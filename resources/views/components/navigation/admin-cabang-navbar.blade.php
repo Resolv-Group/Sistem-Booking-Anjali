@@ -1,0 +1,57 @@
+@props([
+    'active' => 'dashboard',
+])
+
+<div
+    class="fixed bottom-0 left-1/2 z-20 w-full max-w-sm -translate-x-1/2 border-t border-gray-200 bg-white"
+>
+
+    <div class="grid grid-cols-4">
+
+        <button
+            class="flex flex-col items-center py-3 text-xs
+            {{ $active === 'dashboard'
+                ? 'text-primary'
+                : 'text-gray-400'
+            }}"
+        >
+            <span class="text-lg">🏠</span>
+            Dashboard
+        </button>
+
+        <button
+            class="flex flex-col items-center py-3 text-xs
+            {{ $active === 'booking'
+                ? 'text-primary'
+                : 'text-gray-400'
+            }}"
+        >
+            <span class="text-lg">📅</span>
+            Booking
+        </button>
+
+        <button
+            class="flex flex-col items-center py-3 text-xs
+            {{ $active === 'terapis'
+                ? 'text-primary'
+                : 'text-gray-400'
+            }}"
+        >
+            <span class="text-lg">👨‍⚕️</span>
+            Terapis
+        </button>
+
+        <button
+            class="flex flex-col items-center py-3 text-xs
+            {{ $active === 'pasien'
+                ? 'text-primary'
+                : 'text-gray-400'
+            }}"
+        >
+            <span class="text-lg">🧑</span>
+            Pasien
+        </button>
+
+    </div>
+
+</div>
