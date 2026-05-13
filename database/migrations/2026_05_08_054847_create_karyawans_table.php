@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nama_karyawan');
 
             $table->date('tanggal_lahir')->nullable();
-            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
 
             $table->text('alamat')->nullable();
             $table->string('no_telp', 20)->unique();
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('deskripsi_review')->nullable(); 
 
             $table->date('tanggal_bergabung')->nullable();
-            $table->foreignId('cabang_anjali_id')->constrained('cabang_anjali')->nullable();
+            $table->foreignId('cabang_anjali_id')->nullable()->constrained('cabang_anjali');
             $table->enum('status_karyawan', ['Aktif', 'Tidak Aktif', 'Resign', 'PHK'])->default('Aktif');
 
             $table->string('foto_path')->nullable();

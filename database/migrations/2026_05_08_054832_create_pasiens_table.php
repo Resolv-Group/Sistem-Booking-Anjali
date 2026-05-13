@@ -19,8 +19,8 @@ return new class extends Migration
 
             $table->string('nik', 16)->unique()->nullable();
             $table->string('nama_pasien');
-            $table->date('tanggal_lahir');
-            $table->enum('jenis_kelamin', ['L', 'P']);
+            $table->date('tanggal_lahir')->nullable();
+            $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
 
             $table->text('alamat')->nullable();
             $table->string('no_telp', 20)->unique();
@@ -28,7 +28,6 @@ return new class extends Migration
 
             $table->string('kode_referral')->unique()->nullable();
             $table->integer('poin_referral')->default(0);
-            $table->enum('membership_tier', ['Bronze', 'Silver', 'Gold', 'Platinum'])->default('Bronze');
 
             $table->string('foto_path')->nullable();
             $table->string('foto_mime', 100)->nullable();
