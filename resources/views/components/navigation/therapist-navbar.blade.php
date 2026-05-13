@@ -8,7 +8,7 @@
 
     <div class="grid grid-cols-4">
 
-        <button
+        <a href="{{ route('therapist.dashboard') }}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'dashboard'
                 ? 'text-primary'
@@ -17,7 +17,7 @@
         >
             <span class="text-lg">🏠</span>
             Dashboard
-        </button>
+        </a>
 
         <button
             class="flex flex-col items-center py-3 text-xs
@@ -41,7 +41,7 @@
             Pasien
         </button>
 
-        <button
+        <a href="{{ route('therapist.profile') }}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'profil'
                 ? 'text-primary'
@@ -50,7 +50,7 @@
         >
             <span class="text-lg">👤</span>
             Profil
-        </button>
+        </a>
 
     </div>
 

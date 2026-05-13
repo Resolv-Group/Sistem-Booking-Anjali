@@ -2,7 +2,7 @@
     'title' => '',
 ])
 
-<div class="sticky top-0 z-10 bg-white px-4 py-4">
+<div {{ $attributes->merge(['class' => 'sticky -top-px z-10 bg-white px-4 pb-4 pt-[17px]']) }}>
 
     <div class="relative flex items-center justify-between">
 

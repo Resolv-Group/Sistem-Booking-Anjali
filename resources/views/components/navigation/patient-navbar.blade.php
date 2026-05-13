@@ -45,7 +45,7 @@
         </button>
 
         {{-- PROFILE --}}
-        <button
+        <a href="{{ route('patient.profile') }}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'profile'
                 ? 'text-primary'
@@ -54,7 +54,7 @@
         >
             <span class="text-lg">👤</span>
             Profil
-        </button>
+        </a>
 
     </div>
 

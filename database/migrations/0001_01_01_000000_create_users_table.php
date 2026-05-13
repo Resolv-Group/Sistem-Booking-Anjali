@@ -14,12 +14,16 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('phone')->unique();
             $table->string('password');
             $table->rememberToken();
-            // $table->enum('role', ['pic', 'akuntan', 'hrd', 'admin', 'staff', 'head_supervisor'])->default('pic');
-
+            $table->enum('role', [
+                'patient',
+                'therapist',
+                'admin_global',
+                'admin_cabang',
+            ])->default('patient');
+            
             // // RELASI KE STAFF (BOLEH NULL JIKA ADMIN)
             // $table->foreignId('staff_id')
             //       ->nullable()
@@ -29,7 +33,7 @@ return new class extends Migration
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('phone')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
