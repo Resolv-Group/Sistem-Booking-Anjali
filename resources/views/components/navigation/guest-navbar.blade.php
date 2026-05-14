@@ -9,7 +9,7 @@
     <div class="grid grid-cols-4">
 
         {{-- beranda --}}
-        <button
+        <a href="{{ route('landing') }}" 
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'beranda'
                 ? 'text-primary'
@@ -18,22 +18,22 @@
         >
             <span class="text-lg">🏠</span>
             Beranda
-        </button>
+    </a>
 
         {{-- LAYANAN --}}
-        <button
+        <a href="{{route('layanan')}}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'layanan'
                 ? 'text-primary'
-                : 'text-gray-400'
+                : 'text-gray-400'   
             }}"
         >
             <span class="text-lg">🪷</span>
             Layanan
-        </button>
+        </a>
 
         {{-- BOOKING --}}
-        <button
+        <a href="{{ route('view.auth.login') }}" 
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'booking'
                 ? 'text-primary'
@@ -42,7 +42,7 @@
         >
             <span class="text-lg">📅</span>
             Booking
-        </button>
+        </a>
 
         {{-- PROFILE --}}
         <a href="{{ route('view.auth.login') }}"

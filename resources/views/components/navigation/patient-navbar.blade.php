@@ -9,7 +9,7 @@
     <div class="grid grid-cols-4">
 
         {{-- DASHBOARD --}}
-        <button
+        <a href="{{ route('patient.dashboard') }}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'dashboard'
                 ? 'text-primary'
@@ -18,10 +18,22 @@
         >
             <span class="text-lg">🏠</span>
             Dashboard
-        </button>
+        </a>
+
+        {{-- TERAPIS --}}
+        <a href="{{ route('patient.therapist') }}"
+            class="flex flex-col items-center py-3 text-xs
+            {{ $active === 'therapists'
+                ? 'text-primary'
+                : 'text-gray-400'
+            }}"
+        >
+            <span class="text-lg">💆‍♀️</span>
+            Terapis
+        </a>
 
         {{-- BOOKING --}}
-        <button
+        <a href="{{ route('patient.booking.index') }}"
             class="flex flex-col items-center py-3 text-xs
             {{ $active === 'booking'
                 ? 'text-primary'
@@ -30,19 +42,7 @@
         >
             <span class="text-lg">📅</span>
             Booking
-        </button>
-
-        {{-- REFERRAL --}}
-        <button
-            class="flex flex-col items-center py-3 text-xs
-            {{ $active === 'referral'
-                ? 'text-primary'
-                : 'text-gray-400'
-            }}"
-        >
-            <span class="text-lg">🎁</span>
-            Referral
-        </button>
+        </a>
 
         {{-- PROFILE --}}
         <a href="{{ route('patient.profile') }}"

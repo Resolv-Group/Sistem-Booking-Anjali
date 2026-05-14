@@ -4,7 +4,23 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'pages.landing.index')->name('landing');
+Route::get('/', function () {
+    if (!auth()->check()) {
+        return view('pages.landing.index');
+    }
+
+    $user = auth()->user();
+
+    return match ($user->role) {
+        \App\Enums\UserRole::PATIENT => redirect()->route('patient.dashboard'),
+        \App\Enums\UserRole::THERAPIST => redirect()->route('therapist.dashboard'),
+        \App\Enums\UserRole::ADMIN_CABANG => redirect()->route('admin-cabang.dashboard'),
+        \App\Enums\UserRole::ADMIN_GLOBAL => redirect()->route('admin-global.dashboard'),
+        default => view('pages.landing.index'),
+    };
+})->name('landing');
+
+Route::view('/layanan','pages.services.index')->name('layanan');
 
 Route::view(
     '/dashboard/admin-global',
@@ -15,6 +31,32 @@ Route::view(
     '/dashboard/patient',
     'pages.dashboard.patient'
 )->name('patient.dashboard');
+
+Route::view(
+    '/therapist',
+    'pages.therapist.patient'
+)->name('patient.therapist');
+
+//booking
+Route::view(
+    '/booking',
+    'pages.booking.patient.index'
+)->name('patient.booking.index');
+
+Route::view(
+    '/booking/form',
+    'pages.booking.patient.form'
+)->name('patient.booking.form');
+
+Route::post(
+    '/booking/form',
+    [\App\Http\Controllers\BookingController::class, 'store']
+)->name('patient.booking.store');
+
+Route::view(
+    '/booking/form/selesai',
+    'pages.booking.patient.form-selesai'
+)->name('patient.booking.form-selesai');
 
 Route::view('/patient/profile','pages.profile.patient')->name('patient.profile');
 Route::view('/therapist/profile','pages.profile.therapist')->name('therapist.profile');
@@ -37,6 +79,7 @@ Route::view(
 )->name('global.dashboard');
 
 
+//login
 Route::view('/login', 'pages.auth.login')->name('view.auth.login');
 Route::post('login', [
     AuthenticatedSessionController::class,
