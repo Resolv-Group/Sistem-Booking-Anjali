@@ -189,6 +189,16 @@
                     Kelola User
                 </x-ui.button>
 
+                <form action="{{ route('auth.logout') }}" method="POST">
+                    @csrf
+
+                    <x-ui.button type="submit" class="w-full group flex items-center mt-10 p-4 bg-teal-600 text-slate-600 text-sm font-black uppercase tracking-[0.2em] rounded-2xl active:scale-95 transition-all">
+                        Keluar
+                    </x-ui.button>
+
+                </form>
+
+
             </div>
 
         </div>
