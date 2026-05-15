@@ -1,4 +1,4 @@
-<div {{ $attributes->merge(['class' => 'mx-auto min-h-screen max-w-sm bg-[#F8FAFA] shadow-sm relative']) }}>
+<div {{ $attributes->merge(['class' => 'mx-auto min-h-screen w-full max-w-[430px] bg-[#F8FAFA] shadow-sm relative']) }}>
 
     {{ $slot }}
 

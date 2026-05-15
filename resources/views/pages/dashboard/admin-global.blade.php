@@ -206,7 +206,7 @@
     </div>
 
     {{-- BOTTOM NAVBAR --}}
-    <x-ui.navbar-bottom role="admin global" />
+    <x-navigation.admin-global-navbar/>
 
 </x-layouts.mobile-app>
 
