@@ -63,20 +63,15 @@ Route::view('/therapist/profile','pages.profile.therapist')->name('therapist.pro
 Route::view('/admin-global/profile','pages.profile.admin-global')->name('admin-global.profile');
 Route::view('/admin-cabang/profile','pages.profile.admin-cabang')->name('admin-cabang.profile');
 
-Route::view(
-    '/dashboard/therapist',
-    'pages.dashboard.therapist'
-)->name('therapist.dashboard');
+Route::view('/dashboard/therapist','pages.dashboard.therapist')->name('therapist.dashboard');
+Route::view('/jadwal/therapist','pages.jadwal.therapist')->name('therapist.jadwal');
+Route::view('/jadwal/therapist/atur-jam-kerja','pages.jadwal.atur-jam-kerja')->name('therapist.atur-jam-kerja');
+Route::view('/jadwal/therapist/ringkasan-sesi','pages.jadwal.ringkasan-sesi')->name('therapist.ringkasan-sesi');
+Route::view('/booking/list','pages.booking.therapist.index')->name('therapist.booking');
+Route::view('/booking/history','pages.booking.therapist.history')->name('therapist.booking.history');
 
-Route::view(
-    '/dashboard/admin-cabang',
-    'pages.dashboard.admin-cabang'
-)->name('admin-cabang.dashboard');
-
-Route::view(
-    '/lainnya/admin-global',
-    'pages.lainnya.admin-global'
-)->name('global.dashboard');
+Route::view('/dashboard/admin-cabang','pages.dashboard.admin-cabang')->name('admin-cabang.dashboard');
+Route::view('/lainnya/admin-global','pages.lainnya.admin-global')->name('global.dashboard');
 
 
 //login

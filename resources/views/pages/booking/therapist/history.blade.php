@@ -1,0 +1,269 @@
+@extends('components.layouts.app')
+
+@section('title', 'Riwayat Janji Temu')
+
+@section('content')
+
+<x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{ activeTab: 'semua' }">
+
+    {{-- 1. TOPBAR --}}
+    <x-ui.topbar title="Rumah Terapi Anjali">
+        <x-slot:left>
+            <a href="{{ route('therapist.booking') }}" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+            </a>
+        </x-slot:left>
+
+        <x-slot:right>
+            <img
+                src="https://i.pravatar.cc/100"
+                class="h-10 w-10 rounded-full object-cover"
+            >
+        </x-slot:right>
+
+    </x-ui.topbar>
+
+    <div class="px-6 pt-8 pb-32 space-y-8">
+
+        {{-- 2. TITLE SECTION --}}
+        <div class="space-y-2">
+            <h2 class="text-3xl font-semibold text-teal-900 tracking-tight leading-tight">Riwayat Janji Temu</h2>
+            <p class="text-sm text-slate-500 font-medium leading-relaxed">
+                Mengelola dan memverifikasi janji temu pasien yang masuk.
+            </p>
+        </div>
+
+        {{-- 3. SEARCH & FILTER --}}
+        <div class="space-y-4">
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-slate-300 group-focus-within:text-teal-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <input type="text" placeholder="Cari nama pasien atau ID" 
+                    class="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-none rounded-2xl text-sm font-semibold focus:ring-4 focus:ring-teal-50/50 transition-all outline-none">
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button @click="activeTab = 'semua'" :class="activeTab === 'semua' ? 'bg-teal-800 text-white shadow-lg shadow-teal-900/20' : 'bg-white text-slate-400 border border-slate-100'" class="px-7 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all">Semua</button>
+                <button @click="activeTab = 'selesai'" :class="activeTab === 'selesai' ? 'bg-teal-800 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100'" class="px-7 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all">Selesai</button>
+                <button @click="activeTab = 'disetujui'" :class="activeTab === 'disetujui' ? 'bg-teal-800 text-white shadow-lg' : 'bg-white text-slate-400 border border-slate-100'" class="px-7 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all">Disetujui</button>
+            </div>
+        </div>
+
+        {{-- 4. STATS CARDS --}}
+        <div class="space-y-3">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Total Janji Temu (Mei)</p>
+                    <h3 class="text-3xl font-semibold text-slate-800">142</h3>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 border border-teal-100">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Tingkat Persetujuan</p>
+                    <h3 class="text-3xl font-semibold text-slate-800">94.8%</h3>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- 5. HISTORY LIST --}}
+        <div x-data="{ 
+            limit: 3, 
+            loading: false, 
+            finished: false,
+            items: [
+                { nama: 'Nayesha Putri', id: '6623', status: 'disetujui', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, info: 'Dr. Aris Muhammad • Tipe Layanan 1', waktu: '13 Mei 2026 • 14:30 PM' },
+                { nama: 'Kaylina Safira', id: '5522', status: 'ditolak', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, info: 'Dr. Sarah Jenkins • Cardiologist', waktu: '12 Mei 2026 • 09:00 AM' },
+                { nama: 'Reya Mahesa', id: '4421', status: 'selesai', tipe: 'Group', extra: 2, peserta: ['Putra Pratama', 'Siti Aminah'], showPeserta: false, info: 'Dr. Marcus Thorne • Neuro-Specialist', waktu: 'Oct 22, 2023 • 11:15 AM' },
+                { nama: 'Zahra Ali', id: '3310', status: 'selesai', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, info: 'Dr. Elena • Tipe Layanan 2', waktu: 'Oct 20, 2023 • 02:00 PM' }
+            ],
+            loadMore() {
+                this.loading = true;
+                setTimeout(() => {
+                    this.loading = false;
+                    this.finished = true;
+                }, 1000);
+            }
+        }" class="space-y-6">
+            <h3 class="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] ml-1">Pemesanan Sebelumnya</h3>
+            
+            <template x-for="(item, index) in items.slice(0, limit)" :key="index">
+                <div 
+                    :class="{
+                        'border-r-emerald-400 bg-gradient-to-l from-emerald-50/40 via-white to-white': item.status === 'disetujui',
+                        'border-r-blue-400 bg-gradient-to-l from-blue-50/40 via-white to-white': item.status === 'selesai',
+                        'border-r-rose-400 bg-gradient-to-l from-rose-50/40 via-white to-white': item.status === 'ditolak'
+                    }"
+                    class="bg-white rounded-[2rem] border-r-4 border border-slate-200/60 p-7 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                    
+                    {{-- Session Type Badge --}}
+                    <div class="absolute top-0 left-0">
+                        <template x-if="item.tipe === 'Personal'">
+                            <div class="bg-teal-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-br-xl flex items-center gap-1 shadow-sm">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                <span>Personal</span>
+                            </div>
+                        </template>
+                        <template x-if="item.tipe === 'Group'">
+                            <div class="bg-orange-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-br-xl flex items-center gap-1 shadow-sm">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                <span>Group</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <div class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
+                            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-base font-semibold text-slate-800 truncate" x-text="item.nama"></h4>
+                                    <template x-if="item.tipe === 'Group'">
+                                        <button @click.stop="item.showPeserta = !item.showPeserta" 
+                                            class="px-2 py-0.5 bg-orange-50 text-orange-600 text-[9px] font-bold rounded-full border border-orange-100 active:scale-90 transition-all">
+                                            <span x-text="'+' + item.extra"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                                <span class="text-[10px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded border border-teal-100 uppercase" x-text="'ID: #' + item.id"></span>
+                            </div>
+                            <div class="mt-2 space-y-1">
+                                <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                    <span x-text="item.info"></span>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span x-text="item.waktu"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Expanded Participants List --}}
+                    <template x-if="item.tipe === 'Group' && item.showPeserta">
+                        <div x-show="item.showPeserta" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
+                            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                Anggota Grup
+                            </p>
+                            <div class="grid grid-cols-1 gap-1.5">
+                                <template x-for="name in item.peserta">
+                                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                                        <div class="w-1 h-1 rounded-full bg-orange-400"></div>
+                                        <span class="text-[11px] font-semibold text-slate-600" x-text="name"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="flex items-center justify-between pt-5 border-t border-slate-50">
+                        {{-- Status Indicator --}}
+                        <div>
+                            <template x-if="item.status === 'disetujui'">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Disetujui</span>
+                                </div>
+                            </template>
+                            <template x-if="item.status === 'ditolak'">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                    <span class="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Rejected</span>
+                                </div>
+                            </template>
+                            <template x-if="item.status === 'selesai'">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Done</span>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Action Buttons --}}
+                        <div class="flex gap-2">
+                            <template x-if="item.status === 'selesai' || item.status === 'disetujui'">
+                                <button class="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-slate-200 active:scale-95 transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Receipt
+                                </button>
+                            </template>
+                            
+                            <template x-if="item.status === 'ditolak'">
+                                <div class="flex gap-2">
+                                    <button class="px-4 py-2 bg-teal-800 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all shadow-md shadow-teal-900/10">
+                                        Reschedule
+                                    </button>
+                                    <button class="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all border border-slate-200">
+                                        Alasan
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            {{-- Load More Section --}}
+            <div class="pt-4 pb-12">
+                <button 
+                    x-show="!finished"
+                    @click="loadMore()"
+                    :disabled="loading"
+                    class="w-full py-4 bg-white border-2 border-dashed border-slate-200 rounded-[1.5rem] text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50">
+                    <template x-if="!loading">
+                        <div class="flex items-center gap-2">
+                            <span>Muat Lebih Banyak Riwayat</span>
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </template>
+                    <template x-if="loading">
+                        <div class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-teal-600">Memuat...</span>
+                        </div>
+                    </template>
+                </button>
+
+                {{-- Nothing more to show --}}
+                <div x-show="finished" x-cloak class="text-center py-6 space-y-2">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-50 text-slate-300">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Tidak ada riwayat lagi</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- 7. BOTTOM NAVBAR --}}
+    <x-navigation.therapist-navbar active="booking" />
+
+</x-layouts.mobile-app>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+@endsection
