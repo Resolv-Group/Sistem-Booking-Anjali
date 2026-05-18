@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('menu_terapi', function (Blueprint $table) {
+        Schema::create('cabang', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('daftar_layanan_id')->constrained('daftar_layanan');
-            $table->foreignId('cabang_anjali_id')->constrained('cabang_anjali');
+            $table->string('nama_cabang');
+            $table->string('alamat_cabang');
+            $table->string('no_telp_cabang');
+            $table->string('email_cabang');
 
-            $table->float('harga_menu');
+            $table->decimal('nilai_review', 3, 2)->nullable();
+            $table->text('deskripsi_review')->nullable(); 
 
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();
@@ -31,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menu_terapi');
+        Schema::dropIfExists('rumah_terapi');
     }
 };

@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cabang_anjali', function (Blueprint $table) {
+        Schema::create('layanan', function (Blueprint $table) {
             $table->id();
 
-            $table->string('nama_cabang');
-            $table->string('alamat_cabang');
-            $table->string('no_telp_cabang');
-            $table->string('email_cabang');
-
-            $table->decimal('nilai_review', 3, 2)->nullable();
-            $table->text('deskripsi_review')->nullable(); 
+            $table->string('nama');
+            $table->text('deskripsi')->nullable();
+            $table->decimal('base_harga', 15, 2)->nullable();
+            $table->decimal('homecare_harga', 15, 2)->nullable();
+            $table->decimal('diskon_persentase', 5, 2)->default(0);
+            $table->enum('status', ['Tersedia', 'Tidak Tersedia']);
 
             $table->integer('created_by')->nullable();
             $table->integer('updated_by')->nullable();
@@ -34,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rumah_terapi');
+        Schema::dropIfExists('daftar_layanan');
     }
 };

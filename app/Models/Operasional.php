@@ -4,35 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Operasional_Anjali extends Model
+class Operasional extends Model
 {
-    protected $table = 'operasional_anjali';
+    protected $table = 'operasional_rumah_terapi';
 
     protected $fillable = [
-        'cabang_anjali_id',
+        'cabang_id',
         'hari',
-        'jam_buka',
-        'jam_tutup',
-        'status',
+        'waktu_buka',
+        'waktu_tutup',
+        'status_operasional',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'hari' => 'integer',
-        'jam_buka' => 'time',
-        'jam_tutup' => 'time',
-        'status' => 'boolean',
+        'waktu_buka' => 'time',
+        'waktu_tutup' => 'time',
+        'status_operasional' => 'boolean',
     ];
 
     public function cabang()
     {
-        return $this->belongsTo(Cabang_Anjali::class, 'cabang_anjali_id');
+        return $this->belongsTo(Cabang::class, 'cabang_id');
     }
 
     public function scopeByCabang($query, $cabangId)
     {
-        return $query->where('cabang_anjali_id', $cabangId);
+        return $query->where('cabang_id', $cabangId);
     }
 
     public function scopeByHari($query, $hari)

@@ -24,12 +24,28 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    
     protected function casts(): array
     {
         return [
             'role' => UserRole::class,
             'password' => 'hashed',
         ];
+    }
+
+    public function pasien()
+    {
+        return $this->hasOne(Pasien::class);
+    }
+
+    public function karyawan()
+    {
+        return $this->hasOne(Karyawan::class);
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class,'booked_by_user_id');
     }
     
 }

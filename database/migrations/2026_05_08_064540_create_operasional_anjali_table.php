@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operasional_anjali', function (Blueprint $table) {
+        Schema::create('operasional_rumah_terapi', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('cabang_anjali_id')->constrained('cabang_anjali');
+            $table->foreignId('cabang_id')->constrained('cabang');
+
             $table->enum('hari', [1,2,3,4,5,6,7]);
+
             $table->time('waktu_buka');
+
             $table->time('waktu_tutup');
 
             $table->enum('status_operasional', ['Buka', 'Tutup']);

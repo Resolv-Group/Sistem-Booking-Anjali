@@ -38,14 +38,14 @@ Route::view(
 )->name('patient.therapist');
 
 //booking
-Route::view(
+Route::get(
     '/booking',
-    'pages.booking.patient.index'
+    [\App\Http\Controllers\BookingController::class, 'index']
 )->name('patient.booking.index');
 
-Route::view(
+Route::get(
     '/booking/form',
-    'pages.booking.patient.form'
+    [\App\Http\Controllers\BookingController::class, 'create']
 )->name('patient.booking.form');
 
 Route::post(
