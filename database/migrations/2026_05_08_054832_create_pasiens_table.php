@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('pasiens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
             $table->string('pasien_public_id', 25)->unique();
 

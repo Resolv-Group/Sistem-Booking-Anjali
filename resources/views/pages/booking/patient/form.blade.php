@@ -4,35 +4,64 @@
 
 @section('content')
 
+@php
+    $patientName = auth()->user() ? auth()->user()->name : 'Pasien Utama';
+    $patientPublicId = auth()->user() && auth()->user()->pasien ? auth()->user()->pasien->pasien_public_id : 'PSN-GUEST';
+    
+    $words = explode(' ', $therapist->nama_karyawan);
+    $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+    $namaCabang = $therapist->cabang ? $therapist->cabang->nama_cabang : 'Rumah Terapi Anjali';
+    $alamatCabang = $therapist->cabang ? $therapist->cabang->alamat : 'Surabaya';
+@endphp
+
+<script>
+    window.bookingServices = @json($services);
+    window.bookingSessions = @json($sessions);
+</script>
+
 <x-layouts.mobile-app class="bg-slate-50 min-h-screen" 
     x-data="{ 
         step: 1,
         slots: 1,
         selectedServices: [],
         searchService: '',
-        services: [
-            { id: 1, name: 'Psikologi Klinis', price: 350000, desc: 'Sesi terapi kesehatan mental.' },
-            { id: 2, name: 'Fisioterapi', price: 250000, desc: 'Pemulihan fisik dan manajemen nyeri.' },
-            { id: 3, name: 'Akupunktur Medis', price: 300000, desc: 'Terapi jarum untuk energi tubuh.' }
-        ],
-        selectedDate: '{{ date('Y-m-d') }}',
+        services: window.bookingServices,
+        sessions: window.bookingSessions,
+        selectedDate: '',
         timeType: 'pagi', 
         selectedTime: '',
-        timeSlots: {
-            pagi: [
-                { time: '08:00', slots: 2 },
-                { time: '09:00', slots: 0 },
-                { time: '10:00', slots: 4 }
-            ],
-            siang: [
-                { time: '13:00', slots: 1 },
-                { time: '14:00', slots: 3 },
-                { time: '15:00', slots: 2 }
-            ],
-            malam: [
-                { time: '18:00', slots: 5 },
-                { time: '19:00', slots: 0 }
-            ]
+        selectedSessionId: null,
+        
+        init() {
+            if (this.sessions && this.sessions.length > 0) {
+                let dates = this.availableDates;
+                if (dates.length > 0) {
+                    this.selectedDate = dates[0];
+                }
+            }
+        },
+
+        get availableDates() {
+            return [...new Set(this.sessions.map(s => s.tanggal_sesi))].sort();
+        },
+
+        get timeSlotsForSelectedDate() {
+            let daySessions = this.sessions.filter(s => s.tanggal_sesi === this.selectedDate);
+            let groups = { pagi: [], siang: [], malam: [] };
+            
+            daySessions.forEach(s => {
+                let hour = parseInt(s.waktu_mulai.split(':')[0]);
+                let slotInfo = { id: s.id, time: s.waktu_mulai, slots: s.kuota_sisa };
+                
+                if (hour < 12) {
+                    groups.pagi.push(slotInfo);
+                } else if (hour < 18) {
+                    groups.siang.push(slotInfo);
+                } else {
+                    groups.malam.push(slotInfo);
+                }
+            });
+            return groups;
         },
         
         // Verifikasi data
@@ -55,6 +84,28 @@
         get filteredServices() {
             if (!this.searchService) return this.services;
             return this.services.filter(s => s.name.toLowerCase().includes(this.searchService.toLowerCase()));
+        },
+
+        get selectedServicesNames() {
+            return this.selectedServices.map(id => {
+                let service = this.services.find(s => s.id === id);
+                return service ? service.name : '';
+            }).filter(n => n !== '').join(', ');
+        },
+
+        get totalConsultationCost() {
+            return this.selectedServices.reduce((sum, id) => {
+                let service = this.services.find(s => s.id === id);
+                return sum + (service ? service.price : 0);
+            }, 0);
+        },
+
+        get grandTotal() {
+            return this.totalConsultationCost + 5000;
+        },
+
+        formatRupiah(amount) {
+            return 'Rp ' + amount.toLocaleString('id-ID');
         }
     }">
 
@@ -67,7 +118,8 @@
         <input type="hidden" name="date" :value="selectedDate">
         <input type="hidden" name="time" :value="selectedTime">
         <input type="hidden" name="slots" :value="slots">
-        <input type="hidden" name="therapist_id" value="{{ request('therapist_id', 1) }}">
+        <input type="hidden" name="therapist_id" value="{{ $therapist->id }}">
+        <input type="hidden" name="terapis_sesi_id" :value="selectedSessionId">
 
         {{-- TOPBAR --}}
         <x-ui.topbar title="Rumah Terapi Anjali">
@@ -82,6 +134,17 @@
         </x-ui.topbar>
 
         <div class="px-6 pt-8 pb-32">
+
+            @if ($errors->any())
+                <div class="p-5 mb-8 bg-rose-50 border border-rose-100 text-rose-800 rounded-2xl shadow-sm">
+                    <p class="font-bold text-sm mb-2 uppercase tracking-wider text-rose-700">Pendaftaran Gagal</p>
+                    <ul class="list-disc pl-5 text-xs space-y-1 font-semibold">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             {{-- ==============================
                  STEP 1: FORM PERJANJIAN
@@ -104,10 +167,10 @@
                 {{-- 2. THERAPIST CARD --}}
                 <div class="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm">
                     <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 font-semibold text-lg">DP</div>
+                        <div class="w-11 h-11 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 font-semibold text-lg">{{ $initials }}</div>
                         <div>
                             <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Terapis</p>
-                            <p class="text-lg font-semibold text-slate-800">David Purnomo</p>
+                            <p class="text-lg font-semibold text-slate-800">{{ $therapist->nama_karyawan }}</p>
                         </div>
                     </div>
                     <span class="px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold uppercase rounded-md border border-teal-100">Tersedia</span>
@@ -133,7 +196,7 @@
                                         <h4 class="text-base font-semibold text-slate-800" x-text="service.name"></h4>
                                         <p class="text-sm text-slate-400 mt-1 font-semibold" x-text="service.desc"></p>
                                     </div>
-                                    <span class="text-base font-semibold text-teal-600" x-text="'Rp' + (service.price/1000) + '.000'"></span>
+                                    <span class="text-base font-semibold text-teal-600" x-text="formatRupiah(service.price)"></span>
                                 </div>
                                 <div x-show="selectedServices.includes(service.id)" class="absolute -top-2 -right-2 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
@@ -153,8 +216,13 @@
                     <div class="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div class="space-y-2">
                             <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest ml-1">Tanggal Perjanjian</label>
-                            <input type="date" x-model="selectedDate"
+                            <select x-model="selectedDate"
                                 class="w-full bg-slate-50 p-4 rounded-xl text-lg font-semibold text-slate-700 outline-none border border-slate-100 focus:border-teal-500 transition-all">
+                                <option value="" disabled>Pilih Tanggal</option>
+                                <template x-for="date in availableDates" :key="date">
+                                    <option :value="date" x-text="date"></option>
+                                </template>
+                            </select>
                         </div>
 
                         <div class="space-y-2">
@@ -173,9 +241,9 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 pt-2">
-                            <template x-for="slot in timeSlots[timeType]" :key="slot.time">
+                            <template x-for="slot in timeSlotsForSelectedDate[timeType]" :key="slot.id">
                                 <button type="button" 
-                                    @click="if(slot.slots > 0) selectedTime = slot.time"
+                                    @click="if(slot.slots > 0) { selectedTime = slot.time; selectedSessionId = slot.id; }"
                                     :disabled="slot.slots === 0"
                                     :class="{
                                         'border-teal-500 bg-teal-50 ring-1 ring-teal-500': selectedTime === slot.time,
@@ -252,13 +320,13 @@
                                 <span class="text-xs font-semibold text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-1 rounded">Pasien 1 (Utama)</span>
                             </div>
                             <div>
-                                <p class="text-base font-semibold text-slate-800 uppercase tracking-widest">David Purnomo</p>
-                                <p class="text-xs text-slate-400 font-semibold uppercase mt-1">ID: 8829-PX</p>
-                                <input type="hidden" name="patient_names[]" value="David Purnomo" :disabled="slots === 1">
+                                <p class="text-base font-semibold text-slate-800 uppercase tracking-widest">{{ $patientName }}</p>
+                                <p class="text-xs text-slate-400 font-semibold uppercase mt-1">ID: {{ $patientPublicId }}</p>
+                                <input type="hidden" name="patient_names[]" value="{{ $patientName }}" :disabled="slots === 1">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Keluhan Utama</label>
-                                <textarea name="patient_complaints[]" :disabled="slots === 1" placeholder="Ceritakan keluhan David..." 
+                                <textarea name="patient_complaints[]" :disabled="slots === 1" placeholder="Ceritakan keluhan {{ $patientName }}..." 
                                     class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold h-24 focus:ring-2 focus:ring-teal-100 outline-none resize-none"></textarea>
                             </div>
                         </div>
@@ -322,14 +390,14 @@
                     <div class="flex flex-col items-center text-center">
                         <p class="text-xs font-semibold text-teal-600 uppercase tracking-[0.2em] mb-4">Terapis Terpilih</p>
                         <div class="relative mb-4">
-                            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-50 shadow-inner">
-                                <svg class="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <div class="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center border-2 border-white shadow-md text-teal-600 font-bold text-2xl">
+                                {{ $initials }}
                             </div>
                             <div class="absolute bottom-0 right-0 w-6 h-6 bg-teal-500 rounded-full border-2 border-white flex items-center justify-center">
                                 <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
                             </div>
                         </div>
-                        <h4 class="text-xl font-semibold text-slate-800">Dr. Elena</h4>
+                        <h4 class="text-xl font-semibold text-slate-800">{{ $therapist->nama_karyawan }}</h4>
                         <p class="text-sm font-semibold text-slate-400 uppercase tracking-widest mt-1">Spesialis Akupunktur</p>
                     </div>
 
@@ -340,8 +408,8 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Layanan Terpilih</p>
-                                <p class="text-base font-semibold text-slate-800 leading-tight">Psikologi Klinis</p>
-                                <p class="text-xs font-semibold text-slate-400 mt-1">60 Min Session</p>
+                                <p class="text-base font-semibold text-slate-800 leading-tight" x-text="selectedServicesNames || 'Belum memilih layanan'"></p>
+                                <p class="text-xs font-semibold text-slate-400 mt-1">Sesi Terapi</p>
                             </div>
                         </div>
 
@@ -362,8 +430,8 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Lokasi</p>
-                                <p class="text-base font-semibold text-slate-800 leading-tight">Klinik Anjali, Surabaya</p>
-                                <p class="text-xs font-semibold text-slate-400 mt-1 leading-relaxed">Jl. Tuban Raya No.100, <br>Jepara</p>
+                                <p class="text-base font-semibold text-slate-800 leading-tight">{{ $namaCabang }}</p>
+                                <p class="text-xs font-semibold text-slate-400 mt-1 leading-relaxed">{{ $alamatCabang }}</p>
                             </div>
                         </div>
                     </div>
@@ -372,18 +440,18 @@
                 <div class="bg-slate-50 border border-slate-200 rounded-[2rem] p-8 space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-sm font-semibold text-slate-500">Biaya Konsultasi</span>
-                        <span class="text-base font-semibold text-slate-800">Rp350.000</span>
+                        <span class="text-base font-semibold text-slate-800" x-text="formatRupiah(totalConsultationCost)"></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-sm font-semibold text-slate-500">Biaya Admin</span>
-                        <span class="text-base font-semibold text-slate-800">Rp5.000</span>
+                        <span class="text-base font-semibold text-slate-800">Rp 5.000</span>
                     </div>
                     <div class="pt-4 border-t border-slate-200 flex justify-between items-end">
                         <div>
                             <p class="text-[11px] font-semibold text-teal-600 uppercase tracking-widest">Grand Total</p>
                             <p class="text-[10px] font-semibold text-slate-400 uppercase">Termasuk Pajak</p>
                         </div>
-                        <span class="text-2xl font-semibold text-slate-900 tracking-tight">Rp355.000</span>
+                        <span class="text-2xl font-semibold text-slate-900 tracking-tight" x-text="formatRupiah(grandTotal)"></span>
                     </div>
                 </div>
 
@@ -425,16 +493,16 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center text-sm font-medium opacity-90">
                             <span>Biaya Konsultasi</span>
-                            <span>Rp350.000</span>
+                            <span x-text="formatRupiah(totalConsultationCost)"></span>
                         </div>
                         <div class="flex justify-between items-center text-sm font-medium opacity-90">
                             <span>Biaya Admin</span>
-                            <span>Rp5.000</span>
+                            <span>Rp 5.000</span>
                         </div>
                         <div class="pt-6 border-t border-white/20 flex justify-between items-end">
                             <div>
                                 <p class="text-[10px] font-semibold uppercase tracking-widest opacity-60 mb-1">Grand Total</p>
-                                <p class="text-3xl font-semibold tracking-tight">Rp355.000</p>
+                                <p class="text-3xl font-semibold tracking-tight" x-text="formatRupiah(grandTotal)"></p>
                             </div>
                             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>

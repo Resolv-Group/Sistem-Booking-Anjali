@@ -9,6 +9,7 @@ class Karyawan extends Model
     protected $table = 'karyawans';
 
     protected $fillable = [
+        'user_id',  
         'kode_karyawan',
         'nik',
         'nama_karyawan',
@@ -21,7 +22,7 @@ class Karyawan extends Model
         'nilai_review',
         'deskripsi_review',
         'tanggal_bergabung',
-        'cabang_anjali_id',
+        'cabang_id',
         'status_karyawan',
         'foto_path',
         'foto_mime',
@@ -40,55 +41,31 @@ class Karyawan extends Model
             : null;
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function cabang()
     {
-        return $this->belongsTo(Cabang_Anjali::class, 'cabang_anjali_id');
+        return $this->belongsTo(Cabang::class);
     }
 
-    public function jadwal()
+    public function sessions()
     {
-        return $this->hasMany(Jadwal_Karyawan::class);
+        return $this->hasMany(
+            TherapistSession::class,
+            'terapis_id'
+        );
     }
 
-    // public function bookingsAsTherapist()
-    // {
-    //     return $this->hasMany(Booking::class, 'terapis_id');
-    // }
-
-    // public function bookingsAsAdmin()
-    // {
-    //     return $this->hasMany(Booking::class, 'admin_id');
-    // }
-
-    // public function reviews()
-    // {
-    //     return $this->hasMany(Review::class, 'reviewer_type', 'peran')
-    //                 ->where('reviewer_type', 'Karyawan');
-    // }
-
-    public function scopeActive($query)
+    public function layanans()
     {
-        return $query->where('status_karyawan', 'Aktif');
-    }
-
-    public function scopeAdminCabang($query)
-    {
-        return $query->where('peran', 'Admin Rumah Terapi');
-    }
-
-    public function scopeTerapis($query)
-    {
-        return $query->where('peran', 'Terapis');
-    }
-
-    public function scopeSearch($query, $term)
-    {
-        return $query->when($term, function ($q) use ($term) {
-            $q->where('nama_karyawan', 'like', "%{$term}%")
-              ->orWhere('kode_karyawan', 'like', "%{$term}%")
-              ->orWhere('nik', 'like', "%{$term}%")
-              ->orWhere('no_telp', 'like', "%{$term}%")
-              ->orWhere('email', 'like', "%{$term}%");
-        });
+        return $this->belongsToMany(
+            Layanan::class,
+            'terapis_layanan',
+            'terapis_id',
+            'layanan_id'
+        );
     }
 }

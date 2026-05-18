@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
             $table->string('kode_karyawan')->unique();
             $table->string('nik', 16)->unique()->nullable();
@@ -32,7 +33,7 @@ return new class extends Migration
             $table->string('deskripsi_review')->nullable(); 
 
             $table->date('tanggal_bergabung')->nullable();
-            $table->foreignId('cabang_anjali_id')->nullable()->constrained('cabang_anjali');
+            $table->foreignId('cabang_id')->constrained('cabang')->nullOnDelete();
             $table->enum('status_karyawan', ['Aktif', 'Tidak Aktif', 'Resign', 'PHK'])->default('Aktif');
 
             $table->string('foto_path')->nullable();

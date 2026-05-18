@@ -9,6 +9,7 @@ class Pasien extends Model
     protected $table = 'pasiens';
 
     protected $fillable = [
+        'user_id',
         'pasien_public_id',
         'nik',
         'nama_pasien',
@@ -31,20 +32,22 @@ class Pasien extends Model
             : null;
     }
 
-    // public function bookings()
-    // {
-    //     return $this->hasMany(Booking::class);
-    // }
+    protected function casts(): array
+    {
+        return [
+            'tanggal_lahir' => 'date',
+        ];
+    }
 
-    // public function referrals()
-    // {
-    //     return $this->hasMany(Referral::class, 'referrer_id');
-    // }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    // public function usedReferrals()
-    // {
-    //     return $this->hasMany(Referral::class, 'used_by');
-    // }
+    public function bookingPatients()
+    {
+        return $this->hasMany(BookingPatient::class);
+    }
 
     public function scopeSearch($query, $term)
     {
