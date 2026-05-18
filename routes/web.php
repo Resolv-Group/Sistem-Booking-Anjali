@@ -63,6 +63,7 @@ Route::view('/therapist/profile','pages.profile.therapist')->name('therapist.pro
 Route::view('/admin-global/profile','pages.profile.admin-global')->name('admin-global.profile');
 Route::view('/admin-cabang/profile','pages.profile.admin-cabang')->name('admin-cabang.profile');
 
+//therapist 
 Route::view('/dashboard/therapist','pages.dashboard.therapist')->name('therapist.dashboard');
 Route::view('/jadwal/therapist','pages.jadwal.therapist')->name('therapist.jadwal');
 Route::view('/jadwal/therapist/atur-jam-kerja','pages.jadwal.atur-jam-kerja')->name('therapist.atur-jam-kerja');
@@ -70,8 +71,22 @@ Route::view('/jadwal/therapist/ringkasan-sesi','pages.jadwal.ringkasan-sesi')->n
 Route::view('/booking/list','pages.booking.therapist.index')->name('therapist.booking');
 Route::view('/booking/history','pages.booking.therapist.history')->name('therapist.booking.history');
 
+//admin global
 Route::view('/dashboard/admin-cabang','pages.dashboard.admin-cabang')->name('admin-cabang.dashboard');
 Route::view('/lainnya/admin-global','pages.lainnya.admin-global')->name('global.dashboard');
+Route::view('/cabang/admin-global','pages.cabang.index')->name('admin-global.cabang');
+Route::view('/cabang/admin-global/menu','pages.cabang.menu')->name('admin-global.cabang.menu');
+Route::view('/cabang/admin-global/create','pages.cabang.cabang-create')->name('admin-global.cabang.create');
+// Route::view('/cabang/admin-global/edit','pages.cabang.edit')->name('admin-global.cabang.edit');
+
+
+Route::view('/operasional-jadwal/admin-global/menu','pages.cabang.menu.operasional-jadwal')->name('admin-global.operasional-jadwal');
+Route::view('/layanan/admin-global/menu','pages.cabang.menu.layanan.layanan-menu')->name('admin-global.layanan');
+Route::view('/layanan/admin-global/create','pages.cabang.menu.layanan.layanan-create')->name('admin-global.layanan.create');
+Route::view('/layanan/admin-global/detail','pages.cabang.menu.layanan.layanan-detail')->name('admin-global.layanan.detail');
+
+Route::view('/atur-layanan/pilih-therapist','pages.cabang.menu.assign-layanan.therapist-list')->name('admin-global.therapist-list');
+Route::view('/atur-layanan/admin-global','pages.cabang.menu.assign-layanan.assign-layanan')->name('admin-global.assign-layanan');
 
 
 //login
