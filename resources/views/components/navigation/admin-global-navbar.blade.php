@@ -59,7 +59,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Beranda</span>
             </a>
 
-            <a href="#"   
+            <a href="{{ route('admin-global.cabang') }}"   
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
                 {{ $active === 'cabang' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="{{ $active === 'cabang' ? '2.5' : '2' }}">
@@ -74,7 +74,7 @@
                     class="w-14 h-14 bg-teal-800 text-white rounded-2xl shadow-xl shadow-teal-900/30 flex items-center justify-center transition-all active:scale-90"
                     :class="open ? 'bg-orange-500 shadow-orange-500/30' : ''">
                     <svg x-show="!open" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     <svg x-show="open" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" x-cloak>
                         <path d="M6 18L18 6M6 6l12 12" />
