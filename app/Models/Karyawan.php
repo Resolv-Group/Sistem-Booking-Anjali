@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Kolaborasi;
 
 class Karyawan extends Model
 {
@@ -22,10 +23,12 @@ class Karyawan extends Model
         'nilai_review',
         'deskripsi_review',
         'tanggal_bergabung',
-        'cabang_id',
+        'kolaborasi_id',
         'status_karyawan',
         'foto_path',
         'foto_mime',
+        'created_by',
+        'updated_by'
     ];
 
     protected $casts = [
@@ -46,9 +49,9 @@ class Karyawan extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function cabang()
+    public function kolaborasi()
     {
-        return $this->belongsTo(Cabang::class);
+        return $this->belongsTo(Kolaborasi::class);
     }
 
     public function sessions()

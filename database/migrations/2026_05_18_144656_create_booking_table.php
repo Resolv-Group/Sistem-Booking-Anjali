@@ -23,10 +23,6 @@ return new class extends Migration
                 ->constrained('terapis_sesi')
                 ->cascadeOnDelete();
 
-            $table->foreignId('layanan_id')
-                ->constrained('layanan')
-                ->cascadeOnDelete();
-
             $table->enum('status',[
                 'pending',
                 'approved',

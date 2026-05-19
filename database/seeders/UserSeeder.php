@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $adminGlobalTL = '1980-01-01';
-        $adminCabangTL = '1980-01-01';
+        $adminKolaborasiTL = '1980-01-01';
         $terapis1TL = '1991-01-01';
         $terapis2TL = '1992-02-02';
         $pasien1TL = '1991-01-01';
@@ -38,28 +38,28 @@ class UserSeeder extends Seeder
             'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
             'nama_karyawan' => 'Admin Global',
             'no_telp' => '08111111111',
-            'peran' => 'Admin',
+            'peran' => 'Admin Global',
             'tanggal_lahir' => $adminGlobalTL,
             'jenis_kelamin' => 'L',
-            'cabang_id' => 1,
+            'kolaborasi_id' => 1,
         ]);
 
-        // 1 Admin RT (Admin Cabang)
+        // 1 Admin Kolaborasi
         $user2 = User::create([
-            'name' => 'Admin Cabang',
+            'name' => 'Admin Kolaborasi',
             'phone' => '08222222222',
-            'password' => Hash::make(Carbon::parse($adminCabangTL)->format('d-m-Y')),
-            'role' => UserRole::ADMIN_CABANG,
+            'password' => Hash::make(Carbon::parse($adminKolaborasiTL)->format('d-m-Y')),
+            'role' => UserRole::ADMIN_KOLABORASI,
         ]);
         Karyawan::create([
             'user_id' => $user2->id,
             'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
-            'nama_karyawan' => 'Admin Cabang',
+            'nama_karyawan' => 'Admin Kolaborasi',
             'no_telp' => '08222222222',
-            'peran' => 'Admin Rumah Terapi',
-            'tanggal_lahir' => $adminCabangTL,
+            'peran' => 'Admin Kolaborasi',
+            'tanggal_lahir' => $adminKolaborasiTL,
             'jenis_kelamin' => 'P',
-            'cabang_id' => 1,
+            'kolaborasi_id' => 1,
         ]);
 
         // 2 Terapis
@@ -77,9 +77,9 @@ class UserSeeder extends Seeder
             'peran' => 'Terapis',
             'tanggal_lahir' => $terapis1TL,
             'jenis_kelamin' => 'L',
-            'cabang_id' => 1,
+            'kolaborasi_id' => 1,
         ]);
-        $terapis1->layanans()->attach([1, 2]);
+        $terapis1->layanans()->attach([1, 2, 3, 4]);
 
         $user4 = User::create([
             'name' => 'Terapis 2',
@@ -95,9 +95,9 @@ class UserSeeder extends Seeder
             'peran' => 'Terapis',
             'tanggal_lahir' => $terapis2TL,
             'jenis_kelamin' => 'P',
-            'cabang_id' => 2,
+            'kolaborasi_id' => 2,
         ]);
-        $terapis2->layanans()->attach([2, 3]);
+        $terapis2->layanans()->attach([5, 6, 7, 8, 9]);
 
         // 2 Pasien
         $user5 = User::create([
@@ -130,14 +130,14 @@ class UserSeeder extends Seeder
             'jenis_kelamin' => 'P',
         ]);
 
-        // Seed Therapist Sessions for Terapis 1 (Cabang 1)
+        // Seed Therapist Sessions for Terapis 1 (kolaborasi 1)
         $dates = [Carbon::today(), Carbon::tomorrow(), Carbon::today()->addDays(2)];
         $timesT1 = ['08:00', '10:00', '13:00', '15:00', '18:00'];
         foreach ($dates as $date) {
             foreach ($timesT1 as $index => $time) {
                 TherapistSession::create([
                     'terapis_id' => $terapis1->id,
-                    'cabang_id' => 1,
+                    'kolaborasi_id' => 1,
                     'tanggal_sesi' => $date->format('Y-m-d'),
                     'waktu_mulai' => $time,
                     'kuota' => [2, 4, 1, 3, 5][$index],
@@ -146,13 +146,13 @@ class UserSeeder extends Seeder
             }
         }
 
-        // Seed Therapist Sessions for Terapis 2 (Cabang 2)
+        // Seed Therapist Sessions for Terapis 2 (kolaborasi 2)
         $timesT2 = ['09:00', '11:00', '14:00', '16:00', '19:00'];
         foreach ($dates as $date) {
             foreach ($timesT2 as $index => $time) {
                 TherapistSession::create([
                     'terapis_id' => $terapis2->id,
-                    'cabang_id' => 2,
+                    'kolaborasi_id' => 2,
                     'tanggal_sesi' => $date->format('Y-m-d'),
                     'waktu_mulai' => $time,
                     'kuota' => 5,

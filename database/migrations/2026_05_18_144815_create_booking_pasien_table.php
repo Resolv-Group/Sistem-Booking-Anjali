@@ -23,6 +23,8 @@ return new class extends Migration
                 ->constrained('pasiens')
                 ->cascadeOnDelete();
 
+            $table->foreignId('layanan_id')->nullable()->constrained('layanan')->cascadeOnDelete();
+
             $table->text('keluhan_pasien')
                 ->nullable();
 

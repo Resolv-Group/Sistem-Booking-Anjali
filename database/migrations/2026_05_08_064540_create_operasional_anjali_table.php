@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('operasional_rumah_terapi', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('cabang_id')->constrained('cabang');
+            $table->foreignId('kolaborasi_id')->constrained('kolaborasi');
 
             $table->enum('hari', [1,2,3,4,5,6,7]);
 

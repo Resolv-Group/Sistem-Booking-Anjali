@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Cabang extends Model
+class Kolaborasi extends Model
 {
-    protected $table = 'cabang';
+    protected $table = 'kolaborasi';
 
     protected $fillable = [
-        'nama_cabang',
-        'alamat_cabang',
-        'no_telp_cabang',
-        'email_cabang',
+        'nama_kolaborasi',
+        'alamat_kolaborasi',
+        'kota_kolaborasi',
+        'no_telp_kolaborasi',
+        'email_kolaborasi',
         'nilai_review',
         'deskripsi_review',
         'created_by',

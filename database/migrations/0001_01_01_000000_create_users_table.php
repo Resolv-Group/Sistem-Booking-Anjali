@@ -21,7 +21,7 @@ return new class extends Migration
                 'patient',
                 'therapist',
                 'admin_global',
-                'admin_cabang',
+                'admin_kolaborasi',
             ])->default('patient');
             
             // // RELASI KE STAFF (BOLEH NULL JIKA ADMIN)

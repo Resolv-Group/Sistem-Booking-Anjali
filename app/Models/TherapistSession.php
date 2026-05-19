@@ -11,7 +11,7 @@ class TherapistSession extends Model
 
     protected $fillable = [
         'terapis_id',
-        'cabang_id',
+        'kolaborasi_id',
         'tanggal_sesi',
         'waktu_mulai',
         'kuota',
@@ -28,11 +28,11 @@ class TherapistSession extends Model
         );
     }
 
-    public function cabang()
+    public function kolaborasi()
     {
         return $this->belongsTo(
-            Cabang::class,
-            'cabang_id'
+            Kolaborasi::class,
+            'kolaborasi_id'
         );
     }
 
@@ -46,25 +46,24 @@ class TherapistSession extends Model
     */
 
     public function getRemainingCapacityAttribute()
-    {
-        $used = $this->bookings()
-            ->whereIn('status',[
-                'menunggu',
-                'disetujui',
-                'selesai'
-            ])
-            ->withCount('bookingPatients')
-            ->get()
-            ->sum('booking_patients_count');
+{
+    // Sum the patient count from all valid bookings
+    $used = $this->bookings
+        ->whereIn('status', ['pending', 'disetujui', 'selesai'])
+        ->sum(function ($booking) {
+            return $booking->bookingPatients->count();
+        });
 
-        return $this->kuota - $used;
-    }
+    return $this->kuota - $used;
+}
+
+    
 
     public function getUsedCapacityAttribute()
     {
         return $this->bookings()
             ->whereIn('status',[
-                'menunggu',
+                'pending',
                 'disetujui',
                 'selesai'
             ])

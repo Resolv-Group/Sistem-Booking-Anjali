@@ -10,8 +10,8 @@
     
     $words = explode(' ', $therapist->nama_karyawan);
     $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
-    $namaCabang = $therapist->cabang ? $therapist->cabang->nama_cabang : 'Rumah Terapi Anjali';
-    $alamatCabang = $therapist->cabang ? $therapist->cabang->alamat : 'Surabaya';
+    $namaKolaborasi = $therapist->kolaborasi ? $therapist->kolaborasi->nama_kolaborasi : 'Rumah Terapi Anjali';
+    $alamatKolaborasi = $therapist->kolaborasi ? $therapist->kolaborasi->alamat : 'Surabaya';
 @endphp
 
 <script>
@@ -21,16 +21,25 @@
 
 <x-layouts.mobile-app class="bg-slate-50 min-h-screen" 
     x-data="{ 
-        step: 1,
-        slots: 1,
-        selectedServices: [],
+        step: {{ old('current_step', 1) }},
+        slots: {{ old('slots', 1) }},   
+        selectedServices: {{ old('services') ? old('services') : '[]' }},
+        patientServiceOverrides: {
+            0: '{{ old('patient_services.0', '') }}',
+            1: '{{ old('patient_services.1', '') }}',
+            2: '{{ old('patient_services.2', '') }}',
+            3: '{{ old('patient_services.3', '') }}',
+            4: '{{ old('patient_services.4', '') }}'
+        },    
         searchService: '',
+        paymentProofFileName: '',
         services: window.bookingServices,
         sessions: window.bookingSessions,
-        selectedDate: '',
-        timeType: 'pagi', 
-        selectedTime: '',
-        selectedSessionId: null,
+        selectedDate: '{{ old('date', '') }}',
+        timeType: '{{ old('time_type', 'pagi') }}', 
+        selectedTime: '{{ old('time', '') }}',
+        selectedSessionId: '{{ old('terapis_sesi_id', '') }}',
+        biayaHomecare: 0,
         
         init() {
             if (this.sessions && this.sessions.length > 0) {
@@ -49,9 +58,19 @@
             let daySessions = this.sessions.filter(s => s.tanggal_sesi === this.selectedDate);
             let groups = { pagi: [], siang: [], malam: [] };
             
+            let today = new Date();
+            let todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            let currentHour = today.getHours();
+            let currentMinute = today.getMinutes();
+            let isToday = (this.selectedDate === todayStr);
+            
             daySessions.forEach(s => {
                 let hour = parseInt(s.waktu_mulai.split(':')[0]);
-                let slotInfo = { id: s.id, time: s.waktu_mulai, slots: s.kuota_sisa };
+                let minute = parseInt(s.waktu_mulai.split(':')[1]);
+                
+                let isPast = isToday && (hour < currentHour || (hour === currentHour && minute < currentMinute));
+                
+                let slotInfo = { id: s.id, time: s.waktu_mulai, slots: s.kuota_sisa, isPast: isPast };
                 
                 if (hour < 12) {
                     groups.pagi.push(slotInfo);
@@ -75,9 +94,9 @@
         
         toggleService(id) {
             if (this.selectedServices.includes(id)) {
-                this.selectedServices = this.selectedServices.filter(i => i !== id);
+                this.selectedServices = [];
             } else {
-                this.selectedServices.push(id);
+                this.selectedServices = [id];
             }
         },
 
@@ -93,19 +112,73 @@
             }).filter(n => n !== '').join(', ');
         },
 
+        getPatientServiceName(index) {
+            let overrideId = this.patientServiceOverrides[index];
+            if (overrideId) {
+                let s = this.services.find(sv => sv.id === parseInt(overrideId));
+                return s ? s.name : null;
+            }
+            return this.selectedServicesNames || null;
+        },
+
+        get biayaHomecare() {
+            if (this.selectedServices.length > 0) {
+                let defaultService = this.services.find(s => s.id === this.selectedServices[0]);
+                return defaultService ? defaultService.homecare_price : 0;
+            }
+            return 0;
+        },
+
         get totalConsultationCost() {
-            return this.selectedServices.reduce((sum, id) => {
-                let service = this.services.find(s => s.id === id);
-                return sum + (service ? service.price : 0);
-            }, 0);
+            let defaultCost = 0;
+            if (this.selectedServices.length > 0) {
+                let defaultService = this.services.find(s => s.id === this.selectedServices[0]);
+                defaultCost = defaultService ? defaultService.price : 0;
+            }
+
+            let total = 0;
+            for (let i = 0; i < this.slots; i++) {
+                let overrideId = this.patientServiceOverrides[i];
+                if (overrideId) {
+                    let overrideService = this.services.find(s => s.id === parseInt(overrideId));
+                    total += overrideService ? overrideService.price : 0;
+                } else {
+                    total += defaultCost;
+                }
+            }
+            return total;
+        },
+
+        get diskon() {
+            if (this.selectedServices.length > 0) {
+                let defaultService = this.services.find(s => s.id === this.selectedServices[0]);
+                return defaultService ? defaultService.discount : 0;
+            }
+            return 0;
+        },
+
+        get discountAmount() {
+            return this.totalConsultationCost * (this.diskon / 100);
         },
 
         get grandTotal() {
-            return this.totalConsultationCost + 5000;
+            return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
         },
 
         formatRupiah(amount) {
             return 'Rp ' + amount.toLocaleString('id-ID');
+        },
+
+        formatDate(dateStr) {
+            if (!dateStr) return '';
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('id-ID', options);
+        },
+
+        formatTime(timeStr) {
+            if (!timeStr) return '';
+            return timeStr.substring(0, 5);
         }
     }">
 
@@ -114,12 +187,13 @@
 
         {{-- Hidden bindings to pass Alpine data to backend --}}
         <input type="hidden" name="patient_id" value="{{ auth()->id() ?? 1 }}">
-        <input type="hidden" name="services" :value="JSON.stringify(selectedServices)">
-        <input type="hidden" name="date" :value="selectedDate">
-        <input type="hidden" name="time" :value="selectedTime">
-        <input type="hidden" name="slots" :value="slots">
-        <input type="hidden" name="therapist_id" value="{{ $therapist->id }}">
-        <input type="hidden" name="terapis_sesi_id" :value="selectedSessionId">
+
+        <input type="hidden" name="current_step" :value="step" value="{{ old('current_step') }}">
+        <input type="hidden" name="services" :value="JSON.stringify(selectedServices)" value="{{ old('services') }}">
+        <input type="hidden" name="date" :value="selectedDate" value="{{ old('date') }}">
+        <input type="hidden" name="time" :value="selectedTime" value="{{ old('time') }}">
+        <input type="hidden" name="slots" :value="slots" value="{{ old('slots') }}">
+        <input type="hidden" name="terapis_sesi_id" :value="selectedSessionId" value="{{ old('terapis_sesi_id') }}">
 
         {{-- TOPBAR --}}
         <x-ui.topbar title="Rumah Terapi Anjali">
@@ -149,14 +223,14 @@
             {{-- ==============================
                  STEP 1: FORM PERJANJIAN
                  ============================== --}}
-            <div x-show="step === 1" x-transition class="space-y-10">
+            <div x-show="step === 1" x-transition class="space-y-10" x-ref="step1">
                 
                 {{-- 1. TITLE SECTION --}}
                 <div class="space-y-2">
                     <div class="flex items-center gap-3">
                         <span class="text-2xl font-semibold text-teal-600">02</span>
                         <div class="h-1 flex-1 bg-slate-200 rounded-full">
-                            <div class="w-4/5 h-full bg-teal-500"></div>
+                            <div class="w-2/5 h-full bg-teal-500"></div>
                         </div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Step 2 dari 5</span>
                     </div>
@@ -176,17 +250,128 @@
                     <span class="px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-semibold uppercase rounded-md border border-teal-100">Tersedia</span>
                 </div>
 
-                {{-- 3. PILIH LAYANAN --}}
+                {{-- 3. TANGGAL & WAKTU --}}
+                <div class="space-y-6">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Pilih Tanggal & Waktu</h3>
+                    </div>
+
+                    <div class="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="space-y-2" x-data="{ isOpen: false }">
+                            <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest ml-1">Tanggal Perjanjian</label>
+                            
+                            <div class="relative">
+                                <!-- Trigger -->
+                                <button type="button" @click="isOpen = !isOpen" @click.away="isOpen = false"
+                                    class="w-full flex items-center justify-between bg-slate-50 p-4 rounded-xl text-lg font-semibold text-slate-700 outline-none border border-slate-100 hover:border-teal-200 focus:border-teal-500 transition-all text-left">
+                                    <span x-text="selectedDate ? formatDate(selectedDate) : 'Pilih Tanggal'" :class="!selectedDate ? 'text-slate-400' : ''"></span>
+                                    <svg class="w-5 h-5 text-slate-400 transition-transform duration-200" :class="isOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div x-show="isOpen" x-transition.opacity.duration.200ms style="display: none;"
+                                    class="absolute z-10 mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl shadow-slate-200/50 max-h-64 overflow-y-auto">
+                                    <div class="p-2 space-y-1">
+                                        <template x-for="date in availableDates" :key="date">
+                                            <button type="button" 
+                                                @click="selectedDate = date; isOpen = false; timeType = 'pagi'; selectedTime = ''; selectedSessionId = null;"
+                                                class="w-full text-left px-4 py-3 rounded-lg text-base font-semibold transition-all"
+                                                :class="selectedDate === date ? 'bg-teal-50 text-teal-700' : 'text-slate-700 hover:bg-slate-50'">
+                                                <div class="flex items-center justify-between">
+                                                    <span x-text="formatDate(date)"></span>
+                                                    <svg x-show="selectedDate === date" class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+                                                </div>
+                                            </button>
+                                        </template>
+                                        
+                                        <div x-show="availableDates.length === 0" class="px-4 py-3 text-sm text-slate-500 text-center font-medium">
+                                            Tidak ada tanggal tersedia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest ml-1">Waktu Kunjungan</label>
+                            <div class="flex p-1 bg-slate-100 rounded-xl">
+                                <button type="button" @click="timeType = 'pagi'" 
+                                    :class="timeType === 'pagi' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
+                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Pagi</button>
+                                <button type="button" @click="timeType = 'siang'" 
+                                    :class="timeType === 'siang' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
+                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Siang</button>
+                                <button type="button" @click="timeType = 'malam'" 
+                                    :class="timeType === 'malam' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
+                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Malam</button>
+                            </div>
+                            <input type="hidden" name="time_type" :value="timeType" :value="old('time_type')">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <template x-for="slot in timeSlotsForSelectedDate[timeType]" :key="slot.id">
+                                <button type="button" 
+                                    @click="
+                                        if(slot.slots > 0 && !slot.isPast) { 
+                                            if (slots > slot.slots) {
+                                                if (typeof Swal !== 'undefined') {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Slot Tidak Cukup',
+                                                        text: `Waktu ${formatTime(slot.time)} hanya ada ${slot.slots} slot tersisa. Silakan pilih waktu lain.`,
+                                                        confirmButtonColor: '#0f766e',
+                                                        confirmButtonText: 'Mengerti',
+                                                        customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl shadow-md' }
+                                                    });
+                                                } else {
+                                                    alert(`Waktu ${formatTime(slot.time)} hanya ada ${slot.slots} slot tersisa.`);
+                                                }
+                                            } else {
+                                                selectedTime = slot.time; selectedSessionId = slot.id; 
+                                            }
+                                        }
+                                    "
+                                    :disabled="slot.slots === 0 || slot.isPast"
+                                    :class="{
+                                        'border-teal-500 bg-teal-50 ring-1 ring-teal-500': selectedTime === slot.time,
+                                        'border-slate-100 bg-white hover:border-teal-200': selectedTime !== slot.time && slot.slots > 0 && !slot.isPast,
+                                        'opacity-40 bg-slate-50 cursor-not-allowed border-transparent': slot.slots === 0 || slot.isPast
+                                    }"
+                                    class="p-4 border-2 rounded-xl text-left transition-all relative overflow-hidden group">
+                                    
+                                    <div class="flex flex-col">
+                                        <span class="text-lg font-semibold tracking-tight" 
+                                            :class="selectedTime === slot.time ? 'text-teal-700' : 'text-slate-700'" 
+                                            x-text="formatTime(slot.time)"></span>
+                                        
+                                        <div class="flex items-center gap-1.5 mt-1">
+                                            <div class="w-1.5 h-1.5 rounded-full" :class="(slot.slots > 0 && !slot.isPast) ? 'bg-emerald-500' : 'bg-rose-500'"></div>
+                                            <span class="text-xs font-semibold uppercase tracking-tighter" 
+                                                :class="(slot.slots > 0 && !slot.isPast) ? 'text-slate-400' : 'text-rose-400'"
+                                                x-text="slot.isPast ? 'Waktu Lewat' : (slot.slots > 0 ? 'Sisa ' + slot.slots + ' Slot' : 'Penuh')"></span>
+                                        </div>
+                                    </div>
+                                    <div x-show="selectedTime === slot.time" class="absolute top-2 right-2">
+                                        <svg class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 4. PILIH LAYANAN --}}
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
                         <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Pilih Layanan</h3>
+                        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Pilih Layanan Utama</h3>
                     </div>
 
                     <input type="text" x-model="searchService" placeholder="Cari layanan..." 
                         class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-base font-semibold shadow-sm focus:border-teal-500 outline-none transition-all">
 
-                    <div class="space-y-3">
+                    <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;">
                         <template x-for="service in filteredServices" :key="service.id">
                             <button type="button" @click="toggleService(service.id)" 
                                 :class="selectedServices.includes(service.id) ? 'border-teal-500 bg-teal-50/30' : 'border-slate-200 bg-white'"
@@ -203,72 +388,15 @@
                                 </div>
                             </button>
                         </template>
-                    </div>
-                </div>
-
-                {{-- 4. TANGGAL & WAKTU --}}
-                <div class="space-y-6">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Pilih Tanggal & Waktu</h3>
-                    </div>
-
-                    <div class="space-y-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest ml-1">Tanggal Perjanjian</label>
-                            <select x-model="selectedDate"
-                                class="w-full bg-slate-50 p-4 rounded-xl text-lg font-semibold text-slate-700 outline-none border border-slate-100 focus:border-teal-500 transition-all">
-                                <option value="" disabled>Pilih Tanggal</option>
-                                <template x-for="date in availableDates" :key="date">
-                                    <option :value="date" x-text="date"></option>
-                                </template>
-                            </select>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest ml-1">Waktu Kunjungan</label>
-                            <div class="flex p-1 bg-slate-100 rounded-xl">
-                                <button type="button" @click="timeType = 'pagi'" 
-                                    :class="timeType === 'pagi' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
-                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Pagi</button>
-                                <button type="button" @click="timeType = 'siang'" 
-                                    :class="timeType === 'siang' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
-                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Siang</button>
-                                <button type="button" @click="timeType = 'malam'" 
-                                    :class="timeType === 'malam' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
-                                    class="flex-1 py-3 text-sm font-semibold uppercase tracking-widest rounded-lg transition-all">Malam</button>
+                        
+                        <div x-show="filteredServices.length === 0" x-cloak class="p-8 text-center bg-slate-50 border border-slate-100 rounded-2xl border-dashed">
+                            <div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                                <svg class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3 pt-2">
-                            <template x-for="slot in timeSlotsForSelectedDate[timeType]" :key="slot.id">
-                                <button type="button" 
-                                    @click="if(slot.slots > 0) { selectedTime = slot.time; selectedSessionId = slot.id; }"
-                                    :disabled="slot.slots === 0"
-                                    :class="{
-                                        'border-teal-500 bg-teal-50 ring-1 ring-teal-500': selectedTime === slot.time,
-                                        'border-slate-100 bg-white hover:border-teal-200': selectedTime !== slot.time && slot.slots > 0,
-                                        'opacity-40 bg-slate-50 cursor-not-allowed border-transparent': slot.slots === 0
-                                    }"
-                                    class="p-4 border-2 rounded-xl text-left transition-all relative overflow-hidden group">
-                                    
-                                    <div class="flex flex-col">
-                                        <span class="text-lg font-semibold tracking-tight" 
-                                            :class="selectedTime === slot.time ? 'text-teal-700' : 'text-slate-700'" 
-                                            x-text="slot.time"></span>
-                                        
-                                        <div class="flex items-center gap-1.5 mt-1">
-                                            <div class="w-1.5 h-1.5 rounded-full" :class="slot.slots > 0 ? 'bg-emerald-500' : 'bg-rose-500'"></div>
-                                            <span class="text-xs font-semibold uppercase tracking-tighter" 
-                                                :class="slot.slots > 0 ? 'text-slate-400' : 'text-rose-400'"
-                                                x-text="slot.slots > 0 ? 'Sisa ' + slot.slots + ' Slot' : 'Penuh'"></span>
-                                        </div>
-                                    </div>
-                                    <div x-show="selectedTime === slot.time" class="absolute top-2 right-2">
-                                        <svg class="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
-                                    </div>
-                                </button>
-                            </template>
+                            <h4 class="text-base font-bold text-slate-700 tracking-tight">Layanan Tidak Ditemukan</h4>
+                            <p class="text-sm text-slate-500 font-medium mt-1">Coba gunakan kata kunci pencarian yang lain.</p>
                         </div>
                     </div>
                 </div>
@@ -283,13 +411,36 @@
                     <div class="p-6 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm">
                         <div>
                             <h4 class="text-lg font-semibold text-slate-800" x-text="slots > 1 ? 'Sesi Grup' : 'Individual'"></h4>
-                            <p class="text-sm text-slate-400 font-semibold uppercase tracking-tighter">Maksimal 3 orang per sesi</p>
+                            <p class="text-sm text-slate-400 font-semibold uppercase tracking-tighter">Maksimal 5 orang per sesi</p>
                         </div>
 
                         <div class="flex items-center bg-slate-50 p-1.5 rounded-xl border border-slate-100">
                             <button type="button" @click="if(slots > 1) slots--" class="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-400 font-semibold text-xl">-</button>
                             <span class="w-12 text-center font-semibold text-slate-800 text-xl" x-text="slots"></span>
-                            <button type="button" @click="if(slots < 3) slots++" class="w-10 h-10 flex items-center justify-center bg-teal-800 rounded-xl shadow-sm text-white font-semibold text-xl hover:bg-teal-700 transition">+</button>
+                            <button type="button" @click="
+                                if(slots < 5) {
+                                    let canIncrement = true;
+                                    if(selectedSessionId) {
+                                        let currentSession = sessions.find(s => s.id === selectedSessionId);
+                                        if (currentSession && (slots + 1) > currentSession.kuota_sisa) {
+                                            canIncrement = false;
+                                            if (typeof Swal !== 'undefined') {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Slot Tidak Cukup',
+                                                    text: `Waktu ${formatTime(currentSession.waktu_mulai)} hanya ada ${currentSession.kuota_sisa} slot tersisa. Silakan pilih waktu lain.`,
+                                                    confirmButtonColor: '#0f766e',
+                                                    confirmButtonText: 'Mengerti',
+                                                    customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl shadow-md' }
+                                                });
+                                            } else {
+                                                alert(`Waktu ${formatTime(currentSession.waktu_mulai)} hanya ada ${currentSession.kuota_sisa} slot tersisa.`);
+                                            }
+                                        }
+                                    }
+                                    if (canIncrement) slots++;
+                                }
+                            " class="w-10 h-10 flex items-center justify-center bg-teal-800 rounded-xl shadow-sm text-white font-semibold text-xl hover:bg-teal-700 transition">+</button>
                         </div>
                     </div>
                 </div>
@@ -304,7 +455,7 @@
                             <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Keluhan Saat Ini</h3>
                         </div>
                         <textarea name="complaint_main" :disabled="slots > 1" placeholder="Ceritakan apa yang Anda rasakan atau keluhan Anda hari ini..."
-                            class="w-full px-6 py-5 bg-white border border-slate-200 rounded-2xl text-lg font-semibold text-slate-700 h-40 shadow-sm focus:border-teal-500 outline-none transition-all resize-none"></textarea>
+                            required class="w-full px-6 py-5 bg-white border border-slate-200 rounded-2xl text-lg font-semibold text-slate-700 h-40 shadow-sm focus:border-teal-500 outline-none transition-all resize-none">{{ old('complaint_main') }}</textarea>
                     </div>
 
                     {{-- VIEW: SLOT > 1 (Group Mode) --}}
@@ -327,7 +478,28 @@
                             <div class="space-y-2">
                                 <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Keluhan Utama</label>
                                 <textarea name="patient_complaints[]" :disabled="slots === 1" placeholder="Ceritakan keluhan {{ $patientName }}..." 
-                                    class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold h-24 focus:ring-2 focus:ring-teal-100 outline-none resize-none"></textarea>
+                                    required class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold h-24 focus:ring-2 focus:ring-teal-100 outline-none resize-none">{{ old('patient_complaints.0') }}</textarea>
+                            </div>
+                            {{-- Custom Layanan Spesifik Dropdown - Pasien 1 (Grup) --}}
+                            <div class="space-y-2" x-data="{ open: false }">
+                                <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Layanan Spesifik (Opsional)</label>
+                                <input type="hidden" name="patient_services[]" :value="patientServiceOverrides[0]">
+                                <div class="relative">
+                                    <button type="button" @click="open = !open" @click.outside="open = false"
+                                        class="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl text-base font-semibold text-slate-700 transition-all"
+                                        :class="open ? 'ring-2 ring-teal-400' : 'ring-1 ring-transparent hover:ring-slate-200'">
+                                        <span x-text="patientServiceOverrides[0] ? (services.find(s => s.id === parseInt(patientServiceOverrides[0]))?.name ?? 'Sama dengan layanan utama') : 'Sama dengan layanan utama'" :class="patientServiceOverrides[0] ? 'text-slate-800' : 'text-slate-400'"></span>
+                                        <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                    <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                                        <div class="p-1.5 space-y-0.5">
+                                            <button type="button" @click="patientServiceOverrides[0] = ''; open = false" class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors" :class="!patientServiceOverrides[0] ? 'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'">— Sama dengan layanan utama</button>
+                                            <template x-for="service in services" :key="service.id">
+                                                <button type="button" @click="patientServiceOverrides[0] = service.id; open = false" class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors" :class="parseInt(patientServiceOverrides[0]) === service.id ? 'bg-teal-50 text-teal-700' : 'text-slate-700 hover:bg-slate-50'" x-text="service.name"></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -340,13 +512,34 @@
                                 <div class="space-y-4">
                                     <div class="space-y-2">
                                         <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Nama Lengkap Pasien</label>
-                                        <input type="text" name="patient_names[]" :disabled="slots === 1" placeholder="Masukkan nama..."
-                                            class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold outline-none focus:ring-2 focus:ring-teal-100">
+                                        <input type="text" name="patient_names[]" :disabled="slots === 1" placeholder="Masukkan nama..." :value="'{{ old('patient_names') ? 'already_filled' : '' }}' === 'already_filled' ? @js(old('patient_names'))[i-1] : ''"
+                                            required class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold outline-none focus:ring-2 focus:ring-teal-100">
                                     </div>
                                     <div class="space-y-2">
                                         <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Keluhan Utama</label>
                                         <textarea name="patient_complaints[]" :disabled="slots === 1" placeholder="Ceritakan keluhan..." 
-                                            class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold h-24 outline-none focus:ring-2 focus:ring-teal-100 resize-none"></textarea>
+                                            required class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-base font-semibold h-24 outline-none focus:ring-2 focus:ring-teal-100 resize-none">@js(old('patient_complaints')) ? @js(old('patient_complaints'))[i-1] : ''</textarea>
+                                    </div>
+                                    {{-- Custom Layanan Spesifik Dropdown - Pasien Tambahan --}}
+                                    <div class="space-y-2" x-data="{ open: false }">
+                                        <label class="text-xs font-semibold text-teal-700 uppercase tracking-widest">Layanan Spesifik (Opsional)</label>
+                                        <input type="hidden" name="patient_services[]" :value="patientServiceOverrides[i - 1]">
+                                        <div class="relative">
+                                            <button type="button" @click="open = !open" @click.outside="open = false"
+                                                class="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl text-base font-semibold text-slate-700 transition-all"
+                                                :class="open ? 'ring-2 ring-teal-400' : 'ring-1 ring-transparent hover:ring-slate-200'">
+                                                <span x-text="patientServiceOverrides[i - 1] ? (services.find(s => s.id === parseInt(patientServiceOverrides[i - 1]))?.name ?? 'Sama dengan layanan default') : 'Sama dengan layanan default'" :class="patientServiceOverrides[i - 1] ? 'text-slate-800' : 'text-slate-400'"></span>
+                                                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
+                                            </button>
+                                            <div x-show="open" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                                                <div class="p-1.5 space-y-0.5">
+                                                    <button type="button" @click="patientServiceOverrides[i - 1] = ''; open = false" class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors" :class="!patientServiceOverrides[i - 1] ? 'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'">— Sama dengan layanan default</button>
+                                                    <template x-for="service in services" :key="service.id">
+                                                        <button type="button" @click="patientServiceOverrides[i - 1] = service.id; open = false" class="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors" :class="parseInt(patientServiceOverrides[i - 1]) === service.id ? 'bg-teal-50 text-teal-700' : 'text-slate-700 hover:bg-slate-50'" x-text="service.name"></button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -356,7 +549,71 @@
 
                 {{-- 7. ACTION --}}
                 <div class="space-y-4 pt-6">
-                    <button type="button" @click="step = 2" class="w-full text-center block py-5 bg-teal-800 text-white rounded-2xl text-lg font-semibold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
+                    <button type="button" 
+                        @click="
+                            let step1Valid = true;
+                            let requiredInputs = $refs.step1.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled), select[required]:not(:disabled)');
+                            for (let i = 0; i < requiredInputs.length; i++) {
+                                if (!requiredInputs[i].checkValidity()) {
+                                    requiredInputs[i].reportValidity();
+                                    step1Valid = false;
+                                    break;
+                                }
+                            }
+                            
+                            if (!step1Valid) return;
+
+                            let missingService = false;
+                            if (selectedServices.length === 0) {
+                                for (let j = 0; j < slots; j++) {
+                                    if (!patientServiceOverrides[j] || patientServiceOverrides[j] === '') {
+                                        missingService = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (missingService) {
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Peringatan',
+                                        text: 'Layanan belum lengkap! Silakan pilih Layanan Utama atau pastikan setiap pasien memiliki Layanan Spesifik.',
+                                        confirmButtonColor: '#0f766e',
+                                        confirmButtonText: 'Mengerti',
+                                        customClass: {
+                                            popup: 'rounded-2xl',
+                                            confirmButton: 'rounded-xl shadow-md'
+                                        }
+                                    });
+                                } else {
+                                    alert('Layanan belum lengkap! Silakan pilih Layanan Utama atau pastikan setiap pasien memiliki Layanan Spesifik.');
+                                }
+                                return;
+                            }
+                            
+                            if (!selectedDate || !selectedTime) {
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Peringatan',
+                                        text: 'Tanggal dan Waktu harus dipilih!',
+                                        confirmButtonColor: '#0f766e',
+                                        confirmButtonText: 'Mengerti',
+                                        customClass: {
+                                            popup: 'rounded-2xl',
+                                            confirmButton: 'rounded-xl shadow-md'
+                                        }
+                                    });
+                                } else {
+                                    alert('Tanggal dan Waktu harus dipilih!');
+                                }
+                                return;
+                            }
+                            
+                            step = 2;
+                        " 
+                        class="w-full text-center block py-5 bg-teal-800 text-white rounded-2xl text-lg font-semibold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
                         Lanjut
                     </button>
                     <div class="flex items-center justify-center gap-2 text-slate-400">
@@ -408,7 +665,21 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Layanan Terpilih</p>
-                                <p class="text-base font-semibold text-slate-800 leading-tight" x-text="selectedServicesNames || 'Belum memilih layanan'"></p>
+                                {{-- Single slot: show global service name --}}
+                                <template x-if="slots === 1">
+                                    <p class="text-base font-semibold text-slate-800 leading-tight" x-text="selectedServicesNames || 'Belum memilih layanan'"></p>
+                                </template>
+                                {{-- Group: show per-patient breakdown --}}
+                                <template x-if="slots > 1">
+                                    <div class="space-y-2 mt-1">
+                                        <template x-for="idx in Array.from({length: slots}, (_, k) => k)" :key="idx">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[10px] font-semibold text-teal-600 bg-teal-50 rounded px-1.5 py-0.5 uppercase tracking-widest" x-text="'P' + (idx + 1)"></span>
+                                                <span class="text-sm font-semibold text-slate-700" x-text="getPatientServiceName(idx) || 'Belum dipilih'"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
                                 <p class="text-xs font-semibold text-slate-400 mt-1">Sesi Terapi</p>
                             </div>
                         </div>
@@ -419,8 +690,8 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Jadwal</p>
-                                <p class="text-base font-semibold text-slate-800 leading-tight" x-text="selectedDate"></p>
-                                <p class="text-xs font-semibold text-slate-400 mt-1" x-text="selectedTime"></p>
+                                <p class="text-base font-semibold text-slate-800 leading-tight" x-text="selectedDate ? formatDate(selectedDate) : ''"></p>
+                                <p class="text-xs font-semibold text-slate-400 mt-1" x-text="selectedTime ? formatTime(selectedTime) + ' WIB' : ''"></p>
                             </div>
                         </div>
 
@@ -430,30 +701,46 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1">Lokasi</p>
-                                <p class="text-base font-semibold text-slate-800 leading-tight">{{ $namaCabang }}</p>
-                                <p class="text-xs font-semibold text-slate-400 mt-1 leading-relaxed">{{ $alamatCabang }}</p>
+                                <p class="text-base font-semibold text-slate-800 leading-tight">{{ $namaKolaborasi }}</p>
+                                <p class="text-xs font-semibold text-slate-400 mt-1 leading-relaxed">{{ $alamatKolaborasi }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-[2rem] p-8 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-semibold text-slate-500">Biaya Konsultasi</span>
-                        <span class="text-base font-semibold text-slate-800" x-text="formatRupiah(totalConsultationCost)"></span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-semibold text-slate-500">Biaya Admin</span>
-                        <span class="text-base font-semibold text-slate-800">Rp 5.000</span>
-                    </div>
-                    <div class="pt-4 border-t border-slate-200 flex justify-between items-end">
-                        <div>
-                            <p class="text-[11px] font-semibold text-teal-600 uppercase tracking-widest">Grand Total</p>
-                            <p class="text-[10px] font-semibold text-slate-400 uppercase">Termasuk Pajak</p>
-                        </div>
-                        <span class="text-2xl font-semibold text-slate-900 tracking-tight" x-text="formatRupiah(grandTotal)"></span>
-                    </div>
-                </div>
+    {{-- Biaya Konsultasi --}}
+    <div class="flex justify-between items-center">
+        <span class="text-sm font-semibold text-slate-500">Biaya Konsultasi</span>
+        <span class="text-base font-semibold text-slate-800" x-text="formatRupiah(totalConsultationCost)"></span>
+    </div>
+
+    {{-- Biaya Homecare (Hanya muncul jika > 0) --}}
+    <div x-show="biayaHomecare > 0" class="flex justify-between items-center animate-in fade-in">
+        <span class="text-sm font-semibold text-slate-500">Layanan Homecare</span>
+        <span class="text-base font-semibold text-slate-800" x-text="formatRupiah(biayaHomecare)"></span>
+    </div>
+
+    {{-- Diskon (Hanya muncul jika ada diskon) --}}
+    <div x-show="diskon > 0" class="flex justify-between items-center text-rose-600 animate-in fade-in">
+        <span class="text-sm font-semibold italic">Diskon Layanan (<span x-text="diskon"></span>%)</span>
+        <span class="text-base font-semibold" x-text="'-' + formatRupiah(discountAmount)"></span>
+    </div>
+
+    {{-- Admin --}}
+    <div class="flex justify-between items-center">
+        <span class="text-sm font-semibold text-slate-500">Biaya Admin</span>
+        <span class="text-base font-semibold text-slate-800">Rp 5.000</span>
+    </div>
+
+    <div class="pt-4 border-t border-slate-200 flex justify-between items-end">
+        <div>
+            <p class="text-[11px] font-semibold text-teal-600 uppercase tracking-widest">Grand Total</p>
+            <p class="text-[10px] font-semibold text-slate-400 uppercase">Total Pembayaran</p>
+        </div>
+        <span class="text-2xl font-semibold text-slate-900 tracking-tight" x-text="formatRupiah(grandTotal)"></span>
+    </div>
+</div>
 
                 <div class="space-y-4 pt-4 text-center">
                     <button type="button" @click="step = 3" class="text-center block w-full py-5 bg-teal-800 text-white rounded-2xl text-base font-semibold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
@@ -494,6 +781,14 @@
                         <div class="flex justify-between items-center text-sm font-medium opacity-90">
                             <span>Biaya Konsultasi</span>
                             <span x-text="formatRupiah(totalConsultationCost)"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-medium opacity-90">
+                            <span>Biaya Home Care</span>
+                            <span x-text="formatRupiah(biayaHomecare)"></span>
+                        </div>
+                        <div x-show="diskon > 0" class="flex justify-between items-center text-sm font-medium text-rose-300 opacity-100">
+                            <span>Diskon Layanan (<span x-text="diskon"></span>%)</span>
+                            <span x-text="'-' + formatRupiah(discountAmount)"></span>
                         </div>
                         <div class="flex justify-between items-center text-sm font-medium opacity-90">
                             <span>Biaya Admin</span>
@@ -578,7 +873,7 @@
                                 <p class="text-base font-semibold text-slate-700" x-text="fileName ? fileName : 'Tap to select or take photo'"></p>
                                 <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter" x-show="!fileName">JPEG, PNG, or PDF supported</p>
                             </div>
-                            <input type="file" name="payment_proof" class="absolute inset-0 opacity-0 cursor-pointer" @change="fileName = $event.target.files[0].name">
+                            <input type="file" name="payment_proof" class="absolute inset-0 opacity-0 cursor-pointer" @change="fileName = $event.target.files[0]?.name ?? ''; paymentProofFileName = fileName;">
                         </div>
                     </label>
                 </div>
@@ -592,7 +887,45 @@
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" class="text-center block w-full py-5 bg-teal-800 text-white rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
+                    <button type="button" @click="
+                        if (!paymentProofFileName) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Bukti Transfer Diperlukan',
+                                    text: 'Silakan upload bukti transfer terlebih dahulu sebelum menyelesaikan booking.',
+                                    confirmButtonColor: '#0f766e',
+                                    confirmButtonText: 'Upload Sekarang',
+                                    customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl shadow-md' }
+                                });
+                            } else {
+                                alert('Silakan upload bukti transfer terlebih dahulu.');
+                            }
+                            return;
+                        }
+                        
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: 'Konfirmasi Pembayaran',
+                                text: 'Apakah Anda yakin data dan bukti transfer sudah benar?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#0f766e',
+                                cancelButtonColor: '#ef4444',
+                                confirmButtonText: 'Ya, Selesaikan',
+                                cancelButtonText: 'Periksa Lagi',
+                                customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl px-4 py-2', cancelButton: 'rounded-xl px-4 py-2' }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $el.closest('form').submit();
+                                }
+                            });
+                        } else {
+                            if (confirm('Apakah Anda yakin data dan bukti transfer sudah benar?')) {
+                                $el.closest('form').submit();
+                            }
+                        }
+                    " class="text-center block w-full py-5 bg-teal-800 text-white rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
                         Kirim & Selesaikan
                     </button>
                 </div>
