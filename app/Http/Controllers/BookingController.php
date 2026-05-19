@@ -3,18 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
+use App\Models\Kolaborasi;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
     public function index()
     {
+        $allKolaborasis = Kolaborasi::all();
+
         $terapis = Karyawan::where('peran', 'Terapis')
             ->where('status_karyawan', 'Aktif')
-            ->with(['cabang', 'layanans'])
+            ->with([
+                'kolaborasi', 
+                'layanans', 
+                'sessions' => function($q) {
+                    $q->where('tanggal_sesi', '>=', now()->toDateString())
+                    ->where('status', 'terbuka') // Match your screenshot 'terbuka'
+                    ->with('bookings.bookingPatients');
+                }
+            ])
             ->get();
+                    
+        $uniqueCities = Kolaborasi::pluck('kota_kolaborasi')->unique()->sort();
 
-        return view('pages.booking.patient.index', compact('terapis'));
+        return view('pages.booking.patient.index', compact('terapis', 'allKolaborasis', 'uniqueCities'));
     }
 
     public function create(Request $request)
@@ -23,13 +36,13 @@ class BookingController extends Controller
         
         $therapist = null;
         if ($therapistId) {
-            $therapist = Karyawan::with(['cabang', 'layanans'])->find($therapistId);
+            $therapist = Karyawan::with(['kolaborasi', 'layanans'])->find($therapistId);
         }
         
         if (!$therapist) {
             $therapist = Karyawan::where('peran', 'Terapis')
                 ->where('status_karyawan', 'Aktif')
-                ->with(['cabang', 'layanans'])
+                ->with(['kolaborasi', 'layanans'])
                 ->firstOrFail();
         }
 
@@ -39,6 +52,8 @@ class BookingController extends Controller
                 'id' => $layanan->id,
                 'name' => $layanan->nama,
                 'price' => (int) $layanan->base_harga,
+                'homecare_price' => (int) $layanan->homecare_harga,
+                'discount' => (float) $layanan->diskon_persentase,
                 'desc' => $layanan->deskripsi ?: 'Layanan profesional terapis.'
             ];
         });
@@ -63,9 +78,10 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'terapis_sesi_id' => 'required|exists:terapis_sesi,id',
-            'services' => 'required',
+            'services' => 'nullable',
             'slots' => 'required|integer|min:1|max:3',
             'payment_proof' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
@@ -77,10 +93,7 @@ class BookingController extends Controller
         $primaryPasien = $primaryUser->pasien;
 
         // Parse services
-        $serviceIds = json_decode($request->services, true);
-        if (empty($serviceIds)) {
-            return redirect()->back()->with('error', 'Silakan pilih minimal satu layanan.');
-        }
+        $serviceIds = json_decode($request->services, true) ?? [];
 
         // Upload payment proof
         $path = null;
@@ -95,18 +108,23 @@ class BookingController extends Controller
         $booking = \App\Models\Booking::create([
             'booking_oleh_pasien_id' => $primaryPasien->id,
             'terapis_sesi_id' => $request->terapis_sesi_id,
-            'layanan_id' => $serviceIds[0],
             'status' => 'pending',
             'bukti_transfer_booking_path' => $path,
             'bukti_transfer_booking_mime' => $mime,
         ]);
 
         $slots = (int) $request->slots;
+        $patientServiceOverrides = $request->input('patient_services', []);
+
         if ($slots === 1) {
             // Individual Mode
+            $assignedLayanan = !empty($patientServiceOverrides[0]) ? $patientServiceOverrides[0] : ($serviceIds[0] ?? null);
+            if (!$assignedLayanan) return redirect()->back()->with('error', 'Layanan belum dipilih.');
+            
             \App\Models\BookingPatient::create([
                 'booking_id' => $booking->id,
                 'pasien_id' => $primaryPasien->id,
+                'layanan_id' => $assignedLayanan,
                 'keluhan_pasien' => $request->complaint_main,
                 'status_pasien' => 'menunggu',
             ]);
@@ -116,11 +134,15 @@ class BookingController extends Controller
             $complaints = $request->input('patient_complaints', []);
 
             for ($i = 0; $i < $slots; $i++) {
+                $assignedLayanan = !empty($patientServiceOverrides[$i]) ? $patientServiceOverrides[$i] : ($serviceIds[0] ?? null);
+                if (!$assignedLayanan) return redirect()->back()->with('error', 'Layanan belum lengkap untuk semua pasien.');
+
                 if ($i === 0) {
                     // Patient 1 (Primary)
                     \App\Models\BookingPatient::create([
                         'booking_id' => $booking->id,
                         'pasien_id' => $primaryPasien->id,
+                        'layanan_id' => $assignedLayanan,
                         'keluhan_pasien' => $complaints[0] ?? null,
                         'status_pasien' => 'menunggu',
                     ]);
@@ -147,6 +169,7 @@ class BookingController extends Controller
                     \App\Models\BookingPatient::create([
                         'booking_id' => $booking->id,
                         'pasien_id' => $extraPasien->id,
+                        'layanan_id' => $assignedLayanan,
                         'keluhan_pasien' => $extraComplaint,
                         'status_pasien' => 'menunggu',  
                     ]);

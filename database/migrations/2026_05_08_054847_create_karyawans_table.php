@@ -27,13 +27,13 @@ return new class extends Migration
             $table->string('no_telp', 20)->unique();
             $table->string('email', 100)->unique()->nullable();
 
-            $table->enum('peran', ['Terapis', 'Admin Rumah Terapi', 'Admin']);
+            $table->enum('peran', ['Terapis', 'Admin Kolaborasi', 'Admin Global']);
 
             $table->decimal('nilai_review', 3, 2)->nullable();
             $table->string('deskripsi_review')->nullable(); 
 
             $table->date('tanggal_bergabung')->nullable();
-            $table->foreignId('cabang_id')->constrained('cabang')->nullOnDelete();
+            $table->foreignId('kolaborasi_id')->constrained('kolaborasi')->nullOnDelete();
             $table->enum('status_karyawan', ['Aktif', 'Tidak Aktif', 'Resign', 'PHK'])->default('Aktif');
 
             $table->string('foto_path')->nullable();

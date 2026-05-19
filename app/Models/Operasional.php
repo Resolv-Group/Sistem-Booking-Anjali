@@ -9,7 +9,7 @@ class Operasional extends Model
     protected $table = 'operasional_rumah_terapi';
 
     protected $fillable = [
-        'cabang_id',
+        'kolaborasi_id',
         'hari',
         'waktu_buka',
         'waktu_tutup',
@@ -25,14 +25,14 @@ class Operasional extends Model
         'status_operasional' => 'boolean',
     ];
 
-    public function cabang()
+    public function kolaborasi()
     {
-        return $this->belongsTo(Cabang::class, 'cabang_id');
+        return $this->belongsTo(Kolaborasi::class, 'kolaborasi_id');
     }
 
-    public function scopeByCabang($query, $cabangId)
+    public function scopeByKolaborasi($query, $kolaborasiId)
     {
-        return $query->where('cabang_id', $cabangId);
+        return $query->where('kolaborasi_id', $kolaborasiId);
     }
 
     public function scopeByHari($query, $hari)

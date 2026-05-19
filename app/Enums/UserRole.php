@@ -10,5 +10,5 @@ enum UserRole: string
 
     case ADMIN_GLOBAL = 'admin_global';
 
-    case ADMIN_CABANG = 'admin_cabang';
+    case ADMIN_KOLABORASI = 'admin_kolaborasi';
 }

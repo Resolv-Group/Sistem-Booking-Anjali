@@ -14,7 +14,7 @@ Route::get('/', function () {
     return match ($user->role) {
         \App\Enums\UserRole::PATIENT => redirect()->route('patient.dashboard'),
         \App\Enums\UserRole::THERAPIST => redirect()->route('therapist.dashboard'),
-        \App\Enums\UserRole::ADMIN_CABANG => redirect()->route('admin-cabang.dashboard'),
+        \App\Enums\UserRole::ADMIN_KOLABORASI => redirect()->route('admin-cabang.dashboard'),
         \App\Enums\UserRole::ADMIN_GLOBAL => redirect()->route('admin-global.dashboard'),
         default => view('pages.landing.index'),
     };

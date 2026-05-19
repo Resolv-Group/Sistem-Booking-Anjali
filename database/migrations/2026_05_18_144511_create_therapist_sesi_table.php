@@ -15,7 +15,7 @@ return new class extends Migration {
 
             $table->foreignId('terapis_id')->constrained('karyawans')->cascadeOnDelete();
 
-            $table->foreignId('cabang_id')->constrained('cabang')->cascadeOnDelete();
+            $table->foreignId('kolaborasi_id')->constrained('kolaborasi')->cascadeOnDelete();
 
             $table->date('tanggal_sesi');
 

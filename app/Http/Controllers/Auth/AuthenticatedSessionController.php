@@ -36,8 +36,8 @@ class AuthenticatedSessionController extends Controller
             UserRole::ADMIN_GLOBAL
                 => redirect('/dashboard/admin-global'),
 
-            UserRole::ADMIN_CABANG
-                => redirect('/dashboard/admin-cabang'),
+            UserRole::ADMIN_KOLABORASI
+                => redirect('/dashboard/admin-kolaborasi'),
 
             UserRole::THERAPIST
                 => redirect('/dashboard/therapist'),

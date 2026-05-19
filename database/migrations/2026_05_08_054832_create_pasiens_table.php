@@ -33,6 +33,9 @@ return new class extends Migration
             $table->string('foto_path')->nullable();
             $table->string('foto_mime', 100)->nullable();
 
+            $table->integer('created_by')->nullable();
+            $table->integer('updated_by')->nullable();
+
             $table->timestamps();
         });
     }

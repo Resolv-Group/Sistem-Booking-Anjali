@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('layanan', function (Blueprint $table) {
             $table->id();
 
+            $table->foreignId('kolaborasi_id')
+                ->constrained('kolaborasi')
+                ->cascadeOnDelete();
+
             $table->string('nama');
             $table->text('deskripsi')->nullable();
             $table->decimal('base_harga', 15, 2)->nullable();
