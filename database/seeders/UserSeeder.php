@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Enums\UserRole;
 use App\Models\Karyawan;
 use App\Models\Pasien;
-use App\Models\TherapistSession;
-use App\Enums\UserRole;
+use App\Models\TherapistSchedule;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class UserSeeder extends Seeder
 {
@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
         ]);
         Karyawan::create([
             'user_id' => $user1->id,
-            'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
+            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Admin Global',
             'no_telp' => '08111111111',
             'peran' => 'Admin Global',
@@ -53,7 +53,7 @@ class UserSeeder extends Seeder
         ]);
         Karyawan::create([
             'user_id' => $user2->id,
-            'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
+            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Admin Kolaborasi',
             'no_telp' => '08222222222',
             'peran' => 'Admin Kolaborasi',
@@ -71,7 +71,7 @@ class UserSeeder extends Seeder
         ]);
         $terapis1 = Karyawan::create([
             'user_id' => $user3->id,
-            'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
+            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Terapis 1',
             'no_telp' => '08333333331',
             'peran' => 'Terapis',
@@ -81,6 +81,22 @@ class UserSeeder extends Seeder
         ]);
         $terapis1->layanans()->attach([1, 2, 3, 4]);
 
+        // Seed Therapist Schedule untuk Terapis 1
+        for ($day = 1; $day <= 7; $day++) {
+            TherapistSchedule::create([
+
+                'terapis_id' => $user3->id,
+
+                'hari' => $day,
+
+                'waktu_mulai' => '08:00:00',
+
+                'kuota' => 10,
+
+                'status' => 'Tidak Aktif',
+            ]);
+        }
+
         $user4 = User::create([
             'name' => 'Terapis 2',
             'phone' => '08333333332',
@@ -89,7 +105,7 @@ class UserSeeder extends Seeder
         ]);
         $terapis2 = Karyawan::create([
             'user_id' => $user4->id,
-            'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
+            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Terapis 2',
             'no_telp' => '08333333332',
             'peran' => 'Terapis',
@@ -98,6 +114,22 @@ class UserSeeder extends Seeder
             'kolaborasi_id' => 2,
         ]);
         $terapis2->layanans()->attach([5, 6, 7, 8, 9]);
+
+        // Seed Therapist Schedule untuk Terapis 2
+        for ($day = 1; $day <= 7; $day++) {
+            TherapistSchedule::create([
+
+                'terapis_id' => $user4->id,
+
+                'hari' => $day,
+
+                'waktu_mulai' => '08:00:00',
+
+                'kuota' => 10,
+
+                'status' => 'Tidak Aktif',
+            ]);
+        }
 
         // 2 Pasien
         $user5 = User::create([
@@ -108,7 +140,7 @@ class UserSeeder extends Seeder
         ]);
         Pasien::create([
             'user_id' => $user5->id,
-            'pasien_public_id' => 'PSN-' . strtoupper(Str::random(8)),
+            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nama_pasien' => 'Pasien 1',
             'no_telp' => '08444444441',
             'tanggal_lahir' => $pasien1TL,
@@ -123,42 +155,12 @@ class UserSeeder extends Seeder
         ]);
         Pasien::create([
             'user_id' => $user6->id,
-            'pasien_public_id' => 'PSN-' . strtoupper(Str::random(8)),
+            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nama_pasien' => 'Pasien 2',
             'no_telp' => '08444444442',
             'tanggal_lahir' => $pasien2TL,
             'jenis_kelamin' => 'P',
         ]);
 
-        // Seed Therapist Sessions for Terapis 1 (kolaborasi 1)
-        $dates = [Carbon::today(), Carbon::tomorrow(), Carbon::today()->addDays(2)];
-        $timesT1 = ['08:00', '10:00', '13:00', '15:00', '18:00'];
-        foreach ($dates as $date) {
-            foreach ($timesT1 as $index => $time) {
-                TherapistSession::create([
-                    'terapis_id' => $terapis1->id,
-                    'kolaborasi_id' => 1,
-                    'tanggal_sesi' => $date->format('Y-m-d'),
-                    'waktu_mulai' => $time,
-                    'kuota' => [2, 4, 1, 3, 5][$index],
-                    'status' => 'terbuka',
-                ]);
-            }
-        }
-
-        // Seed Therapist Sessions for Terapis 2 (kolaborasi 2)
-        $timesT2 = ['09:00', '11:00', '14:00', '16:00', '19:00'];
-        foreach ($dates as $date) {
-            foreach ($timesT2 as $index => $time) {
-                TherapistSession::create([
-                    'terapis_id' => $terapis2->id,
-                    'kolaborasi_id' => 2,
-                    'tanggal_sesi' => $date->format('Y-m-d'),
-                    'waktu_mulai' => $time,
-                    'kuota' => 5,
-                    'status' => 'terbuka',
-                ]);
-            }
-        }
     }
 }

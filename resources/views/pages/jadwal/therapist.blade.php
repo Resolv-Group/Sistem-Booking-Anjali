@@ -86,9 +86,9 @@
                     <p class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-widest">12 Janjian Hari Ini</p>
                 </div>
                 <div class="relative">
-                    <input 
-                        type="date" 
-                        x-model="selectedDate" 
+                    <input
+                        type="date"
+                        x-model="selectedDate"
                         @change="updateDays()"
                         class="absolute inset-0 opacity-0 cursor-pointer z-10"
                     >
@@ -101,13 +101,13 @@
             {{-- Days Row (Fits perfectly within margins) --}}
             <div class="flex gap-2 pb-2">
                 <template x-for="d in days" :key="d.fullDate">
-                    <button 
+                    <button
                         @click="selectDate(d.fullDate)"
                         class="flex-1 min-w-0 flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-300"
                         :class="d.fullDate === selectedDate ? 'bg-teal-800 text-white shadow-xl shadow-teal-900/20' : 'bg-white text-slate-400 border border-slate-100 shadow-sm'"
                     >
-                        <span 
-                            class="text-[10px] font-semibold uppercase tracking-widest" 
+                        <span
+                            class="text-[10px] font-semibold uppercase tracking-widest"
                             :class="d.fullDate === selectedDate ? 'opacity-70' : ''"
                             x-text="d.dayName"
                         ></span>
@@ -208,7 +208,7 @@
                                     @foreach($session['patients'] as $patient)
                                         <div class="bg-white/70 backdrop-blur-md rounded-2xl p-5 border border-slate-100 shadow-sm shadow-slate-200/20">
                                             <div class="flex flex-col space-y-4">
-                                                
+
                                                 <div class="flex justify-between items-start">
                                                     <div class="space-y-0.5">
                                                         <div class="flex items-center gap-2">
@@ -265,8 +265,8 @@
     {{-- 6. SPEED DIAL FLOATING ACTION BUTTON --}}
     <div x-data="{ open: false }" class="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
         {{-- Speed Dial Items (Tucked away when closed) --}}
-        <div 
-            x-show="open" 
+        <div
+            x-show="open"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0 translate-y-4 scale-90"
             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
@@ -292,12 +292,12 @@
             </div> --}}
         </div>
 
-        <button 
-            @click="open = !open" 
+        <button
+            @click="open = !open"
             :class="open ? 'bg-slate-800 shadow-slate-900/40' : 'bg-teal-900 shadow-teal-900/40'"
             class="w-14 h-14 text-white rounded-2xl flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-300 relative overflow-hidden"
         >
-            <svg x-show="!open" 
+            <svg x-show="!open"
                  x-transition:enter="transition duration-300"
                  x-transition:enter-start="opacity-0 scale-50 rotate-90"
                  x-transition:enter-end="opacity-100 scale-100 rotate-0"
@@ -305,7 +305,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15h2m-2 4h2" />
             </svg>
-            <svg x-show="open" 
+            <svg x-show="open"
                  x-transition:enter="transition duration-300"
                  x-transition:enter-start="opacity-0 scale-50 -rotate-90"
                  x-transition:enter-end="opacity-100 scale-100 rotate-0"
@@ -324,7 +324,7 @@
     /* Custom utility to hide scrollbar but keep functionality */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
+
     body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;

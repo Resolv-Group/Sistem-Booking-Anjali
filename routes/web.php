@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\TherapistScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -66,7 +67,8 @@ Route::view('/admin-cabang/profile','pages.profile.admin-cabang')->name('admin-c
 //therapist 
 Route::view('/dashboard/therapist','pages.dashboard.therapist')->name('therapist.dashboard');
 Route::view('/jadwal/therapist','pages.jadwal.therapist')->name('therapist.jadwal');
-Route::view('/jadwal/therapist/atur-jam-kerja','pages.jadwal.atur-jam-kerja')->name('therapist.atur-jam-kerja');
+Route::get('/jadwal/therapist/atur-jam-kerja', [TherapistScheduleController::class, 'index'])->name('therapist.atur-jam-kerja');
+Route::post('/jadwal/therapist/atur-jam-kerja/form', [TherapistScheduleController::class, 'store'])->name('therapist.atur-jam-kerja.store');
 Route::view('/jadwal/therapist/ringkasan-sesi','pages.jadwal.ringkasan-sesi')->name('therapist.ringkasan-sesi');
 Route::view('/booking/list','pages.booking.therapist.index')->name('therapist.booking');
 Route::view('/booking/history','pages.booking.therapist.history')->name('therapist.booking.history');
