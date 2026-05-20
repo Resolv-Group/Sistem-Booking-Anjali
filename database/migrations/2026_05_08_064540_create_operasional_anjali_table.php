@@ -18,9 +18,9 @@ return new class extends Migration
 
             $table->enum('hari', [1,2,3,4,5,6,7]);
 
-            $table->time('waktu_buka');
+            $table->time('waktu_buka')->nullable();
 
-            $table->time('waktu_tutup');
+            $table->time('waktu_tutup')->nullable();
 
             $table->enum('status_operasional', ['Buka', 'Tutup']);
 
@@ -36,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operasional_anjali');
+        Schema::dropIfExists('operasional_rumah_terapi');
     }
 };

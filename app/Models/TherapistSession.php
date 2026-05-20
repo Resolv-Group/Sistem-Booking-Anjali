@@ -11,6 +11,7 @@ class TherapistSession extends Model
 
     protected $fillable = [
         'terapis_id',
+        'operasional_id',
         'kolaborasi_id',
         'tanggal_sesi',
         'waktu_mulai',
@@ -57,7 +58,7 @@ class TherapistSession extends Model
     return $this->kuota - $used;
 }
 
-    
+
 
     public function getUsedCapacityAttribute()
     {
