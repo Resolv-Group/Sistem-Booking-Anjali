@@ -19,9 +19,15 @@ class TherapistScheduleController extends Controller
         $karyawanId = $karyawan ? $karyawan->id : $user->id;
 
         // Ambil jadwal yang sudah ada di DB (coba Karyawan ID, fallback ke User ID)
-        $existingSchedules = TherapistSchedule::where('terapis_id', $karyawanId)->get();
+        $existingSchedules = TherapistSchedule::where('terapis_id', $karyawanId)
+            ->where('status', 'Aktif')
+            ->orderBy('waktu_mulai', 'asc')
+            ->get();
         if ($existingSchedules->isEmpty() && $karyawan && $karyawanId !== $user->id) {
-            $existingSchedules = TherapistSchedule::where('terapis_id', $user->id)->get();
+            $existingSchedules = TherapistSchedule::where('terapis_id', $user->id)
+                ->where('status', 'Aktif')
+                ->orderBy('waktu_mulai', 'asc')
+                ->get();
         }
 
         // dd($existingSchedules);
@@ -56,13 +62,14 @@ class TherapistScheduleController extends Controller
                     }
 
                     return [
+                        'id' => $sched->id,
                         'start' => $time ?? '',
                         'kuota' => (int) $sched->kuota,
                     ];
                 })->toArray();
 
                 if (empty($slots)) {
-                    $slots = [['start' => '', 'kuota' => 0]];
+                    $slots = [['id' => 'temp_' . uniqid(), 'start' => '', 'kuota' => 0]];
                 }
 
                 $formattedDays[] = [
@@ -78,7 +85,7 @@ class TherapistScheduleController extends Controller
                     'active' => false,
                     'clinic_hours' => $this->getClinicHours($dayNum),
                     'slots' => [
-                        ['start' => '', 'kuota' => 0],
+                        ['id' => 'temp_' . uniqid(), 'start' => '', 'kuota' => 0],
                     ],
                 ];
             }
@@ -116,6 +123,23 @@ class TherapistScheduleController extends Controller
         ];
 
         $daysInput = $request->input('days', []);
+
+        // Validate kuota >= 1 for active days/slots
+        foreach ($daysInput as $item) {
+            foreach ($item as $dayName => $dayData) {
+                $isActive = isset($dayData['active']) && $dayData['active'] === '1';
+                if ($isActive && isset($dayData['slots'])) {
+                    foreach ($dayData['slots'] as $slot) {
+                        if (!empty($slot['start'])) {
+                            $kuota = isset($slot['kuota']) ? (int)$slot['kuota'] : 0;
+                            if ($kuota < 1) {
+                                return back()->withInput()->with('error', 'Kuota pasien untuk setiap sesi aktif minimal harus 1.');
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         foreach (range(1, 7) as $dayNum) {
             $dayName = $dayNames[$dayNum];
@@ -182,10 +206,19 @@ class TherapistScheduleController extends Controller
                 }
 
                 // After processing slots, deactivate leftover schedules
+                $deactivatedIds = [];
                 foreach ($existingSchedules as $oldSchedule) {
                     if (! in_array($oldSchedule->id, $processedIds)) {
                         $oldSchedule->update(['status' => 'Tidak Aktif']);
+                        $deactivatedIds[] = $oldSchedule->id;
                     }
+                }
+
+                if (! empty($deactivatedIds)) {
+                    TherapistSession::whereIn('operasional_id', $deactivatedIds)
+                        ->where('tanggal_sesi', '>', now()->toDateString())
+                        ->whereDoesntHave('bookings')
+                        ->update(['status' => 'dibatalkan']);
                 }
             } else {
                 // Nonaktifkan semua schedule hari ini

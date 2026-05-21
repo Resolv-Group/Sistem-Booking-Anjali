@@ -34,6 +34,12 @@
                 return this.daftarKolaborasis.filter(k => k.toLowerCase().includes(this.searchKolaborasi.toLowerCase()));
             },
         
+            formatDate(dateStr) {
+                if (!dateStr) return 'Pilih Tanggal';
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            },
+        
             shouldShow(kolaborasiName, therapistName, services, kotaKolaborasi, availableSessions) {
                 // 1. Filter by Branch
                 const matchesKolaborasi = this.selectedKolaborasi === 'Semua Kolaborasi' || kolaborasiName === this.selectedKolaborasi;
@@ -49,11 +55,12 @@
         
                 // 4. Filter by Date: if a date is selected, therapist must have a session on that date
                 let matchesDate = true;
-                if (this.selectedDate && availableSessions.length > 0) {
-                    matchesDate = availableSessions.some(s => s.startsWith(this.selectedDate));
-                } else if (this.selectedDate && availableSessions.length === 0) {
-                    // No available sessions at all — hide this therapist
-                    matchesDate = false;
+                if (this.selectedDate !== '') {
+                    if (availableSessions && availableSessions.length > 0) {
+                        matchesDate = availableSessions.some(s => s.startsWith(this.selectedDate));
+                    } else {
+                        matchesDate = false;
+                    }
                 }
         
                 return matchesKolaborasi && matchesLokasi && matchesSearch && matchesDate;
@@ -85,14 +92,43 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4">
-                    <div class="grid grid-cols-1 gap-3">
-                        <div
-                            class="relative bg-white border border-slate-200 rounded-2xl p-3 shadow-sm focus-within:border-teal-500 transition-all">
-                            <label class="block text-[10px] font-bold text-teal-600 uppercase mb-1">Tanggal</label>
-                            <input type="date" x-model="selectedDate"
-                                class="w-full bg-transparent text-sm font-semibold text-slate-700 outline-none"
-                                value="{{ date('Y-m-d') }}">
+                    <!-- Filter Tanggal (Redesigned to match other filters) -->
+                    <div class="relative">
+                        {{-- Tombol Trigger (Visual Saja) --}}
+                        <div class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold transition-all"
+                            :class="selectedDate ? 'text-slate-700 border-teal-500 ring-4 ring-teal-500/5' : 'text-slate-700'">
+
+                            <div class="flex items-center gap-3">
+                                {{-- Icon Kalender --}}
+                                <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{-- Text Tanggal --}}
+                                <span x-text="formatDate(selectedDate)"></span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                {{-- Tombol Reset (Hanya muncul jika ada tanggal) --}}
+                                <button x-show="selectedDate" @click.stop="selectedDate = ''" type="button"
+                                    class="p-1 text-slate-300 hover:text-rose-500 transition-colors z-20">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                {{-- Chevron --}}
+                                <svg class="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                         </div>
+
+                        {{-- Input Date Asli (Transparan & Menutupi Tombol) --}}
+                        {{-- Ini agar user bisa klik area mana saja dan picker HP muncul --}}
+                        <input type="date" x-model="selectedDate"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     </div>
                     <div class="relative">
                         <button @click="showLokasi = !showLokasi"
@@ -151,9 +187,11 @@
                                 </svg>
                                 <span x-text="selectedKolaborasi"></span>
                             </div>
-                            <svg class="w-5 h-5 text-slate-300 transition-transform" :class="openBranch ? 'rotate-180' : ''"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <svg class="w-5 h-5 text-slate-300 transition-transform"
+                                :class="openBranch ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
@@ -215,11 +253,11 @@
                             ->filter(function ($session) use ($todayStr, $currentTimeStr) {
                                 // A session is valid if:
                                 // Condition A: It's a future date
-                                $isFutureDate = $session->tanggal_sesi > $todayStr;
+        $isFutureDate = $session->tanggal_sesi > $todayStr;
 
-                                // Condition B: It's today, but the start time hasn't passed yet
-                                $isTodayButUpcoming =
-                                    $session->tanggal_sesi === $todayStr && $session->waktu_mulai > $currentTimeStr;
+        // Condition B: It's today, but the start time hasn't passed yet
+        $isTodayButUpcoming =
+            $session->tanggal_sesi === $todayStr && $session->waktu_mulai > $currentTimeStr;
 
         // Condition C: It's open and has slots
                                 $isAvailable = $session->status === 'terbuka' && $session->remaining_capacity > 0;
@@ -261,6 +299,7 @@
                             $slots = 0;
                             $nextTime = 'Penuh / Tutup';
                         }
+                        $isBookable = $nextSession && $slots > 0;
 
                         $rating = $t->nilai_review ?: '5.0';
                         $harga = $t->layanans->min('base_harga') ?: 150000;
@@ -282,7 +321,8 @@
 
                     <div x-show="shouldShow('{{ $namaKolaborasi }}', '{{ addslashes($t->nama_karyawan) }}', @js($layanans), '{{ $kotaKolaborasi }}', @js($availableSessions))"
                         x-transition
-                        class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative group transition-all duration-300">
+                        class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative group transition-all duration-300"
+                        :class="!{{ $isBookable ? 'true' : 'false' }} ? 'opacity-75' : ''">
 
                         <div class="flex flex-col items-center">
                             <div class="relative mb-6">
@@ -293,15 +333,22 @@
 
                                 <div
                                     class="w-32 h-32 rounded-[2.5rem] bg-slate-50 overflow-hidden border-2 border-white shadow-md">
-                                    <img src="{{ $img }}" class="w-full h-full object-cover">
+                                    <img src="{{ $img }}"
+                                        class="w-full h-full object-cover {{ !$isBookable ? 'grayscale' : '' }}">
                                 </div>
 
                                 <div
                                     class="absolute -bottom-2 -right-1 bg-white px-3 py-1 rounded-full shadow-md border border-slate-50 flex items-center gap-1.5">
-                                    <div class="w-2 h-2 rounded-full {{ $slots <= 1 ? 'bg-rose-500' : 'bg-emerald-500' }}">
-                                    </div>
-                                    <span class="text-[11px] font-bold text-slate-700 uppercase">{{ $slots }} Slot
-                                        Tersisa</span>
+                                    @if ($isBookable)
+                                        <div
+                                            class="w-2 h-2 rounded-full {{ $slots <= 1 ? 'bg-orange-500' : 'bg-emerald-500' }}">
+                                        </div>
+                                        <span class="text-[11px] font-bold text-slate-700 uppercase">{{ $slots }}
+                                            Slot Tersisa</span>
+                                    @else
+                                        <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                        <span class="text-[11px] font-bold text-rose-600 uppercase">Penuh / Tutup</span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -394,21 +441,31 @@
                         </div>
 
                         <div
-                            class="mt-6 px-5 py-3 w-full bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-100">
+                            class="mt-6 px-5 py-3 w-full bg-slate-50 rounded-2xl flex items-center justify-between border {{ $isBookable ? 'bg-slate-50 border-slate-100' : 'bg-rose-50 border-rose-100' }}">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 {{ $isBookable ? 'text-teal-500' : 'text-rose-500' }}" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span class="text-xs font-bold text-slate-500 uppercase">Jadwal Selanjutnya</span>
+                                <span
+                                    class="text-xs font-bold {{ $isBookable ? 'text-slate-500' : 'text-rose-500' }} uppercase">{{ $isBookable ? 'Jadwal Selanjutnya' : 'Status' }}</span>
                             </div>
-                            <span class="text-xs font-bold text-slate-800 capitalize">{{ $nextTime }}</span>
+                            <span
+                                class="text-xs font-bold {{ $isBookable ? 'text-slate-800' : 'text-rose-700' }} capitalize">{{ $nextTime }}</span>
                         </div>
 
-                        <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
-                            class="mt-5 block text-center w-full py-4 bg-teal-700 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all">
-                            Buat Janji
-                        </a>
+                        @if ($isBookable)
+                            <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
+                                class="mt-5 block text-center w-full py-4 bg-teal-700 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all">
+                                Buat Janji
+                            </a>
+                        @else
+                            <button type="button"
+                                class="mt-5 block text-center w-full py-4 bg-slate-500 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all"
+                                disabled>
+                                Jadwal Tidak Tersedia
+                            </button>
+                        @endif
                     </div>
             </div>
             @endforeach

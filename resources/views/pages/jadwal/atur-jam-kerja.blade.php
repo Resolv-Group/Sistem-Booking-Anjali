@@ -8,7 +8,7 @@
         days: {{ json_encode($daysData) }},
         addSlot(index) {
             if (this.days[index].slots.length < 10) {
-                this.days[index].slots.push({ start: '08:00', kuota: 10 });
+                this.days[index].slots.push({ id: 'temp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9), start: '08:00', kuota: 10 });
                 this.sortSlots(index);
             }
         },
@@ -136,7 +136,7 @@
 
                                 {{-- Sesi/Slot List --}}
                                 <div class="space-y-4">
-                                    <template x-for="(slot, sIdx) in day.slots" :key="sIdx">
+                                    <template x-for="(slot, sIdx) in day.slots" :key="slot.id || sIdx">
                                         <div
                                             class="relative px-6 py-5 bg-slate-50 rounded-3xl border border-slate-100 animate-in fade-in zoom-in-95 duration-300">
 
