@@ -23,19 +23,62 @@ return new class extends Migration
                 ->constrained('terapis_sesi')
                 ->cascadeOnDelete();
 
-            $table->enum('status',[
+            $table->enum('status', [
                 'pending',
                 'approved',
                 'rejected',
                 'completed',
-                'cancelled'
+                'cancelled',
             ])->default('pending');
 
             $table->string('bukti_transfer_booking_path')
                 ->nullable();
-            
+
             $table->string('bukti_transfer_booking_mime')
                 ->nullable();
+
+            $table->text('alasan_status')
+                ->nullable();
+
+            $table->string('batalkan_type')
+                ->nullable();
+
+            $table->foreignId('approved_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('approved_at')
+                ->nullable();
+
+            $table->foreignId('rejected_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('rejected_at')
+                ->nullable();
+
+            $table->foreignId('completed_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('completed_at')
+                ->nullable();
+
+            $table->foreignId('cancelled_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('cancelled_at')
+                ->nullable();
+
+            $table->foreignId('updated_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             $table->timestamps();
 

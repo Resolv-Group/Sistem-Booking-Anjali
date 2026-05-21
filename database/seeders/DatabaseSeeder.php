@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             LayananSeeder::class,
             OperasionalSeeder::class,
             UserSeeder::class,
+            BookingSeeder::class,
         ]);
     }
 }
