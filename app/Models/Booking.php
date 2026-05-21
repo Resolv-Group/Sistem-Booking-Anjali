@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-
     protected $table = 'booking';
 
     protected $fillable = [
@@ -14,10 +13,26 @@ class Booking extends Model
         'terapis_sesi_id',
         'status',
         'bukti_transfer_booking_path',
-        'bukti_transfer_booking_mime'
+        'bukti_transfer_booking_mime',
+        'approved_by',
+        'approved_at',
+        'rejected_by',
+        'rejected_at',
+        'completed_by',
+        'completed_at',
+        'cancelled_by',
+        'cancelled_at',
+        'alasan_status',
+        'batalkan_type',
+        'updated_by',
     ];
 
-    protected $casts = [];
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+    ];
 
     public function patient()
     {

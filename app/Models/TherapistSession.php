@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class TherapistSession extends Model
 {
-
     protected $table = 'terapis_sesi';
 
     protected $fillable = [
@@ -47,26 +46,24 @@ class TherapistSession extends Model
     */
 
     public function getRemainingCapacityAttribute()
-{
-    // Sum the patient count from all valid bookings
-    $used = $this->bookings
-        ->whereIn('status', ['pending', 'disetujui', 'selesai'])
-        ->sum(function ($booking) {
-            return $booking->bookingPatients->count();
-        });
+    {
+        // Sum the patient count from all valid bookings
+        $used = $this->bookings
+            ->whereIn('status', ['pending', 'approved', 'completed'])
+            ->sum(function ($booking) {
+                return $booking->bookingPatients->count();
+            });
 
-    return $this->kuota - $used;
-}
-
-
+        return $this->kuota - $used;
+    }
 
     public function getUsedCapacityAttribute()
     {
         return $this->bookings()
-            ->whereIn('status',[
+            ->whereIn('status', [
                 'pending',
-                'disetujui',
-                'selesai'
+                'approved',
+                'completed',
             ])
             ->withCount('bookingPatients')
             ->get()

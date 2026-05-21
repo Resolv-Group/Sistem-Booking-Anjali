@@ -34,11 +34,11 @@ return new class extends Migration
             $table->text('ringkasan_sesi')
                 ->nullable();
 
-            $table->enum('status_pasien',[
+            $table->enum('status_pasien', [
                 'menunggu',
-                'sedang berjalan',
+                'sedang_berjalan',
                 'selesai',
-                'dibatalkan'
+                'dibatalkan',
             ])->default('menunggu');
 
             $table->timestamps();
