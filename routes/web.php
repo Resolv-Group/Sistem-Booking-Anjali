@@ -81,9 +81,10 @@ Route::get('/admin-cabang/booking/list', [BookingController::class, 'adminBookin
 Route::post('/admin-cabang/booking/{booking}/accept', [BookingController::class, 'accept'])->name('admin-cabang.booking.accept');
 Route::post('/admin-cabang/booking/{booking}/reject', [BookingController::class, 'reject'])->name('admin-cabang.booking.reject');
 Route::post('/admin-cabang/booking/{booking}/cancel-approval', [BookingController::class, 'cancelApproval'])->name('admin-cabang.booking.cancel');
+Route::get('/admin-cabang/booking/form', [BookingController::class, 'adminBookingForm'])->name('admin-cabang.booking.form');
+Route::post('/admin-cabang/booking/form', [BookingController::class, 'adminBookingStore'])->name('admin-cabang.booking.store');
 
 // admin global
-
 Route::view('/lainnya/admin-global', 'pages.lainnya.admin-global')->name('global.dashboard');
 Route::view('/cabang/admin-global', 'pages.cabang.index')->name('admin-global.cabang');
 Route::view('/cabang/admin-global/menu', 'pages.cabang.menu')->name('admin-global.cabang.menu');
