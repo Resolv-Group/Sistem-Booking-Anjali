@@ -42,16 +42,44 @@
         biayaHomecare: 0,
     
         init() {
-            if (this.sessions && this.sessions.length > 0) {
-                let dates = this.availableDates;
-                if (dates.length > 0) {
-                    this.selectedDate = dates[0];
-                }
+            let dates = this.availableDates;
+            if (dates.length > 0) {
+                this.selectedDate = dates[0];
+            } else {
+                this.selectedDate = ''; // No available dates at all
             }
         },
     
         get availableDates() {
-            return [...new Set(this.sessions.map(s => s.tanggal_sesi))].sort();
+            let today = new Date();
+            // Format today as YYYY-MM-DD
+            let todayStr = today.getFullYear() + '-' +
+                String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                String(today.getDate()).padStart(2, '0');
+            let currentHour = today.getHours();
+            let currentMinute = today.getMinutes();
+    
+            // Filter sessions first
+            let validSessions = this.sessions.filter(s => {
+                // 1. Must have at least 1 slot remaining
+                if (s.kuota_sisa <= 0) return false;
+    
+                // 2. Ignore past dates entirely
+                if (s.tanggal_sesi < todayStr) return false;
+    
+                // 3. If it's today, ignore past hours/minutes
+                if (s.tanggal_sesi === todayStr) {
+                    let [hour, minute] = s.waktu_mulai.split(':').map(Number);
+                    if (hour < currentHour || (hour === currentHour && minute < currentMinute)) {
+                        return false;
+                    }
+                }
+    
+                return true;
+            });
+    
+            // Extract unique dates from the filtered valid sessions
+            return [...new Set(validSessions.map(s => s.tanggal_sesi))].sort();
         },
     
         get timeSlotsForSelectedDate() {

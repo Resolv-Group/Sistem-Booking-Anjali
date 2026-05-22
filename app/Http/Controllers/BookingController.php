@@ -215,6 +215,51 @@ class BookingController extends Controller
         return redirect()->back()->with('success', 'Janji temu berhasil dibatalkan.');
     }
 
+    public function adminBookingForm(Request $request)
+    {
+        $therapists = Karyawan::where('peran', 'Terapis')
+            ->where('status_karyawan', 'Aktif')
+            ->with(['layanans', 'sessions' => function ($query) {
+                $query->where('status', 'terbuka')
+                    ->where('tanggal_sesi', '>=', now()->toDateString());
+            }])
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id' => $t->id,
+                    'name' => $t->nama_karyawan,
+                    'image' => $t->fotoUrl() ?: 'https://i.pravatar.cc/150?u='.$t->id,
+                    // Map layanan spesifik terapis ini
+                    'services' => $t->layanans->map(function ($l) {
+                        return [
+                            'id' => $l->id,
+                            'name' => $l->nama,
+                            'price' => (int) $l->base_harga,
+                            'homecare_price' => (int) $l->homecare_harga,
+                            'discount' => (float) $l->diskon_persentase,
+                            'desc' => $l->deskripsi ?: 'Layanan profesional.',
+                        ];
+                    }),
+                    // Map sesi spesifik terapis ini
+                    'sessions' => $t->sessions->map(function ($s) {
+                        return [
+                            'id' => $s->id,
+                            'tanggal_sesi' => $s->tanggal_sesi,
+                            'waktu_mulai' => substr($s->waktu_mulai, 0, 5),
+                            'kuota_sisa' => (int) $s->remaining_capacity,
+                            'used_capacity' => (int) $s->used_capacity,
+                        ];
+                    }),
+                ];
+            });
+
+        $patients = Pasien::select('id', 'nama_pasien', 'pasien_public_id', 'tanggal_lahir', 'email', 'no_telp')
+            ->limit(10) // Ambil beberapa saja, sisanya via search (opsional)
+            ->get();
+
+        return view('pages.booking.admin.form', compact('therapists', 'patients'));
+    }
+
     public function create(Request $request)
     {
         $therapistId = $request->query('therapist_id');
@@ -367,5 +412,10 @@ class BookingController extends Controller
         }
 
         return redirect()->route('patient.booking.form-selesai')->with('success', 'Booking berhasil diajukan! Menunggu verifikasi.');
+    }
+
+    public function adminBookingStore(Request $request)
+    {
+        dd($request->all());
     }
 }
