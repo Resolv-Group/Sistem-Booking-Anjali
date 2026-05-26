@@ -35,10 +35,89 @@
         selectedSessionId: '{{ old('terapis_sesi_id', '') }}',
         selectedServices: {{ old('services') ? old('services') : '[]' }},
     
-    
-    
         formatRupiah(amount) {
             return 'Rp' + amount.toLocaleString('id-ID');
+        },
+    
+        get totalConsultationCost() {
+            let defaultCost = 0;
+            this.selectedServices.forEach(id => {
+                let s = this.services.find(sv => sv.id === id);
+                if (s) defaultCost += s.price;
+            });
+    
+            let total = 0;
+            this.patientSlots.forEach(slot => {
+                if (slot.services && slot.services.length > 0) {
+                    slot.services.forEach(id => {
+                        let s = this.services.find(sv => sv.id === id);
+                        if (s) total += s.price;
+                    });
+                } else {
+                    total += defaultCost;
+                }
+            });
+            return total;
+        },
+    
+        get discountAmount() {
+            let totalDiscount = 0;
+            let defaultDiscount = 0;
+            this.selectedServices.forEach(id => {
+                let s = this.services.find(sv => sv.id === id);
+                if (s) defaultDiscount += (s.price * (s.discount / 100));
+            });
+    
+            this.patientSlots.forEach(slot => {
+                if (slot.services && slot.services.length > 0) {
+                    slot.services.forEach(id => {
+                        let s = this.services.find(sv => sv.id === id);
+                        if (s) {
+                            totalDiscount += s.price * (s.discount / 100);
+                        }
+                    });
+                } else {
+                    totalDiscount += defaultDiscount;
+                }
+            });
+            return totalDiscount;
+        },
+    
+        get isHomecare() {
+            return this.selectedServices.some(id => {
+                let s = this.services.find(sv => sv.id === id);
+                return s && s.homecare_price > 0;
+            });
+        },
+    
+        get biayaHomecare() {
+            // Get all unique services selected across all patients
+            let allServiceIds = new Set();
+            let hasOverrides = false;
+            this.patientSlots.forEach(slot => {
+                if (slot.services && slot.services.length > 0) {
+                    hasOverrides = true;
+                    slot.services.forEach(id => allServiceIds.add(id));
+                }
+            });
+            if (!hasOverrides) {
+                this.selectedServices.forEach(id => allServiceIds.add(id));
+            }
+    
+            let totalHomecare = 0;
+            allServiceIds.forEach(id => {
+                let s = this.services.find(sv => sv.id === id);
+                if (s && s.homecare_price) {
+                    totalHomecare += s.homecare_price;
+                }
+            });
+            return totalHomecare;
+        },
+    
+        get grandTotal() {
+            let subtotal = this.totalConsultationCost - this.discountAmount;
+            // Grand total = (Harga - Diskon) + Biaya Homecare + Admin 5000
+            return (this.selectedServices.length > 0 || this.patientSlots.some(slot => slot.services && slot.services.length > 0)) ? (subtotal + this.biayaHomecare + 5000) : 0;
         },
     
         init() {
@@ -156,9 +235,9 @@
     
         toggleService(id) {
             if (this.selectedServices.includes(id)) {
-                this.selectedServices = [];
+                this.selectedServices = this.selectedServices.filter(x => x !== id);
             } else {
-                this.selectedServices = [id];
+                this.selectedServices.push(id);
             }
         },
     
@@ -175,7 +254,7 @@
         },
     
         patientSlots: [
-            { type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '' }
+            { type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '', services: [] }
         ],
     
         addSlot() {
@@ -186,7 +265,7 @@
     
             let session = this.sessions.find(s => s.id == this.selectedSessionId);
             if (this.patientSlots.length < session.kuota_sisa && this.patientSlots.length < 5) {
-                this.patientSlots.push({ type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '' });
+                this.patientSlots.push({ type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '', services: [] });
             } else {
                 Swal.fire('Penuh', 'Kuota sesi tidak mencukupi atau batas maksimal tercapai', 'error');
             }
@@ -202,8 +281,8 @@
             this.patientSlots[slotIndex].id = p.id;
             this.patientSlots[slotIndex].name = p.nama_pasien;
             this.patientSlots[slotIndex].email = p.email;
-            this.patientSlots[slotIndex].phone = p.nomor_telepon;
-            this.patientSlots[slotIndex].dob = p.tgl_lahir;
+            this.patientSlots[slotIndex].phone = p.no_telp;
+            this.patientSlots[slotIndex].dob = p.tanggal_lahir;
             this.patientSlots[slotIndex].search = ''; // clear search after select
         },
     
@@ -635,6 +714,61 @@
                                     class="w-full p-5 bg-[#EDF1F3] border-none rounded-2xl text-sm font-medium h-24 focus:ring-2 focus:ring-teal-100 outline-none resize-none"></textarea>
                             </div>
                         </div>
+
+                        {{-- Custom Layanan Spesifik Dropdown (Opsional) --}}
+                        <div class="space-y-2 pt-4 border-t border-slate-50" x-data="{ open: false }">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan Spesifik
+                                (Opsional)</label>
+                            <div class="relative">
+                                <button type="button" @click="open = !open" @click.outside="open = false"
+                                    class="w-full flex items-center justify-between px-4 py-3 bg-[#EDF1F3] rounded-xl text-sm font-medium text-slate-700 transition-all">
+                                    <span
+                                        x-text="slot.services && slot.services.length > 0 ? slot.services.map(id => services.find(s => s.id === id)?.name).filter(Boolean).join(', ') : 'Sama dengan layanan utama'"
+                                        :class="slot.services && slot.services.length > 0 ? 'text-slate-800' : 'text-slate-400'"
+                                        class="truncate pr-2 block"></span>
+                                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                        :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="absolute z-50 mt-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
+                                    <div class="p-1.5 space-y-0.5 max-h-40 overflow-y-auto">
+                                        <button type="button" @click="slot.services = []; open = false"
+                                            class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-semibold transition-colors"
+                                            :class="(!slot.services || slot.services.length === 0) ?
+                                            'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'">—
+                                            Sama dengan layanan utama</button>
+                                        <template x-for="service in services" :key="service.id">
+                                            <button type="button"
+                                                @click="
+                                                    if (!slot.services) slot.services = [];
+                                                    if (slot.services.includes(service.id)) {
+                                                        slot.services = slot.services.filter(id => id !== service.id);
+                                                    } else {
+                                                        slot.services = [...slot.services, service.id];
+                                                    }
+                                                "
+                                                class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-semibold transition-colors"
+                                                :class="slot.services && slot.services.includes(service.id) ?
+                                                    'bg-teal-50 text-teal-700' : 'text-slate-700 hover:bg-slate-50'">
+                                                <span x-text="service.name"></span>
+                                                <svg x-show="slot.services && slot.services.includes(service.id)"
+                                                    class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="3">
+                                                    <path d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </template>
 
@@ -671,6 +805,65 @@
                                 </div>
                             </div>
                         </template>
+                    </div>
+
+                    {{-- Detail Harga --}}
+                    <div x-show="selectedServices.length > 0"
+                        class="border-t border-slate-100 pt-6 space-y-4 animate-in fade-in duration-300">
+                        <div class="text-xs font-bold text-teal-800 uppercase tracking-widest">Rincian Biaya</div>
+
+                        {{-- List Layanan yang Dipilih --}}
+                        <div class="space-y-2">
+                            <template x-for="id in selectedServices" :key="id">
+                                <div class="flex justify-between items-center text-sm font-medium text-slate-500">
+                                    <span x-text="services.find(s => s.id === id)?.name || 'Layanan'"></span>
+                                    <span class="text-slate-800"
+                                        x-text="formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Multiplier Pasien jika pasien > 1 --}}
+                        <div x-show="patientSlots.length > 1"
+                            class="flex justify-between items-center text-xs text-slate-400 font-semibold border-b border-dashed border-slate-100 pb-3">
+                            <span>Jumlah Pasien</span>
+                            <span x-text="'x ' + patientSlots.length + ' Pasien'"></span>
+                        </div>
+
+                        {{-- Subtotal Biaya Konsultasi --}}
+                        <div class="flex justify-between items-center text-sm font-medium text-slate-600">
+                            <span>Subtotal Konsultasi</span>
+                            <span class="text-slate-800 font-bold" x-text="formatRupiah(totalConsultationCost)"></span>
+                        </div>
+
+                        {{-- Diskon --}}
+                        <div x-show="discountAmount > 0"
+                            class="flex justify-between items-center text-sm font-semibold text-rose-600">
+                            <span>Diskon Layanan</span>
+                            <span x-text="'-' + formatRupiah(discountAmount)"></span>
+                        </div>
+
+                        {{-- Biaya Homecare --}}
+                        <div class="flex justify-between items-center text-sm font-medium text-slate-600">
+                            <span>Biaya Homecare</span>
+                            <span x-text="biayaHomecare ? formatRupiah(biayaHomecare) : 'Rp0'"></span>
+                        </div>
+
+                        {{-- Biaya Admin --}}
+                        <div class="flex justify-between items-center text-sm font-medium text-slate-600">
+                            <span>Biaya Admin</span>
+                            <span class="text-slate-800 font-bold">Rp5.000</span>
+                        </div>
+
+                        {{-- Grand Total --}}
+                        <div class="pt-4 border-t border-slate-100 flex justify-between items-end">
+                            <div>
+                                <p class="text-[11px] font-bold text-[#0D4C4A] uppercase tracking-widest">Total Pembayaran
+                                </p>
+                            </div>
+                            <span class="text-2xl font-bold text-slate-900 tracking-tight"
+                                x-text="formatRupiah(grandTotal)"></span>
+                        </div>
                     </div>
 
                     <div class="space-y-4 pt-4">
