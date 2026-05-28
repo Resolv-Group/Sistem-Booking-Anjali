@@ -39,87 +39,62 @@
             return 'Rp' + amount.toLocaleString('id-ID');
         },
     
-        get totalConsultationCost() {
-            let defaultCost = 0;
-            this.selectedServices.forEach(id => {
-                let s = this.services.find(sv => sv.id === id);
-                if (s) defaultCost += s.price;
-            });
+get totalConsultationCost() {
+    let total = 0;
+    this.patientSlots.forEach(slot => {
+        (slot.services || []).forEach(id => {
+            let s = this.services.find(sv => sv.id === id);
+            if (s) total += s.price;
+        });
+    });
+    return total;
+},
     
-            let total = 0;
-            this.patientSlots.forEach(slot => {
-                if (slot.services && slot.services.length > 0) {
-                    slot.services.forEach(id => {
-                        let s = this.services.find(sv => sv.id === id);
-                        if (s) total += s.price;
-                    });
-                } else {
-                    total += defaultCost;
-                }
-            });
-            return total;
-        },
+get discountAmount() {
+    let total = 0;
+    this.patientSlots.forEach(slot => {
+        (slot.services || []).forEach(id => {
+            let s = this.services.find(sv => sv.id === id);
+            if (s) total += s.price * (s.discount / 100);
+        });
+    });
+    return total;
+},
+
     
-        get discountAmount() {
-            let totalDiscount = 0;
-            let defaultDiscount = 0;
-            this.selectedServices.forEach(id => {
-                let s = this.services.find(sv => sv.id === id);
-                if (s) defaultDiscount += (s.price * (s.discount / 100));
-            });
+
+get isHomecare() {
+    let allIds = new Set();
+    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
+    return [...allIds].some(id => {
+        let s = this.services.find(sv => sv.id === id);
+        return s && s.homecare_price > 0;
+    });
+},
     
-            this.patientSlots.forEach(slot => {
-                if (slot.services && slot.services.length > 0) {
-                    slot.services.forEach(id => {
-                        let s = this.services.find(sv => sv.id === id);
-                        if (s) {
-                            totalDiscount += s.price * (s.discount / 100);
-                        }
-                    });
-                } else {
-                    totalDiscount += defaultDiscount;
-                }
-            });
-            return totalDiscount;
-        },
+get biayaHomecare() {
+    let allIds = new Set();
+    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
+    let total = 0;
+    allIds.forEach(id => {
+        let s = this.services.find(sv => sv.id === id);
+        if (s && s.homecare_price) total += s.homecare_price;
+    });
+    return total;
+},
     
-        get isHomecare() {
-            return this.selectedServices.some(id => {
-                let s = this.services.find(sv => sv.id === id);
-                return s && s.homecare_price > 0;
-            });
-        },
-    
-        get biayaHomecare() {
-            // Get all unique services selected across all patients
-            let allServiceIds = new Set();
-            let hasOverrides = false;
-            this.patientSlots.forEach(slot => {
-                if (slot.services && slot.services.length > 0) {
-                    hasOverrides = true;
-                    slot.services.forEach(id => allServiceIds.add(id));
-                }
-            });
-            if (!hasOverrides) {
-                this.selectedServices.forEach(id => allServiceIds.add(id));
-            }
-    
-            let totalHomecare = 0;
-            allServiceIds.forEach(id => {
-                let s = this.services.find(sv => sv.id === id);
-                if (s && s.homecare_price) {
-                    totalHomecare += s.homecare_price;
-                }
-            });
-            return totalHomecare;
-        },
-    
-        get grandTotal() {
-            let subtotal = this.totalConsultationCost - this.discountAmount;
-            // Grand total = (Harga - Diskon) + Biaya Homecare + Admin 5000
-            return (this.selectedServices.length > 0 || this.patientSlots.some(slot => slot.services && slot.services.length > 0)) ? (subtotal + this.biayaHomecare + 5000) : 0;
-        },
-    
+get grandTotal() {
+    let anyServices = this.patientSlots.some(slot => slot.services && slot.services.length > 0);
+    if (!anyServices) return 0;
+    return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
+},
+
+get allSelectedServices() {
+    let ids = new Set();
+    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => ids.add(id)));
+    return [...ids];
+},
+
         init() {
             let dates = this.availableDates;
             if (dates.length > 0) {
@@ -329,7 +304,7 @@
                 {{-- Data Utama --}}
                 <input type="hidden" name="terapis_id" :value="selectedTherapistId">
                 <input type="hidden" name="terapis_sesi_id" :value="selectedSessionId">
-                <input type="hidden" name="services" :value="JSON.stringify(selectedServices)">
+                <input type="hidden" name="services" :value="JSON.stringify(allSelectedServices)">
                 <input type="hidden" name="date" :value="selectedDate">
                 <input type="hidden" name="time" :value="selectedTime">
 
@@ -571,68 +546,6 @@
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="2.5">
-                                <path
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                            <div class="flex justify-between w-full gap-2">
-                                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Pilih Layanan
-                                    Utama
-                                </h3>
-                                <span class="text-[10px] font-bold text-slate-300 uppercase">Step 3/5</span>
-                            </div>
-                        </div>
-
-                        <input type="text" x-model="searchService" placeholder="Cari layanan..."
-                            class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-base font-semibold shadow-sm focus:border-teal-500 outline-none transition-all">
-
-                        <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2"
-                            style="scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;">
-                            <template x-for="service in filteredServices" :key="service.id">
-                                <button type="button" @click="toggleService(service.id)"
-                                    :class="selectedServices.includes(service.id) ? 'border-teal-500 bg-teal-50/30' :
-                                        'border-slate-200 bg-white'"
-                                    class="w-full p-5 border rounded-2xl text-left transition-all relative group shadow-sm">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1 pr-4">
-                                            <h4 class="text-base font-semibold text-slate-800" x-text="service.name"></h4>
-                                            <p class="text-sm text-slate-400 mt-1 font-semibold" x-text="service.desc">
-                                            </p>
-                                        </div>
-                                        <span class="text-base font-semibold text-teal-600"
-                                            x-text="formatRupiah(service.price)"></span>
-                                    </div>
-                                    <div x-show="selectedServices.includes(service.id)"
-                                        class="absolute -top-2 -right-2 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                            stroke-width="3">
-                                            <path d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    </div>
-                                </button>
-                            </template>
-
-                            <div x-show="filteredServices.length === 0" x-cloak
-                                class="p-8 text-center bg-slate-50 border border-slate-100 rounded-2xl border-dashed">
-                                <div
-                                    class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                                    <svg class="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor" stroke-width="2">
-                                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <h4 class="text-base font-bold text-slate-700 tracking-tight">Layanan Tidak Ditemukan</h4>
-                                <p class="text-sm text-slate-500 font-medium mt-1">Coba gunakan kata kunci pencarian yang
-                                    lain.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {{-- 4. PEMILIHAN PASIEN --}}
                 {{-- 4 & 5. PEMILIHAN & KELUHAN PASIEN (LOOPED) --}}
                 <template x-for="(slot, index) in patientSlots" :key="index">
@@ -716,59 +629,88 @@
                         </div>
 
                         {{-- Custom Layanan Spesifik Dropdown (Opsional) --}}
-                        <div class="space-y-2 pt-4 border-t border-slate-50" x-data="{ open: false }">
-                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan Spesifik
-                                (Opsional)</label>
-                            <div class="relative">
-                                <button type="button" @click="open = !open" @click.outside="open = false"
-                                    class="w-full flex items-center justify-between px-4 py-3 bg-[#EDF1F3] rounded-xl text-sm font-medium text-slate-700 transition-all">
-                                    <span
-                                        x-text="slot.services && slot.services.length > 0 ? slot.services.map(id => services.find(s => s.id === id)?.name).filter(Boolean).join(', ') : 'Sama dengan layanan utama'"
-                                        :class="slot.services && slot.services.length > 0 ? 'text-slate-800' : 'text-slate-400'"
-                                        class="truncate pr-2 block"></span>
-                                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                                        :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor" stroke-width="2">
-                                        <path d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                                    x-transition:enter-start="opacity-0 -translate-y-1"
-                                    x-transition:enter-end="opacity-100 translate-y-0"
-                                    x-transition:leave="transition ease-in duration-100"
-                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                    class="absolute z-50 mt-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
-                                    <div class="p-1.5 space-y-0.5 max-h-40 overflow-y-auto">
-                                        <button type="button" @click="slot.services = []; open = false"
-                                            class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-semibold transition-colors"
-                                            :class="(!slot.services || slot.services.length === 0) ?
-                                            'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'">—
-                                            Sama dengan layanan utama</button>
-                                        <template x-for="service in services" :key="service.id">
-                                            <button type="button"
-                                                @click="
-                                                    if (!slot.services) slot.services = [];
-                                                    if (slot.services.includes(service.id)) {
-                                                        slot.services = slot.services.filter(id => id !== service.id);
-                                                    } else {
-                                                        slot.services = [...slot.services, service.id];
-                                                    }
-                                                "
-                                                class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-semibold transition-colors"
-                                                :class="slot.services && slot.services.includes(service.id) ?
-                                                    'bg-teal-50 text-teal-700' : 'text-slate-700 hover:bg-slate-50'">
-                                                <span x-text="service.name"></span>
-                                                <svg x-show="slot.services && slot.services.includes(service.id)"
-                                                    class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor" stroke-width="3">
-                                                    <path d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
+                        {{-- Layanan Pasien (Chip Selection) --}}
+<div class="space-y-3 pt-4 border-t border-slate-50">
+    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan Dipilih</label>
+
+    {{-- Selected chips --}}
+    <div class="flex flex-wrap gap-2 min-h-[2rem]">
+        <template x-for="id in (slot.services || [])" :key="id">
+            <div class="flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-xl text-xs font-bold text-teal-700 transition-all">
+                <svg class="w-3 h-3 text-teal-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path d="M5 13l4 4L19 7"/>
+                </svg>
+                <span x-text="services.find(s => s.id === id)?.name || ''"></span>
+                <span class="text-teal-400 text-[10px] font-semibold" x-text="'· ' + formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
+                <button type="button"
+                    @click="slot.services = (slot.services || []).filter(x => x !== id)"
+                    class="ml-1 w-4 h-4 rounded-full bg-teal-200 hover:bg-rose-200 flex items-center justify-center text-teal-600 hover:text-rose-600 transition-colors">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                        <path d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </template>
+        <div x-show="!slot.services || slot.services.length === 0"
+             class="text-xs text-slate-400 font-medium italic py-1">
+            Belum ada layanan dipilih
+        </div>
+    </div>
+
+    {{-- Add layanan dropdown --}}
+    <div class="relative" x-data="{ openLayanan: false }">
+        <button type="button"
+            @click="openLayanan = !openLayanan"
+            @click.outside="openLayanan = false"
+            class="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:border-teal-300 hover:text-teal-500 transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Tambah Layanan
+        </button>
+
+        <div x-show="openLayanan"
+             x-transition:enter="transition ease-out duration-150"
+             x-transition:enter-start="opacity-0 -translate-y-1"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-100"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="absolute z-50 left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+            <div class="p-2 space-y-1 max-h-56 overflow-y-auto">
+                <template x-for="service in services" :key="service.id">
+                    <button type="button"
+                        @click="
+                            if (!slot.services) slot.services = [];
+                            if (slot.services.includes(service.id)) {
+                                slot.services = slot.services.filter(id => id !== service.id);
+                            } else {
+                                slot.services = [...slot.services, service.id];
+                            }
+                        "
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-colors group"
+                        :class="slot.services && slot.services.includes(service.id)
+                            ? 'bg-teal-50 text-teal-700'
+                            : 'text-slate-700 hover:bg-slate-50'">
+                        <div>
+                            <p class="text-xs font-bold" x-text="service.name"></p>
+                            <p class="text-[10px] text-slate-400 font-medium" x-text="formatRupiah(service.price)"></p>
                         </div>
+                        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0"
+                             :class="slot.services && slot.services.includes(service.id)
+                                 ? 'border-teal-500 bg-teal-500'
+                                 : 'border-slate-200 group-hover:border-teal-300'">
+                            <svg x-show="slot.services && slot.services.includes(service.id)"
+                                 class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
                     </div>
                 </template>
 
@@ -808,20 +750,24 @@
                     </div>
 
                     {{-- Detail Harga --}}
-                    <div x-show="selectedServices.length > 0"
-                        class="border-t border-slate-100 pt-6 space-y-4 animate-in fade-in duration-300">
+<div x-show="patientSlots.some(slot => slot.services && slot.services.length > 0)"
+     class="border-t border-slate-100 pt-6 space-y-4 animate-in fade-in duration-300">
                         <div class="text-xs font-bold text-teal-800 uppercase tracking-widest">Rincian Biaya</div>
 
                         {{-- List Layanan yang Dipilih --}}
-                        <div class="space-y-2">
-                            <template x-for="id in selectedServices" :key="id">
-                                <div class="flex justify-between items-center text-sm font-medium text-slate-500">
-                                    <span x-text="services.find(s => s.id === id)?.name || 'Layanan'"></span>
-                                    <span class="text-slate-800"
-                                        x-text="formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
-                                </div>
-                            </template>
-                        </div>
+<div class="space-y-3">
+    <template x-for="(slot, i) in patientSlots" :key="i">
+        <div x-show="slot.services && slot.services.length > 0" class="space-y-1">
+            <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="'Pasien ' + (i+1)"></p>
+            <template x-for="id in (slot.services || [])" :key="id">
+                <div class="flex justify-between items-center text-sm font-medium text-slate-500 pl-2">
+                    <span x-text="services.find(s => s.id === id)?.name || 'Layanan'"></span>
+                    <span class="text-slate-800" x-text="formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
+                </div>
+            </template>
+        </div>
+    </template>
+</div>
 
                         {{-- Multiplier Pasien jika pasien > 1 --}}
                         <div x-show="patientSlots.length > 1"

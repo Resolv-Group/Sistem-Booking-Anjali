@@ -57,9 +57,16 @@ Route::post(
 )->name('patient.booking.store');
 
 Route::view(
-    '/booking/form/selesai',
+    '/booking/form-pasien/selesai',
     'pages.booking.patient.form-selesai'
 )->name('patient.booking.form-selesai');
+
+Route::view(
+    '/booking/form/selesai',
+    'pages.booking.admin.form-selesai'
+)->name('admin.booking.form-selesai');
+
+// Route::middleware('auth')->post('/patients/quick-register', [BookingController::class, 'quickRegisterPatient']);
 
 Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile');
 Route::view('/therapist/profile', 'pages.profile.therapist')->name('therapist.profile');
