@@ -16,12 +16,18 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('booking_oleh_pasien_id')
+                ->nullable()
                 ->constrained('pasiens')
                 ->cascadeOnDelete();
 
             $table->foreignId('terapis_sesi_id')
                 ->constrained('terapis_sesi')
                 ->cascadeOnDelete();
+
+            $table->foreignId('booking_oleh_karyawan_id')
+                ->nullable()
+                ->constrained('karyawans')
+                ->nullOnDelete();
 
             $table->enum('status', [
                 'pending',

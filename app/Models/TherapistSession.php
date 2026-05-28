@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class TherapistSession extends Model
 {
@@ -19,6 +20,8 @@ class TherapistSession extends Model
     ];
 
     protected $casts = [];
+
+    protected $with = ['bookings.bookingPatients'];
 
     public function therapist()
     {
@@ -45,14 +48,27 @@ class TherapistSession extends Model
     Remaining slot helper
     */
 
+    // public function getRemainingCapacityAttribute()
+    // {
+    //     // Sum the patient count from all valid bookings
+    //     $used = $this->bookings
+    //         ->whereIn('status', ['pending', 'approved', 'completed'])
+    //         ->sum(function ($booking) {
+    //             return $booking->bookingPatients->count();
+    //         });
+
+    //     return $this->kuota - $used;
+    // }
+
     public function getRemainingCapacityAttribute()
     {
-        // Sum the patient count from all valid bookings
-        $used = $this->bookings
+        $used = $this->bookings()
             ->whereIn('status', ['pending', 'approved', 'completed'])
-            ->sum(function ($booking) {
-                return $booking->bookingPatients->count();
-            });
+            ->withCount(['bookingPatients as unique_patient_count' => function ($query) {
+                $query->select(DB::raw('COUNT(DISTINCT pasien_id)'));
+            }])
+            ->get()
+            ->sum('unique_patient_count');
 
         return $this->kuota - $used;
     }

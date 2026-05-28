@@ -11,6 +11,7 @@ class Booking extends Model
     protected $fillable = [
         'booking_oleh_pasien_id',
         'terapis_sesi_id',
+        'booking_oleh_karyawan_id',
         'status',
         'bukti_transfer_booking_path',
         'bukti_transfer_booking_mime',
