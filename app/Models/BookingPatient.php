@@ -17,6 +17,13 @@ class BookingPatient extends Model
         'catatan_terapis',
         'ringkasan_sesi',
         'status_pasien',
+        'started_at',
+        'finished_at',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
     ];
 
     public function layanan()
@@ -37,5 +44,10 @@ class BookingPatient extends Model
             Pasien::class,
             'pasien_id'
         );
+    }
+
+    public function rekamMedis()
+    {
+        return $this->hasOne(RekamMedis::class, 'booking_pasien_id');
     }
 }

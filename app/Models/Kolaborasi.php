@@ -33,4 +33,9 @@ class Kolaborasi extends Model
     {
         return $this->hasMany(TherapistSession::class);
     }
+
+    public function getStaffCountAttribute()
+    {
+        return $this->karyawans()->count();
+    }
 }

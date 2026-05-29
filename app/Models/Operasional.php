@@ -13,6 +13,8 @@ class Operasional extends Model
         'hari',
         'waktu_buka',
         'waktu_tutup',
+        'waktu_istirahat_mulai',
+        'waktu_istirahat_selesai',
         'status_operasional',
         'created_by',
         'updated_by',
@@ -20,9 +22,6 @@ class Operasional extends Model
 
     protected $casts = [
         'hari' => 'integer',
-        'waktu_buka' => 'time',
-        'waktu_tutup' => 'time',
-        'status_operasional' => 'boolean',
     ];
 
     public function kolaborasi()
