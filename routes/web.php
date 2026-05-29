@@ -4,7 +4,12 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\KolaborasiController;
+use App\Http\Controllers\LayananController;
 use App\Http\Controllers\TherapistScheduleController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\OperasionalController;
+use App\Http\Controllers\TherapistSessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -75,10 +80,12 @@ Route::view('/admin-cabang/profile', 'pages.profile.admin-cabang')->name('admin-
 
 // therapist
 Route::view('/dashboard/therapist', 'pages.dashboard.therapist')->name('therapist.dashboard');
-Route::view('/jadwal/therapist', 'pages.jadwal.therapist')->name('therapist.jadwal');
+Route::get('/jadwal/therapist', [TherapistSessionController::class, 'index'])->name('therapist.jadwal');
+Route::post('/jadwal/therapist/session/{id}/start', [TherapistSessionController::class, 'startSession'])->name('therapist.session.start');
 Route::get('/jadwal/therapist/atur-jam-kerja', [TherapistScheduleController::class, 'index'])->name('therapist.atur-jam-kerja');
 Route::post('/jadwal/therapist/atur-jam-kerja/form', [TherapistScheduleController::class, 'store'])->name('therapist.atur-jam-kerja.store');
-Route::view('/jadwal/therapist/ringkasan-sesi', 'pages.jadwal.ringkasan-sesi')->name('therapist.ringkasan-sesi');
+Route::get('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController::class, 'catatanForm'])->name('therapist.ringkasan-sesi');
+Route::post('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController::class, 'saveCatatan'])->name('therapist.ringkasan-sesi.store');
 Route::view('/therapist/booking/list', 'pages.booking.therapist.index')->name('therapist.booking');
 Route::view('/therapist/booking/history', 'pages.booking.therapist.history')->name('therapist.booking.history');
 
@@ -93,18 +100,36 @@ Route::post('/admin-cabang/booking/form', [BookingController::class, 'adminBooki
 
 // admin global
 Route::view('/lainnya/admin-global', 'pages.lainnya.admin-global')->name('global.dashboard');
-Route::view('/cabang/admin-global', 'pages.cabang.index')->name('admin-global.cabang');
-Route::view('/cabang/admin-global/menu', 'pages.cabang.menu')->name('admin-global.cabang.menu');
+// Route::view('/cabang/admin-global', 'pages.cabang.index')->name('admin-global.cabang');
+Route::get('/cabang/admin-global', [KolaborasiController::class, 'index'])->name('admin-global.cabang');
+Route::get('/cabang/admin-global/menu/{id_kolaborasi}', [KolaborasiController::class, 'menuIndex'])->name('admin-global.cabang.menu');
 Route::view('/cabang/admin-global/create', 'pages.cabang.cabang-create')->name('admin-global.cabang.create');
 // Route::view('/cabang/admin-global/edit','pages.cabang.edit')->name('admin-global.cabang.edit');
 
-Route::view('/operasional-jadwal/admin-global/menu', 'pages.cabang.menu.operasional-jadwal')->name('admin-global.operasional-jadwal');
-Route::view('/layanan/admin-global/menu', 'pages.cabang.menu.layanan.layanan-menu')->name('admin-global.layanan');
-Route::view('/layanan/admin-global/create', 'pages.cabang.menu.layanan.layanan-create')->name('admin-global.layanan.create');
-Route::view('/layanan/admin-global/detail', 'pages.cabang.menu.layanan.layanan-detail')->name('admin-global.layanan.detail');
+Route::get('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'index'])->name('admin-global.operasional-jadwal');
+Route::post('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'update'])->name('admin-global.operasional-jadwal.update');
 
-Route::view('/atur-layanan/pilih-therapist', 'pages.cabang.menu.assign-layanan.therapist-list')->name('admin-global.therapist-list');
-Route::view('/atur-layanan/admin-global', 'pages.cabang.menu.assign-layanan.assign-layanan')->name('admin-global.assign-layanan');
+// Layanan CRUD (scoped to kolaborasi)
+Route::get('/layanan/{id_kolaborasi}', [LayananController::class, 'layananIndex'])->name('admin-global.layanan');
+Route::get('/layanan/{id_kolaborasi}/create', [LayananController::class, 'layananCreate'])->name('admin-global.layanan.create');
+Route::post('/layanan/{id_kolaborasi}', [LayananController::class, 'layananStore'])->name('admin-global.layanan.store');
+Route::get('/layanan/{id_kolaborasi}/detail/{id_layanan}', [LayananController::class, 'layananDetail'])->name('admin-global.layanan.detail');
+Route::put('/layanan/{id_kolaborasi}/detail/{id_layanan}', [LayananController::class, 'layananUpdate'])->name('admin-global.layanan.update');
+Route::delete('/layanan/{id_kolaborasi}/detail/{id_layanan}', [LayananController::class, 'layananDestroy'])->name('admin-global.layanan.destroy');
+
+// Assign layanan to therapist
+Route::get('/atur-layanan/{id_kolaborasi}', [LayananController::class, 'index'])->name('admin-global.therapist-list');
+Route::get('/atur-layanan/{id_kolaborasi}/pilih-therapist/{id_karyawan}', [LayananController::class, 'assignLayanan'])->name('admin-global.assign-layanan');
+Route::post('/atur-layanan/{id_kolaborasi}/pilih-therapist/{id_karyawan}', [LayananController::class, 'assignLayananStore'])->name('admin-global.assign-layanan.store');
+
+// Karyawan Management (scoped to kolaborasi)
+Route::get('/cabang/admin-global/menu/{id_kolaborasi}/karyawan', [KaryawanController::class, 'index'])->name('admin-global.karyawan');
+Route::get('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/create', [KaryawanController::class, 'create'])->name('admin-global.karyawan.create');
+Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan', [KaryawanController::class, 'store'])->name('admin-global.karyawan.store');
+Route::get('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}/detail', [KaryawanController::class, 'detail'])->name('admin-global.karyawan.detail');
+Route::put('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'update'])->name('admin-global.karyawan.update');
+Route::delete('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'destroy'])->name('admin-global.karyawan.destroy');
+Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}/map', [KaryawanController::class, 'mapToCabang'])->name('admin-global.karyawan.map');
 
 // login
 Route::view('/login', 'pages.auth.login')->name('view.auth.login');

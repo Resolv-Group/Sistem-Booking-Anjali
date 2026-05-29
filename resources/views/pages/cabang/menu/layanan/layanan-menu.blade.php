@@ -9,7 +9,7 @@
     {{-- 1. TOPBAR --}}
     <div class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
         <div class="flex items-center gap-4">
-            <a href="{{ url()->previous() }}" class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
+            <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}" class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
             </a>
             <h1 class="text-sm font-bold text-teal-800 uppercase tracking-widest leading-none">Rumah Terapi Anjali</h1>
@@ -20,6 +20,17 @@
     </div>
 
     <div class="px-6 pt-8 pb-32 space-y-8">
+
+        {{-- SUCCESS NOTIFICATION --}}
+        @if(session('success'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-4"
+                class="bg-teal-500 text-white rounded-2xl p-4 text-sm font-bold text-center shadow-lg">
+                {{ session('success') }}
+            </div>
+        @endif
 
         {{-- 2. TITLE SECTION --}}
         <div class="space-y-3 px-1">
@@ -42,63 +53,70 @@
 
         {{-- 4. SERVICE LIST --}}
         <div class="space-y-4">
-            <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] ml-1">Daftar Layanan Aktif</h3>
+            <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] ml-1">Daftar Layanan ({{ $layanans->count() }})</h3>
             
-            @php
-                $layanan = [
-                    ['nama' => 'Akupunktur', 'durasi' => '60 Menit', 'harga' => 350000, 'bg' => 'bg-cyan-100', 'text' => 'text-cyan-600', 'icon' => 'plus-circle'],
-                    ['nama' => 'Mass Age', 'durasi' => '90 Menit', 'harga' => 450000, 'bg' => 'bg-blue-100', 'text' => 'text-blue-600', 'icon' => 'flower'],
-                    ['nama' => 'Cupping', 'durasi' => '45 Menit', 'harga' => 275000, 'bg' => 'bg-teal-100', 'text' => 'text-teal-600', 'icon' => 'beaker'],
-                    ['nama' => 'Moksa', 'durasi' => '30 Menit', 'harga' => 180000, 'bg' => 'bg-emerald-100', 'text' => 'text-emerald-600', 'icon' => 'flame'],
-                    ['nama' => 'TDP', 'durasi' => '20 Menit', 'harga' => 120000, 'bg' => 'bg-slate-200', 'text' => 'text-slate-500', 'icon' => 'sun'],
-                ];
-            @endphp
-
-            @foreach($layanan as $item)
-            <a href="{{ route('admin-global.layanan.detail') }}" class="bg-white rounded-[1.8rem] p-5 shadow-sm border border-slate-100 flex items-center justify-between group active:scale-[0.98] transition-all">
+            @forelse($layanans as $item)
+            <a href="{{ route('admin-global.layanan.detail', [$kolaborasi->id, $item->id]) }}" 
+                class="bg-white rounded-[1.8rem] p-5 shadow-sm border border-slate-100 flex items-center justify-between group active:scale-[0.98] transition-all"
+                x-show="'{{ strtolower($item->nama) }}'.includes(search.toLowerCase()) || search === ''"
+            >
                 <div class="flex items-center gap-4">
                     {{-- Icon Container --}}
-                    <div class="w-16 h-16 rounded-xl {{ $item['bg'] }} {{ $item['text'] }} flex items-center justify-center shadow-inner">
-                        {{-- Placeholder for actual Lucide icons --}}
+                    <div class="w-16 h-16 rounded-xl {{ $item->status === 'Tersedia' ? 'bg-teal-100 text-teal-600' : 'bg-slate-200 text-slate-400' }} flex items-center justify-center shadow-inner">
                         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /> {{-- Example generic icon --}}
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                     </div>
 
                     {{-- Text Info --}}
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
-                            <h4 class="text-base font-black text-slate-800 leading-tight">{{ $item['nama'] }}</h4>
+                            <h4 class="text-base font-black text-slate-800 leading-tight">{{ $item->nama }}</h4>
+                            @if($item->status === 'Tersedia')
                             <span class="px-2 py-0.5 bg-teal-50 text-teal-600 text-[8px] font-black uppercase tracking-widest rounded-md border border-teal-100 flex items-center gap-1">
                                 <div class="w-1 h-1 rounded-full bg-teal-500"></div>
                                 Aktif
                             </span>
+                            @else
+                            <span class="px-2 py-0.5 bg-red-50 text-red-500 text-[8px] font-black uppercase tracking-widest rounded-md border border-red-100 flex items-center gap-1">
+                                <div class="w-1 h-1 rounded-full bg-red-400"></div>
+                                Nonaktif
+                            </span>
+                            @endif
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="flex items-center gap-1 text-slate-400">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span class="text-[11px] font-bold uppercase tracking-tighter">{{ $item['durasi'] }}</span>
-                            </div>
-                            <p class="text-sm font-black text-slate-700">Rp{{ number_format($item['harga'], 0, ',', '.') }}</p>
+                            <p class="text-sm font-black text-slate-700">Rp{{ number_format($item->base_harga, 0, ',', '.') }}</p>
+                            @if($item->diskon_persentase > 0)
+                                <span class="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md">-{{ $item->diskon_persentase }}%</span>
+                            @endif
                         </div>
                     </div>
                 </div>
 
-                {{-- Action Menu --}}
-                <button class="p-2 text-slate-300 hover:text-slate-600 transition-colors">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                </button>
+                {{-- Action Arrow --}}
+                <svg class="w-4 h-4 text-slate-300 group-hover:text-teal-600 transition-all group-hover:translate-x-1 shrink-0"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path d="M9 5l7 7-7 7" />
+                </svg>
             </a>
-            @endforeach
+            @empty
+            <div class="text-center py-16 space-y-3">
+                <div class="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <p class="text-sm font-bold text-slate-400">Belum ada layanan.</p>
+                <p class="text-xs text-slate-300">Tambahkan layanan pertama Anda.</p>
+            </div>
+            @endforelse
         </div>
 
     </div>
 
     {{-- 5. FLOATING ACTION BUTTON --}}
     <div x-data="{ open: false }" class="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
-        {{-- Speed Dial Items (Tucked away when closed) --}}
+        {{-- Speed Dial Items --}}
         <div 
             x-show="open" 
             x-transition:enter="transition ease-out duration-200"
@@ -109,12 +127,11 @@
             x-transition:leave-end="opacity-0 translate-y-4 scale-90"
             class="flex flex-col items-end gap-3 mb-2"
         >
-
-            {{-- Tambah Cabang --}}
+            {{-- Tambah Layanan --}}
             <div class="flex items-center gap-3">
                 <span class="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tambah Layanan</span>
-                <a href="{{ route('admin-global.layanan.create') }}" class="w-12 h-12 bg-white text-teal-700 rounded-xl flex items-center justify-center shadow-lg border border-slate-100 active:scale-95 transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                <a href="{{ route('admin-global.layanan.create', $kolaborasi->id) }}" class="w-12 h-12 bg-white text-teal-700 rounded-xl flex items-center justify-center shadow-lg border border-slate-100 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 </a>
             </div>
         </div>
@@ -130,7 +147,6 @@
                  x-transition:enter-end="opacity-100 scale-100 rotate-0"
                  class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15h2m-2 4h2" />
             </svg>
             <svg x-show="open" 
                  x-transition:enter="transition duration-300"
