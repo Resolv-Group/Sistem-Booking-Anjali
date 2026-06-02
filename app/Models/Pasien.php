@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Pasien extends Model
 {
+    use HasUuids;
+
     protected $table = 'pasiens';
 
     protected $fillable = [
@@ -25,10 +29,15 @@ class Pasien extends Model
         'foto_mime',
     ];
 
+    public function uniqueIds(): array
+    {
+        return ['pasien_public_id'];
+    }
+
     public function fotoUrl()
     {
         return $this->foto_path
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->foto_path)
+            ? Storage::disk('public')->url($this->foto_path)
             : null;
     }
 
@@ -53,8 +62,8 @@ class Pasien extends Model
     {
         return $query->when($term, function ($q) use ($term) {
             $q->where('nama_pasien', 'like', "%{$term}%")
-              ->orWhere('no_telp', 'like', "%{$term}%")
-              ->orWhere('nik', 'like', "%{$term}%");
+                ->orWhere('no_telp', 'like', "%{$term}%")
+                ->orWhere('nik', 'like', "%{$term}%");
         });
     }
 }

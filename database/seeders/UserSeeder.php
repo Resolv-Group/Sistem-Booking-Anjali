@@ -10,7 +10,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -35,7 +34,6 @@ class UserSeeder extends Seeder
         ]);
         Karyawan::create([
             'user_id' => $user1->id,
-            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Admin Global',
             'no_telp' => '08111111111',
             'peran' => 'Admin Global',
@@ -53,7 +51,6 @@ class UserSeeder extends Seeder
         ]);
         Karyawan::create([
             'user_id' => $user2->id,
-            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Admin Kolaborasi',
             'no_telp' => '08222222222',
             'peran' => 'Admin Kolaborasi',
@@ -71,7 +68,6 @@ class UserSeeder extends Seeder
         ]);
         $terapis1 = Karyawan::create([
             'user_id' => $user3->id,
-            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Terapis 1',
             'no_telp' => '08333333331',
             'peran' => 'Terapis',
@@ -105,7 +101,6 @@ class UserSeeder extends Seeder
         ]);
         $terapis2 = Karyawan::create([
             'user_id' => $user4->id,
-            'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
             'nama_karyawan' => 'Terapis 2',
             'no_telp' => '08333333332',
             'peran' => 'Terapis',
@@ -140,7 +135,6 @@ class UserSeeder extends Seeder
         ]);
         Pasien::create([
             'user_id' => $user5->id,
-            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nama_pasien' => 'Pasien 1',
             'no_telp' => '08444444441',
             'tanggal_lahir' => $pasien1TL,
@@ -155,7 +149,6 @@ class UserSeeder extends Seeder
         ]);
         Pasien::create([
             'user_id' => $user6->id,
-            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nama_pasien' => 'Pasien 2',
             'no_telp' => '08444444442',
             'tanggal_lahir' => $pasien2TL,
