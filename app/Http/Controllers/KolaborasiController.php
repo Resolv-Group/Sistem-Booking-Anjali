@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Kolaborasi;
 
+use Illuminate\Http\Request;
+
 class KolaborasiController extends Controller
 {
     //
@@ -20,5 +22,30 @@ class KolaborasiController extends Controller
         $kolaborasi = Kolaborasi::where('id', $id_kolaborasi)->first();
 
         return view('pages.cabang.menu', compact('kolaborasi'));
+    }
+
+    public function edit($id_kolaborasi)
+    {
+        $kolaborasi = Kolaborasi::findOrFail($id_kolaborasi);
+        return view('pages.cabang.edit', compact('kolaborasi'));
+    }
+
+    public function update(Request $request, $id_kolaborasi)
+    {
+        $kolaborasi = Kolaborasi::findOrFail($id_kolaborasi);
+        
+        $validated = $request->validate([
+            'nama_kolaborasi' => 'required|string|max:255',
+            'alamat_kolaborasi' => 'nullable|string',
+            'kota_kolaborasi' => 'nullable|string|max:100',
+            'no_telp_kolaborasi' => 'nullable|string|max:50',
+            'email_kolaborasi' => 'nullable|email|max:100',
+            'homecare_harga' => 'required|numeric|min:0',
+        ]);
+
+        $kolaborasi->update($validated);
+
+        return redirect()->route('admin-global.cabang.menu', $kolaborasi->id)
+            ->with('success', 'Pengaturan cabang berhasil diperbarui.');
     }
 }

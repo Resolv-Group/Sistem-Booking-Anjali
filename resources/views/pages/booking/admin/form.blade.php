@@ -30,7 +30,7 @@
         slots: {{ old('slots', 1) }},
         searchService: '',
         selectedDate: '{{ old('date', '') }}',
-        timeType: '{{ old('time_type', 'pagi') }}',
+        timeType: '{{ old('time_type', '') }}',
         selectedTime: '{{ old('time', '') }}',
         selectedSessionId: '{{ old('terapis_sesi_id', '') }}',
         selectedServices: {{ old('services') ? old('services') : '[]' }},
@@ -39,62 +39,58 @@
             return 'Rp' + amount.toLocaleString('id-ID');
         },
     
-get totalConsultationCost() {
-    let total = 0;
-    this.patientSlots.forEach(slot => {
-        (slot.services || []).forEach(id => {
-            let s = this.services.find(sv => sv.id === id);
-            if (s) total += s.price;
-        });
-    });
-    return total;
-},
+        get totalConsultationCost() {
+            let total = 0;
+            this.patientSlots.forEach(slot => {
+                (slot.services || []).forEach(id => {
+                    let s = this.services.find(sv => sv.id === id);
+                    if (s) total += s.price;
+                });
+            });
+            return total;
+        },
     
-get discountAmount() {
-    let total = 0;
-    this.patientSlots.forEach(slot => {
-        (slot.services || []).forEach(id => {
-            let s = this.services.find(sv => sv.id === id);
-            if (s) total += s.price * (s.discount / 100);
-        });
-    });
-    return total;
-},
-
+        get discountAmount() {
+            let total = 0;
+            this.patientSlots.forEach(slot => {
+                (slot.services || []).forEach(id => {
+                    let s = this.services.find(sv => sv.id === id);
+                    if (s) total += s.price * (s.discount / 100);
+                });
+            });
+            return total;
+        },
     
-
-get isHomecare() {
-    let allIds = new Set();
-    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
-    return [...allIds].some(id => {
-        let s = this.services.find(sv => sv.id === id);
-        return s && s.homecare_price > 0;
-    });
-},
     
-get biayaHomecare() {
-    let allIds = new Set();
-    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
-    let total = 0;
-    allIds.forEach(id => {
-        let s = this.services.find(sv => sv.id === id);
-        if (s && s.homecare_price) total += s.homecare_price;
-    });
-    return total;
-},
     
-get grandTotal() {
-    let anyServices = this.patientSlots.some(slot => slot.services && slot.services.length > 0);
-    if (!anyServices) return 0;
-    return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
-},
-
-get allSelectedServices() {
-    let ids = new Set();
-    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => ids.add(id)));
-    return [...ids];
-},
-
+        get isHomecare() {
+            let allIds = new Set();
+            this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
+            return [...allIds].some(id => {
+                let s = this.services.find(sv => sv.id === id);
+                return s && s.homecare_price > 0;
+            });
+        },
+    
+        get biayaHomecare() {
+            if (this.isHomecare && this.currentTherapist) {
+                return this.currentTherapist.homecare_price || 0;
+            }
+            return 0;
+        },
+    
+        get grandTotal() {
+            let anyServices = this.patientSlots.some(slot => slot.services && slot.services.length > 0);
+            if (!anyServices) return 0;
+            return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
+        },
+    
+        get allSelectedServices() {
+            let ids = new Set();
+            this.patientSlots.forEach(slot => (slot.services || []).forEach(id => ids.add(id)));
+            return [...ids];
+        },
+    
         init() {
             let dates = this.availableDates;
             if (dates.length > 0) {
@@ -127,17 +123,25 @@ get allSelectedServices() {
         selectTherapist(id) {
             this.selectedTherapistId = id;
             // Reset pilihan jadwal & layanan jika ganti terapis
-            this.selectedDate = '';
             this.selectedTime = '';
             this.selectedSessionId = null;
             this.selectedServices = [];
-            console.log(this.selectedTherapistId);
+    
+            let dates = this.availableDates;
+            if (dates.length > 0) {
+                this.selectedDate = dates[0];
+            } else {
+                this.selectedDate = '';
+            }
+            {{-- console.log(this.selectedTherapistId); --}}
         },
     
         // Logika availableDates sekarang mengambil dari 'this.sessions' (computed)
         get availableDates() {
             let today = new Date();
-            let todayStr = today.toISOString().split('T')[0];
+            let todayStr = today.getFullYear() + '-' +
+                String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                String(today.getDate()).padStart(2, '0');
             let currentHour = today.getHours();
             let currentMinute = today.getMinutes();
     
@@ -630,57 +634,60 @@ get allSelectedServices() {
 
                         {{-- Custom Layanan Spesifik Dropdown (Opsional) --}}
                         {{-- Layanan Pasien (Chip Selection) --}}
-<div class="space-y-3 pt-4 border-t border-slate-50">
-    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan Dipilih</label>
+                        <div class="space-y-3 pt-4 border-t border-slate-50">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan
+                                Dipilih</label>
 
-    {{-- Selected chips --}}
-    <div class="flex flex-wrap gap-2 min-h-[2rem]">
-        <template x-for="id in (slot.services || [])" :key="id">
-            <div class="flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-xl text-xs font-bold text-teal-700 transition-all">
-                <svg class="w-3 h-3 text-teal-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path d="M5 13l4 4L19 7"/>
-                </svg>
-                <span x-text="services.find(s => s.id === id)?.name || ''"></span>
-                <span class="text-teal-400 text-[10px] font-semibold" x-text="'· ' + formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
-                <button type="button"
-                    @click="slot.services = (slot.services || []).filter(x => x !== id)"
-                    class="ml-1 w-4 h-4 rounded-full bg-teal-200 hover:bg-rose-200 flex items-center justify-center text-teal-600 hover:text-rose-600 transition-colors">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-                        <path d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-        </template>
-        <div x-show="!slot.services || slot.services.length === 0"
-             class="text-xs text-slate-400 font-medium italic py-1">
-            Belum ada layanan dipilih
-        </div>
-    </div>
+                            {{-- Selected chips --}}
+                            <div class="flex flex-wrap gap-2 min-h-[2rem]">
+                                <template x-for="id in (slot.services || [])" :key="id">
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-xl text-xs font-bold text-teal-700 transition-all">
+                                        <svg class="w-3 h-3 text-teal-500 shrink-0" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="3">
+                                            <path d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span x-text="services.find(s => s.id === id)?.name || ''"></span>
+                                        <span class="text-teal-400 text-[10px] font-semibold"
+                                            x-text="'· ' + formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
+                                        <button type="button"
+                                            @click="slot.services = (slot.services || []).filter(x => x !== id)"
+                                            class="ml-1 w-4 h-4 rounded-full bg-teal-200 hover:bg-rose-200 flex items-center justify-center text-teal-600 hover:text-rose-600 transition-colors">
+                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" stroke-width="3">
+                                                <path d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                                <div x-show="!slot.services || slot.services.length === 0"
+                                    class="text-xs text-slate-400 font-medium italic py-1">
+                                    Belum ada layanan dipilih
+                                </div>
+                            </div>
 
-    {{-- Add layanan dropdown --}}
-    <div class="relative" x-data="{ openLayanan: false }">
-        <button type="button"
-            @click="openLayanan = !openLayanan"
-            @click.outside="openLayanan = false"
-            class="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:border-teal-300 hover:text-teal-500 transition-all">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Tambah Layanan
-        </button>
+                            {{-- Add layanan dropdown --}}
+                            <div class="relative" x-data="{ openLayanan: false }">
+                                <button type="button" @click="openLayanan = !openLayanan"
+                                    @click.outside="openLayanan = false"
+                                    class="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:border-teal-300 hover:text-teal-500 transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="3">
+                                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    Tambah Layanan
+                                </button>
 
-        <div x-show="openLayanan"
-             x-transition:enter="transition ease-out duration-150"
-             x-transition:enter-start="opacity-0 -translate-y-1"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-100"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="absolute z-50 left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
-            <div class="p-2 space-y-1 max-h-56 overflow-y-auto">
-                <template x-for="service in services" :key="service.id">
-                    <button type="button"
-                        @click="
+                                <div x-show="openLayanan" x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="absolute z-50 left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+                                    <div class="p-2 space-y-1 max-h-56 overflow-y-auto">
+                                        <template x-for="service in services" :key="service.id">
+                                            <button type="button"
+                                                @click="
                             if (!slot.services) slot.services = [];
                             if (slot.services.includes(service.id)) {
                                 slot.services = slot.services.filter(id => id !== service.id);
@@ -688,29 +695,31 @@ get allSelectedServices() {
                                 slot.services = [...slot.services, service.id];
                             }
                         "
-                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-colors group"
-                        :class="slot.services && slot.services.includes(service.id)
-                            ? 'bg-teal-50 text-teal-700'
-                            : 'text-slate-700 hover:bg-slate-50'">
-                        <div>
-                            <p class="text-xs font-bold" x-text="service.name"></p>
-                            <p class="text-[10px] text-slate-400 font-medium" x-text="formatRupiah(service.price)"></p>
+                                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-colors group"
+                                                :class="slot.services && slot.services.includes(service.id) ?
+                                                    'bg-teal-50 text-teal-700' :
+                                                    'text-slate-700 hover:bg-slate-50'">
+                                                <div>
+                                                    <p class="text-xs font-bold" x-text="service.name"></p>
+                                                    <p class="text-[10px] text-slate-400 font-medium"
+                                                        x-text="formatRupiah(service.price)"></p>
+                                                </div>
+                                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0"
+                                                    :class="slot.services && slot.services.includes(service.id) ?
+                                                        'border-teal-500 bg-teal-500' :
+                                                        'border-slate-200 group-hover:border-teal-300'">
+                                                    <svg x-show="slot.services && slot.services.includes(service.id)"
+                                                        class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor" stroke-width="3">
+                                                        <path d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0"
-                             :class="slot.services && slot.services.includes(service.id)
-                                 ? 'border-teal-500 bg-teal-500'
-                                 : 'border-slate-200 group-hover:border-teal-300'">
-                            <svg x-show="slot.services && slot.services.includes(service.id)"
-                                 class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path d="M5 13l4 4L19 7"/>
-                            </svg>
-                        </div>
-                    </button>
-                </template>
-            </div>
-        </div>
-    </div>
-</div>
                     </div>
                 </template>
 
@@ -750,24 +759,27 @@ get allSelectedServices() {
                     </div>
 
                     {{-- Detail Harga --}}
-<div x-show="patientSlots.some(slot => slot.services && slot.services.length > 0)"
-     class="border-t border-slate-100 pt-6 space-y-4 animate-in fade-in duration-300">
+                    <div x-show="patientSlots.some(slot => slot.services && slot.services.length > 0)"
+                        class="border-t border-slate-100 pt-6 space-y-4 animate-in fade-in duration-300">
                         <div class="text-xs font-bold text-teal-800 uppercase tracking-widest">Rincian Biaya</div>
 
                         {{-- List Layanan yang Dipilih --}}
-<div class="space-y-3">
-    <template x-for="(slot, i) in patientSlots" :key="i">
-        <div x-show="slot.services && slot.services.length > 0" class="space-y-1">
-            <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="'Pasien ' + (i+1)"></p>
-            <template x-for="id in (slot.services || [])" :key="id">
-                <div class="flex justify-between items-center text-sm font-medium text-slate-500 pl-2">
-                    <span x-text="services.find(s => s.id === id)?.name || 'Layanan'"></span>
-                    <span class="text-slate-800" x-text="formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
-                </div>
-            </template>
-        </div>
-    </template>
-</div>
+                        <div class="space-y-3">
+                            <template x-for="(slot, i) in patientSlots" :key="i">
+                                <div x-show="slot.services && slot.services.length > 0" class="space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="'Pasien ' + (i+1)">
+                                    </p>
+                                    <template x-for="id in (slot.services || [])" :key="id">
+                                        <div
+                                            class="flex justify-between items-center text-sm font-medium text-slate-500 pl-2">
+                                            <span x-text="services.find(s => s.id === id)?.name || 'Layanan'"></span>
+                                            <span class="text-slate-800"
+                                                x-text="formatRupiah(services.find(s => s.id === id)?.price || 0)"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
 
                         {{-- Multiplier Pasien jika pasien > 1 --}}
                         <div x-show="patientSlots.length > 1"

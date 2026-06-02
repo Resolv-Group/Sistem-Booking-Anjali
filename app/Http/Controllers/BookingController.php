@@ -58,18 +58,23 @@ class BookingController extends Controller
 
         // Map bookings for Alpine.js
         $mappedBookings = $bookings->map(function ($booking) {
-            $patients = $booking->bookingPatients;
-            $primaryPatient = $patients->first();
-            $extraPatients = $patients->slice(1);
+            $bookingPatients = $booking->bookingPatients;
+
+            // Group by unique patient to determine Personal vs Group
+            $uniquePatients = $bookingPatients->unique('pasien_id');
+            $uniquePatientCount = $uniquePatients->count();
+
+            $primaryPatient = $uniquePatients->first();
+            $extraPatients = $uniquePatients->slice(1);
 
             return [
                 'id_raw' => $booking->id,
                 'id' => 'BK-'.str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-                'nama' => $booking->patient->nama_pasien ?? 'Unknown',
+                'nama' => $primaryPatient->pasien->nama_pasien ?? ($booking->patient->nama_pasien ?? 'Unknown'),
                 'status' => $booking->bukti_transfer_booking_path ? 'paid' : 'unpaid',
-                'booking_status' => $booking->status, // pending, approved, rejected, completed, cancelled
-                'tipe' => $patients->count() > 1 ? 'Group' : 'Personal',
-                'extra' => max(0, $patients->count() - 1),
+                'booking_status' => strtolower($booking->status) == 'disetujui' ? 'approved' : strtolower($booking->status),
+                'tipe' => $uniquePatientCount > 1 ? 'Group' : 'Personal',
+                'extra' => max(0, $uniquePatientCount - 1),
                 'peserta' => $extraPatients->map(function ($bp) {
                     return $bp->pasien->nama_pasien ?? 'Pasien Tambahan';
                 })->values()->all(),
@@ -219,7 +224,7 @@ class BookingController extends Controller
     {
         $therapists = Karyawan::where('peran', 'Terapis')
             ->where('status_karyawan', 'Aktif')
-            ->with(['layanans', 'sessions' => function ($query) {
+            ->with(['kolaborasi', 'layanans', 'sessions' => function ($query) {
                 $query->where('status', 'terbuka')
                     ->where('tanggal_sesi', '>=', now()->toDateString());
             }])
@@ -229,6 +234,7 @@ class BookingController extends Controller
                     'id' => $t->id,
                     'name' => $t->nama_karyawan,
                     'image' => $t->fotoUrl() ?: 'https://i.pravatar.cc/150?u='.$t->id,
+                    'homecare_price' => (int) ($t->kolaborasi->homecare_harga ?? 0),
                     // Map layanan spesifik terapis ini
                     'services' => $t->layanans->map(function ($l) {
                         return [

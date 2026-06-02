@@ -16,12 +16,14 @@ class Kolaborasi extends Model
         'email_kolaborasi',
         'nilai_review',
         'deskripsi_review',
+        'homecare_harga',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'nilai_review' => 'decimal:2',
+        'homecare_harga' => 'decimal:2',
     ];
 
     public function karyawans()
