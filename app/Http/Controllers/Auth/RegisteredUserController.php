@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Pasien;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use App\Models\Pasien;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -39,11 +40,19 @@ class RegisteredUserController extends Controller
             'password' => ['nullable', Rules\Password::defaults()],
             'tanggal_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', 'in:L,P'],
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi',
+            'phone.required' => 'Nomor telepon wajib diisi',
+            'phone.unique' => 'Nomor telepon sudah terdaftar',
+            'password.required' => 'Kata sandi wajib diisi',
+            'tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib diisi',
+            'password.min' => 'Kata sandi minimal 8 karakter',
         ]);
 
-        $finalPassword = $request->password 
-            ? $request->password 
-            : \Carbon\Carbon::parse($request->tanggal_lahir)->format('d-m-Y');
+        $finalPassword = $request->password
+            ? $request->password
+            : Carbon::parse($request->tanggal_lahir)->format('d-m-Y');
 
         $user = User::create([
             'name' => $request->name,
@@ -53,7 +62,8 @@ class RegisteredUserController extends Controller
         ]);
 
         Pasien::create([
-            'pasien_public_id' => 'PSN-' . strtoupper(Str::random(8)),
+            'user_id' => $user->id,
+            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nik' => $request->nik,
             'nama_pasien' => $request->name,
             'tanggal_lahir' => $request->tanggal_lahir,

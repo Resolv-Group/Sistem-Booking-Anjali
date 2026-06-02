@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\PasswordOtp;
+use App\Models\User;
+use App\Services\WhatsappServices;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -16,7 +19,7 @@ class PasswordResetLinkController extends Controller
      */
     public function create(): View
     {
-        return view('auth.forgot-password');
+        return view('pages.auth.forgot-password');
     }
 
     /**
@@ -26,20 +29,39 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'phone' => ['required'],
-        ]);
+        // 1. Generate 6 digit OTP
+        $otp = rand(100000, 999999);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('phone')
+        // 2. Cek apakah nomor telepon terdaftar di database
+        $user = User::where('phone', $request->phone)->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'phone' => 'Nomor telepon tidak terdaftar.',
+            ]);
+        }
+
+        // 2. Simpan atau update OTP di database
+        PasswordOtp::updateOrInsert(
+            ['phone' => $request->phone],
+            [
+                'otp' => $otp,
+                'expires_at' => Carbon::now()->addMinutes(5),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('phone'))
-                        ->withErrors(['phone' => __($status)]);
+        // 3. Kirim OTP via Service WA
+        $sent = WhatsappServices::sendOTP($request->phone, $otp);
+
+        if (! $sent) {
+            throw ValidationException::withMessages([
+                'phone' => 'Gagal mengirimkan kode OTP. Silakan coba lagi nanti.',
+            ]);
+        }
+
+        // Alihkan user ke halaman verifikasi OTP dengan membawa data nomor telepon di session
+        return redirect()->route('password.verify-otp')->with('phone', $request->phone);
     }
 }
