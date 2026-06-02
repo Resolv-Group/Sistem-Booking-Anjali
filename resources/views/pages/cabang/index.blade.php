@@ -33,6 +33,11 @@
 
             @foreach ($cabangs as $b)
                 <a href="{{ route('admin-global.cabang.menu', ['id_kolaborasi' => $b->id]) }}"
+                    x-show="search === '' || 
+                    '{{ strtolower($b['nama_kolaborasi']) }}'.includes(search.toLowerCase()) || 
+                    '{{ strtolower($b['kota_kolaborasi']) }}'.includes(search.toLowerCase())"
+                    x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
                     class="block p-5 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-200 transition-all active:scale-[0.98] group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
@@ -61,6 +66,13 @@
                     </div>
                 </a>
             @endforeach
+            {{-- State Opsional: Tampilkan pesan ini jika tidak ada cabang yang cocok dengan pencarian --}}
+            <div x-cloak
+                x-show="search !== '' && !Array.from($el.parentNode.children).some(el => el.tagName === 'A' && el.style.display !== 'none')"
+                class="text-center py-12">
+                <p class="text-sm font-bold text-slate-400">Cabang atau kota tidak ditemukan.</p>
+            </div>
+
         </div>
 
         <div x-data="{ open: false }" class="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">

@@ -131,8 +131,8 @@ Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan', [KaryawanContr
 Route::get('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}/detail', [KaryawanController::class, 'detail'])->name('admin-global.karyawan.detail');
 Route::put('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'update'])->name('admin-global.karyawan.update');
 Route::delete('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'destroy'])->name('admin-global.karyawan.destroy');
-Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}/map', [KaryawanController::class, 'mapToCabang'])->name('admin-global.karyawan.map');
-
+Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/map-batch', [KaryawanController::class, 'mapToCabang'])
+    ->name('admin-global.karyawan.map');
 // login
 Route::view('/login', 'pages.auth.login')->name('view.auth.login');
 Route::post('login', [

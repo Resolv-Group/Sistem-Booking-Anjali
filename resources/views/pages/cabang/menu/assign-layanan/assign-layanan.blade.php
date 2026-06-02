@@ -39,23 +39,21 @@
             <div
                 class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
                 <div class="flex items-center gap-4">
-                    <button type="button" @click="window.history.back()"
+                    <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}"
                         class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path d="M15 19l-7-7 7-7" />
                         </svg>
-                    </button>
-                    <h1 class="text-sm font-bold text-teal-800 uppercase tracking-widest leading-none">Rumah Terapi Anjali
-                    </h1>
+                    </a>
+                    <h1 class="text-lg font-bold text-teal-800 uppercase tracking-widest leading-none">
+                        {{ $kolaborasi->nama_kolaborasi }}</h1>
                 </div>
-                <img src="https://i.pravatar.cc/100?u=admin"
-                    class="w-10 h-10 rounded-xl border-2 border-orange-100 p-0.5 object-cover">
             </div>
 
             <div class="px-6 pt-8 pb-32 space-y-8">
 
                 {{-- SUCCESS NOTIFICATION --}}
-                @if(session('success'))
+                @if (session('success'))
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 translate-y-0"

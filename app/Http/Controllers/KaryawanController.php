@@ -24,14 +24,16 @@ class KaryawanController extends Controller
 
         // Karyawan currently assigned to this branch
         $karyawans = Karyawan::where('kolaborasi_id', $id_kolaborasi)
+            ->where('peran', '!=', 'Admin Global')
             ->orderBy('nama_karyawan')
             ->get();
 
         // Karyawan assigned to other branches or unassigned
         $otherKaryawans = Karyawan::where(function ($q) use ($id_kolaborasi) {
-                $q->where('kolaborasi_id', '!=', $id_kolaborasi)
-                  ->orWhereNull('kolaborasi_id');
-            })
+            $q->where('kolaborasi_id', '!=', $id_kolaborasi)
+                ->where('peran', '!=', 'Admin Global')
+                ->orWhereNull('kolaborasi_id');
+        })
             ->orderBy('nama_karyawan')
             ->get();
 
@@ -95,7 +97,7 @@ class KaryawanController extends Controller
 
             Karyawan::create([
                 'user_id' => $user->id,
-                'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
+                'kode_karyawan' => 'KRY-'.strtoupper(Str::random(5)),
                 'nik' => $request->nik,
                 'nama_karyawan' => $request->nama_karyawan,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -123,8 +125,9 @@ class KaryawanController extends Controller
     public function detail($id_kolaborasi, $id_karyawan)
     {
         $kolaborasi = Kolaborasi::findOrFail($id_kolaborasi);
-        $karyawan = Karyawan::findOrFail($id_karyawan);
-        $branches = Kolaborasi::orderBy('nama_kolaborasi')->get();
+        $karyawan = Karyawan::where('kode_karyawan', $id_karyawan)->firstOrFail();
+        $branches = Kolaborasi::orderBy('nama_kolaborasi')
+            ->get(['id', 'nama_kolaborasi']);
 
         return view('pages.cabang.menu.karyawan.karyawan-detail', compact('kolaborasi', 'karyawan', 'branches'));
     }
@@ -139,9 +142,9 @@ class KaryawanController extends Controller
 
         $request->validate([
             'nama_karyawan' => 'required|string|max:255',
-            'nik' => 'nullable|string|size:16|unique:karyawans,nik,' . $karyawan->id,
-            'no_telp' => 'required|string|max:20|unique:karyawans,no_telp,' . $karyawan->id . '|unique:users,phone,' . $karyawan->user_id,
-            'email' => 'nullable|email|max:100|unique:karyawans,email,' . $karyawan->id,
+            'nik' => 'nullable|string|size:16|unique:karyawans,nik,'.$karyawan->id,
+            'no_telp' => 'required|string|max:20|unique:karyawans,no_telp,'.$karyawan->id.'|unique:users,phone,'.$karyawan->user_id,
+            'email' => 'nullable|email|max:100|unique:karyawans,email,'.$karyawan->id,
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'peran' => 'required|in:Terapis,Admin Kolaborasi,Admin Global',
@@ -230,17 +233,25 @@ class KaryawanController extends Controller
     /**
      * Map/Assign an employee to the specified branch.
      */
-    public function mapToCabang($id_kolaborasi, $id_karyawan)
+    public function mapToCabang(Request $request, $id_kolaborasi)
     {
         $kolaborasi = Kolaborasi::findOrFail($id_kolaborasi);
-        $karyawan = Karyawan::findOrFail($id_karyawan);
 
-        $karyawan->update([
-            'kolaborasi_id' => $kolaborasi->id
+        // Validasi input array
+        $request->validate([
+            'employee_ids' => 'required|array',
+            'employee_ids.*' => 'exists:karyawans,id',
         ]);
+
+        // Update kolaborasi_id untuk semua karyawan yang dipilih
+        $karyawan = Karyawan::whereIn('id', $request->employee_ids)->update([
+            'kolaborasi_id' => $kolaborasi->id,
+        ]);
+
+        $count = count($request->employee_ids);
 
         return redirect()
             ->route('admin-global.karyawan', $id_kolaborasi)
-            ->with('success', "{$karyawan->nama_karyawan} berhasil dipetakan ke {$kolaborasi->nama_kolaborasi}!");
+            ->with('success', "{$count} karyawan berhasil dipetakan ke {$kolaborasi->nama_kolaborasi}!");
     }
 }
