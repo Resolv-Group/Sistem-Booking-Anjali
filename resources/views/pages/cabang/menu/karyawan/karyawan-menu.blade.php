@@ -1,205 +1,232 @@
 @extends('components.layouts.app')
 
-@section('title', 'Kelola Karyawan Klinik')
+@section('title', 'Kelola Karyawan')
 
 @section('content')
+    <x-layouts.mobile-app class="bg-[#F4F7F9] min-h-screen pb-32" x-data="{
+        search: '',
+        activeTab: 'cabang',
+        selectedIds: [],
+    
+        toggleSelect(id) {
+            if (this.selectedIds.includes(id)) {
+                this.selectedIds = this.selectedIds.filter(i => i !== id);
+            } else {
+                this.selectedIds.push(id);
+            }
+        },
+    
+        get isAllSelected() {
+            return this.selectedIds.length > 0;
+        }
+    }">
 
-<x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{ 
-    search: '', 
-    activeTab: 'cabang' 
-}">
-
-    {{-- 1. TOPBAR --}}
-    <div class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}" class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
-            </a>
-            <h1 class="text-sm font-bold text-teal-800 uppercase tracking-widest leading-none">Rumah Terapi Anjali</h1>
-        </div>
-        <div class="w-10 h-10 rounded-xl border-2 border-orange-100 p-0.5 bg-white">
-            <img src="https://i.pravatar.cc/100?u=admin" class="w-full h-full rounded-lg object-cover">
-        </div>
-    </div>
-
-    <div class="px-6 pt-8 pb-32 space-y-6">
-
-        {{-- SUCCESS NOTIFICATION --}}
-        @if(session('success'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-                x-transition:leave="transition ease-in duration-300"
-                x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 -translate-y-4"
-                class="bg-teal-600 text-white rounded-2xl p-4 text-sm font-bold text-center shadow-lg">
-                {{ session('success') }}
+        {{-- 1. TOPBAR GLASSY --}}
+        <div
+            class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}"
+                    class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <h1 class="text-lg font-bold text-teal-800 uppercase tracking-widest leading-none">
+                    {{ $kolaborasi->nama_kolaborasi }}</h1>
             </div>
-        @endif
-
-        {{-- 2. TITLE SECTION --}}
-        <div class="space-y-3 px-1">
-            <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none">Kelola <br> Karyawan Klinik</h2>
-            <p class="text-xs font-bold text-teal-600 uppercase tracking-widest">{{ $kolaborasi->nama_kolaborasi }}</p>
-            <p class="text-sm font-medium text-slate-500 leading-relaxed">
-                Kelola daftar karyawan atau petakan karyawan dari cabang lain ke cabang ini.
-            </p>
         </div>
 
-        {{-- 3. TAB CONTROLS --}}
-        <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
-            <button 
-                @click="activeTab = 'cabang'" 
-                :class="activeTab === 'cabang' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
-                class="py-3 rounded-lg text-xs font-black uppercase tracking-wider transition-all"
-            >
-                Karyawan Cabang ({{ $karyawans->count() }})
-            </button>
-            <button 
-                @click="activeTab = 'mapping'" 
-                :class="activeTab === 'mapping' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500'"
-                class="py-3 rounded-lg text-xs font-black uppercase tracking-wider transition-all"
-            >
-                Petakan Karyawan ({{ $otherKaryawans->count() }})
-            </button>
-        </div>
+        <div class="px-6 pt-8 space-y-8">
 
-        {{-- 4. SEARCH BAR --}}
-        <div class="relative group">
-            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                <svg class="w-5 h-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-            <input type="text" x-model="search" placeholder="Cari nama karyawan..." 
-                class="w-full pl-12 pr-4 py-4 bg-slate-100 border-none rounded-xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none">
-        </div>
-
-        {{-- 5. CONTENT TABS --}}
-        
-        {{-- TAB 1: KARYAWAN CABANG --}}
-        <div x-show="activeTab === 'cabang'" class="space-y-4">
-            @forelse($karyawans as $item)
-            <a href="{{ route('admin-global.karyawan.detail', [$kolaborasi->id, $item->id]) }}" 
-                class="bg-white rounded-[1.8rem] p-5 shadow-sm border border-slate-100 flex items-center justify-between group active:scale-[0.98] transition-all"
-                x-show="'{{ strtolower($item->nama_karyawan) }}'.includes(search.toLowerCase()) || search === ''"
-            >
-                <div class="flex items-center gap-4">
-                    {{-- Avatar --}}
-                    <div class="w-14 h-14 rounded-2xl bg-teal-50 border border-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                        @if($item->foto_path)
-                            <img src="{{ Storage::url($item->foto_path) }}" class="w-full h-full object-cover">
-                        @else
-                            <span class="text-teal-700 font-black text-lg">{{ substr($item->nama_karyawan, 0, 2) }}</span>
-                        @endif
-                    </div>
-
-                    {{-- Text Info --}}
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h4 class="text-sm font-black text-slate-800 leading-tight">{{ $item->nama_karyawan }}</h4>
-                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[8px] font-black uppercase tracking-widest rounded">
-                                {{ $item->peran }}
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-slate-400">{{ $item->no_telp }}</span>
-                            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                            @if($item->status_karyawan === 'Aktif')
-                                <span class="text-[9px] font-black text-teal-600 uppercase tracking-wider">Aktif</span>
-                            @else
-                                <span class="text-[9px] font-black text-red-500 uppercase tracking-wider">{{ $item->status_karyawan }}</span>
-                            @endif
-                        </div>
-                    </div>
+            {{-- 2. HEADER SECTION --}}
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-slate-800 leading-tight">Kelola Karyawan</h2>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Pilih Cabang Terlebih Dahulu</p>
                 </div>
+            </div>
 
-                {{-- Action Arrow --}}
-                <svg class="w-4 h-4 text-slate-300 group-hover:text-teal-600 transition-all group-hover:translate-x-1 shrink-0"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                    <path d="M9 5l7 7-7 7" />
-                </svg>
-            </a>
-            @empty
-            <div class="text-center py-16 space-y-3 bg-white rounded-3xl border border-slate-100">
-                <div class="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300">
-                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857" />
+            {{-- 3. SPLIT SELECTION CARDS (Replacement for Tabs) --}}
+            <div class="grid grid-cols-2 gap-3">
+                <button @click="activeTab = 'cabang'"
+                    :class="activeTab === 'cabang' ? 'bg-teal-800 text-white shadow-teal-900/20' :
+                        'bg-white text-slate-400 border-white/50'"
+                    class="p-4 rounded-[1.5rem] border text-left transition-all duration-300 shadow-xl relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Internal</p>
+                        <h3 class="text-sm font-black tracking-tight">Karyawan
+                            {{ $kolaborasi->nama_kolaborasi ?? 'Kolaborasi' }}</h3>
+                        <p class="text-[10px] mt-2 font-bold">{{ $karyawans->count() }} Orang</p>
+                    </div>
+                    <svg class="absolute -right-2 -bottom-2 w-16 h-16 opacity-10 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </button>
+
+                <button @click="activeTab = 'mapping'"
+                    :class="activeTab === 'mapping' ? 'bg-teal-800 text-white shadow-teal-900/20' :
+                        'bg-white text-slate-400 border-white/50'"
+                    class="p-4 rounded-[1.5rem] border text-left transition-all duration-300 shadow-xl relative overflow-hidden group">
+                    <div class="relative z-10">
+                        <p class="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60">Mapping</p>
+                        <h3 class="text-sm font-black tracking-tight">Petakan Staff</h3>
+                        <p class="text-[10px] mt-2 font-bold">{{ $otherKaryawans->count() }} Tersedia</p>
+                    </div>
+                    <svg class="absolute -right-2 -bottom-2 w-16 h-16 opacity-10 group-hover:scale-110 transition-transform"
+                        fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 3L5 6.99h3V14h2V6.99h3L9 3zm7 14.01V10h-2v7.01h-3L15 21l4-3.99h-3z" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- 4. SEARCH BAR (Glassy) --}}
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-slate-400 group-focus-within:text-teal-500 transition-colors" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <p class="text-sm font-bold text-slate-400">Belum ada karyawan di cabang ini.</p>
-                <p class="text-xs text-slate-300">Daftarkan karyawan baru menggunakan tombol di bawah.</p>
+                <input type="text" x-model="search" placeholder="Cari spesialis..."
+                    class="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl text-xs font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm">
             </div>
-            @endforelse
-        </div>
 
-        {{-- TAB 2: PETAKAN KARYAWAN --}}
-        <div x-show="activeTab === 'mapping'" class="space-y-4" x-cloak>
-            <p class="text-xs text-slate-400 font-bold px-1 uppercase tracking-wider">Karyawan dari cabang lain / tidak ber-cabang:</p>
-            
-            @forelse($otherKaryawans as $item)
-            <div 
-                class="bg-white rounded-[1.8rem] p-5 shadow-sm border border-slate-100 flex items-center justify-between group transition-all"
-                x-show="'{{ strtolower($item->nama_karyawan) }}'.includes(search.toLowerCase()) || search === ''"
-            >
-                <div class="flex items-center gap-4">
-                    {{-- Avatar --}}
-                    <div class="w-14 h-14 rounded-2xl bg-orange-50 border border-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                        @if($item->foto_path)
-                            <img src="{{ Storage::url($item->foto_path) }}" class="w-full h-full object-cover">
-                        @else
-                            <span class="text-orange-700 font-black text-lg">{{ substr($item->nama_karyawan, 0, 2) }}</span>
-                        @endif
-                    </div>
-
-                    {{-- Text Info --}}
-                    <div class="space-y-1">
-                        <h4 class="text-sm font-black text-slate-800 leading-tight">{{ $item->nama_karyawan }}</h4>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded">
-                                {{ $item->peran }}
-                            </span>
-                            <span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-bold rounded">
-                                {{ $item->kolaborasi ? $item->kolaborasi->nama_kolaborasi : 'Belum Dipetakan' }}
-                            </span>
+            {{-- TAB 1: KARYAWAN CABANG --}}
+            <div x-show="activeTab === 'cabang'" class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                @forelse($karyawans as $item)
+                    <a href="{{ route('admin-global.karyawan.detail', [$kolaborasi->id, $item->kode_karyawan]) }}"
+                        class="bg-white/80 backdrop-blur-md rounded-[2rem] p-4 border border-white shadow-sm flex items-center justify-between group active:scale-[0.98] transition-all"
+                        x-show="'{{ strtolower($item->nama_karyawan) }}'.includes(search.toLowerCase()) || search === ''">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-14 h-14 rounded-2xl bg-slate-100 overflow-hidden shrink-0 border border-slate-50 shadow-inner flex items-center justify-center">
+                                @if ($item->foto_path)
+                                    <img src="{{ Storage::url($item->foto_path) }}" class="w-full h-full object-cover">
+                                @else
+                                    <span
+                                        class="text-slate-400 font-black text-sm">{{ substr($item->nama_karyawan, 0, 2) }}</span>
+                                @endif
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-black text-slate-800 leading-tight">{{ $item->nama_karyawan }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="px-2 py-0.5 bg-teal-50 text-teal-700 text-[8px] font-black uppercase rounded">{{ $item->peran }}</span>
+                                    <span class="text-[9px] font-bold text-slate-400">{{ $item->no_telp }}</span>
+                                </div>
+                            </div>
                         </div>
+                        <div
+                            class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </a>
+                @empty
+                    {{-- Empty State --}}
+                    <div class="text-center py-12">
+                        <div class="w-24 h-24 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <span class="text-slate-300 text-5xl">👥</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-700 mb-2">Tidak Ada Karyawan</h3>
+                        <p class="text-sm text-slate-400 max-w-xs mx-auto">Karyawan yang terhubung dengan cabang ini
+                            akan muncul di sini setelah ditambahkan.</p>
                     </div>
+                @endforelse
+            </div>
+
+            {{-- TAB 2: PETAKAN KARYAWAN (Multi-select) --}}
+            <div x-show="activeTab === 'mapping'" class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                x-cloak>
+                <div class="flex justify-between items-center px-1">
+                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Karyawan Tersedia</p>
+                    <button x-show="selectedIds.length > 0" @click="selectedIds = []"
+                        class="text-[10px] font-black text-rose-500 uppercase italic">Batalkan Semua</button>
                 </div>
 
-                {{-- Action Map Button --}}
-                <form action="{{ route('admin-global.karyawan.map', [$kolaborasi->id, $item->id]) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-[10px] font-black uppercase tracking-widest rounded-xl border border-teal-100 active:scale-95 transition-all">
-                        Petakan
-                    </button>
-                </form>
+                @forelse($otherKaryawans as $item)
+                    <div @click="toggleSelect({{ $item->id }})"
+                        :class="selectedIds.includes({{ $item->id }}) ? 'border-teal-500 bg-teal-50/50' :
+                            'bg-white/80 border-white'"
+                        class="p-4 rounded-[2rem] border shadow-sm flex items-center justify-between transition-all cursor-pointer select-none active:scale-[0.98]"
+                        x-show="'{{ strtolower($item->nama_karyawan) }}'.includes(search.toLowerCase()) || search === ''">
+
+                        <div class="flex items-center gap-4">
+                            {{-- Checkbox Visual --}}
+                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
+                                :class="selectedIds.includes({{ $item->id }}) ? 'bg-teal-600 border-teal-600' :
+                                    'border-slate-200 bg-white'">
+                                <svg x-show="selectedIds.includes({{ $item->id }})" class="w-3 h-3 text-white"
+                                    fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24">
+                                    <path d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+
+                            <div
+                                class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                @if ($item->foto_path)
+                                    <img src="{{ Storage::url($item->foto_path) }}" class="w-full h-full object-cover">
+                                @else
+                                    <span
+                                        class="text-orange-700 font-black text-xs">{{ substr($item->nama_karyawan, 0, 2) }}</span>
+                                @endif
+                            </div>
+
+                            <div class="space-y-0.5">
+                                <h4 class="text-sm font-black text-slate-800 leading-tight">{{ $item->nama_karyawan }}</h4>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                    {{ $item->kolaborasi ? $item->kolaborasi->nama_kolaborasi : 'Umum' }}</p>
+                            </div>
+                        </div>
+
+                        <span
+                            class="px-2 py-1 bg-slate-100 text-slate-600 text-[8px] font-black uppercase rounded">{{ $item->peran }}</span>
+                    </div>
+                @empty
+                    {{-- Empty State --}}
+                @endforelse
             </div>
-            @empty
-            <div class="text-center py-16 space-y-3 bg-white rounded-3xl border border-slate-100">
-                <div class="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300">
-                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M12 4v16m8-8H4" />
-                    </svg>
-                </div>
-                <p class="text-sm font-bold text-slate-400">Tidak ada karyawan cabang lain yang tersedia.</p>
-            </div>
-            @endforelse
         </div>
 
-    </div>
+        {{-- FLOATING ACTIONS --}}
 
-    {{-- FLOATING ACTION BUTTON (Hanya aktif untuk Tab Karyawan Cabang) --}}
-    <div x-show="activeTab === 'cabang'" class="fixed bottom-24 right-6 z-50">
-        <a href="{{ route('admin-global.karyawan.create', $kolaborasi->id) }}" 
-           class="w-14 h-14 bg-teal-900 text-white rounded-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-300"
-        >
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-        </a>
-    </div>
+        {{-- FAB for Add New (Only in Cabang Tab) --}}
+        <div x-show="activeTab === 'cabang' && !isAllSelected"
+            class="fixed bottom-28 right-6 z-40 animate-in zoom-in duration-300">
+            <a href="{{ route('admin-global.karyawan.create', $kolaborasi->id) }}"
+                class="w-14 h-14 bg-teal-950 text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-teal-900/40 active:scale-90 transition-all">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4" />
+                </svg>
+            </a>
+        </div>
 
-    {{-- 6. BOTTOM NAVBAR --}}
-    <x-navigation.admin-global-navbar active="cabang" />
+        {{-- Floating Action Bar for Multi-Mapping (Only when items selected) --}}
+        <div x-show="activeTab === 'mapping' && isAllSelected" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
+            class="fixed bottom-28 left-6 right-6 z-50">
+            <form action="{{ route('admin-global.karyawan.map', $kolaborasi->id) }}" method="POST">
+                @csrf
+                <template x-for="id in selectedIds" :key="id">
+                    <input type="hidden" name="employee_ids[]" :value="id">
+                </template>
 
-</x-layouts.mobile-app>
+                <button type="submit"
+                    class="w-full py-4 bg-teal-800 text-white rounded-2xl shadow-2xl shadow-teal-900/40 flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    <span class="text-sm font-black uppercase tracking-[0.1em]">Petakan <span
+                            x-text="selectedIds.length"></span> Karyawan</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </button>
+            </form>
+        </div>
 
+        <x-navigation.admin-global-navbar active="cabang" />
+    </x-layouts.mobile-app>
 @endsection

@@ -4,192 +4,217 @@
 
 @section('content')
 
-<x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{ 
-    namaKaryawan: '',
-    roleKaryawan: 'Terapis',
-    statusKaryawan: 'Aktif',
-    jenisKelamin: 'L',
-    photoPreview: null
-}">
+    <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{
+        namaKaryawan: '',
+        roleKaryawan: 'Terapis',
+        statusKaryawan: 'Aktif',
+        jenisKelamin: 'L',
+        photoPreview: null
+    }">
 
-    {{-- 1. TOPBAR --}}
-    <div class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
-        <div class="flex items-center gap-4">
-            <a href="{{ route('admin-global.karyawan', $kolaborasi->id) }}" class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
-            </a>
-            <h1 class="text-sm font-bold text-teal-800 uppercase tracking-widest leading-none">Rumah Terapi Anjali</h1>
-        </div>
-        <img src="https://i.pravatar.cc/100?u=admin" class="w-10 h-10 rounded-xl border-2 border-orange-100 p-0.5 object-cover">
-    </div>
-
-    <div class="px-6 pt-8 pb-32 space-y-8">
-
-        {{-- 2. TITLE SECTION --}}
-        <div class="space-y-3 px-1">
-            <h2 class="text-3xl font-black text-slate-800 tracking-tight">Tambah Karyawan</h2>
-            <p class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">{{ $kolaborasi->nama_kolaborasi }}</p>
-            <p class="text-sm font-medium text-slate-500 leading-relaxed">
-                Lengkapi informasi karyawan di bawah ini. Akun login user akan dibuat secara otomatis.
-            </p>
-        </div>
-
-        {{-- Validation Errors --}}
-        @if($errors->any())
-            <div class="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
-                @foreach($errors->all() as $error)
-                    <p class="text-xs font-bold text-red-600">• {{ $error }}</p>
-                @endforeach
+        {{-- 1. TOPBAR --}}
+        <div
+            class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('admin-global.karyawan', $kolaborasi->id) }}"
+                    class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <h1 class="text-lg font-bold text-teal-800 uppercase tracking-widest leading-none">
+                    {{ $kolaborasi->nama_kolaborasi }}</h1>
             </div>
-        @endif
+        </div>
 
-        {{-- 3. FORM --}}
-        <form action="{{ route('admin-global.karyawan.store', $kolaborasi->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-            @csrf
+        <div class="px-6 pt-8 pb-32 space-y-8">
 
-            {{-- Card 1: Identitas Utama --}}
-            <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-                
-                {{-- Foto Profil --}}
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Foto Profil</label>
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                            <template x-if="photoPreview">
-                                <img :src="photoPreview" class="w-full h-full object-cover">
-                            </template>
-                            <template x-if="!photoPreview">
-                                <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                            </template>
-                        </div>
-                        <input type="file" name="foto" accept="image/*" class="hidden" id="foto-input" 
-                               @change="const file = $event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { photoPreview = e.target.result; }; reader.readAsDataURL(file); }">
-                        <button type="button" onclick="document.getElementById('foto-input').click()" 
+            {{-- 2. TITLE SECTION --}}
+            <div class="space-y-3 px-1">
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Tambah Karyawan</h2>
+                <p class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">{{ $kolaborasi->nama_kolaborasi }}
+                </p>
+                <p class="text-sm font-medium text-slate-500 leading-relaxed">
+                    Lengkapi informasi karyawan di bawah ini. Akun login user akan dibuat secara otomatis.
+                </p>
+            </div>
+
+            {{-- Validation Errors --}}
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <p class="text-xs font-bold text-red-600">• {{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
+            {{-- 3. FORM --}}
+            <form action="{{ route('admin-global.karyawan.store', $kolaborasi->id) }}" method="POST"
+                enctype="multipart/form-data" class="space-y-6">
+                @csrf
+
+                {{-- Card 1: Identitas Utama --}}
+                <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+
+                    {{-- Foto Profil --}}
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Foto
+                            Profil</label>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                                <template x-if="photoPreview">
+                                    <img :src="photoPreview" class="w-full h-full object-cover">
+                                </template>
+                                <template x-if="!photoPreview">
+                                    <svg class="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </template>
+                            </div>
+                            <input type="file" name="foto" accept="image/*" class="hidden" id="foto-input"
+                                @change="const file = $event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { photoPreview = e.target.result; }; reader.readAsDataURL(file); }">
+                            <button type="button" onclick="document.getElementById('foto-input').click()"
                                 class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black uppercase tracking-wider rounded-xl border border-slate-200 transition active:scale-95">
-                            Pilih Foto
-                        </button>
+                                Pilih Foto
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Nama --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Nama
+                            Lengkap</label>
+                        <input type="text" name="nama_karyawan" x-model="namaKaryawan" value="{{ old('nama_karyawan') }}"
+                            required
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
+                            placeholder="Contoh: Budi Santoso">
+                    </div>
+
+                    {{-- NIK --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">NIK (16
+                            Digit)</label>
+                        <input type="text" name="nik" value="{{ old('nik') }}" maxlength="16" minlength="16"
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
+                            placeholder="Masukkan 16 digit NIK">
                     </div>
                 </div>
 
-                {{-- Nama --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Nama Lengkap</label>
-                    <input type="text" name="nama_karyawan" x-model="namaKaryawan" value="{{ old('nama_karyawan') }}" required
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
-                        placeholder="Contoh: Budi Santoso">
-                </div>
+                {{-- Card 2: Kontak & Login Info --}}
+                <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
 
-                {{-- NIK --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">NIK (16 Digit)</label>
-                    <input type="text" name="nik" value="{{ old('nik') }}" maxlength="16" minlength="16"
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
-                        placeholder="Masukkan 16 digit NIK">
-                </div>
-            </div>
-
-            {{-- Card 2: Kontak & Login Info --}}
-            <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-                
-                {{-- No Telepon (Login ID) --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">No. Telepon (Digunakan untuk Login)</label>
-                    <input type="tel" name="no_telp" value="{{ old('no_telp') }}" required
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
-                        placeholder="Contoh: 08123456789">
-                </div>
-
-                {{-- Email --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Email (Opsional)</label>
-                    <input type="email" name="email" value="{{ old('email') }}"
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
-                        placeholder="Contoh: budi@gmail.com">
-                </div>
-            </div>
-
-            {{-- Card 3: Biodata --}}
-            <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-                
-                {{-- Tanggal Lahir & Gender --}}
-                <div class="grid grid-cols-2 gap-4">
+                    {{-- No Telepon (Login ID) --}}
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tgl Lahir</label>
-                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required
-                            class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
-                        <p class="text-[8px] font-bold text-slate-400 leading-tight">Digunakan sebagai password awal (Format: DD-MM-YYYY)</p>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">No. Telepon
+                            (Digunakan untuk Login)</label>
+                        <input type="tel" name="no_telp" value="{{ old('no_telp') }}" required
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
+                            placeholder="Contoh: 08123456789">
                     </div>
-                    
+
+                    {{-- Email --}}
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis Kelamin</label>
-                        <select name="jenis_kelamin" x-model="jenisKelamin" required
-                            class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
-                            <option value="L">Laki-laki</option>
-                            <option value="P">Perempuan</option>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Email
+                            (Opsional)</label>
+                        <input type="email" name="email" value="{{ old('email') }}"
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner"
+                            placeholder="Contoh: budi@gmail.com">
+                    </div>
+                </div>
+
+                {{-- Card 3: Biodata --}}
+                <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+
+                    {{-- Tanggal Lahir & Gender --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tgl
+                                Lahir</label>
+                            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required
+                                class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
+                            <p class="text-[8px] font-bold text-slate-400 leading-tight">Digunakan sebagai password awal
+                                (Format: DD-MM-YYYY)</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis
+                                Kelamin</label>
+                            <select name="jenis_kelamin" x-model="jenisKelamin" required
+                                class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Alamat --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Alamat
+                            Rumah</label>
+                        <textarea name="alamat" rows="4"
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium text-slate-600 leading-relaxed focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner resize-none"
+                            placeholder="Alamat lengkap...">{{ old('alamat') }}</textarea>
+                    </div>
+                </div>
+
+                {{-- Card 4: Peran & Status Kerja --}}
+                <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+
+                    {{-- Peran --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Peran
+                            Kerja</label>
+                        <select name="peran" x-model="roleKaryawan" required
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
+                            <option value="Terapis">Terapis</option>
+                            <option value="Admin Kolaborasi">Admin Kolaborasi</option>
+                            <option value="Admin Global">Admin Global</option>
+                        </select>
+                    </div>
+
+                    {{-- Tanggal Bergabung --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tanggal
+                            Bergabung</label>
+                        <input type="date" name="tanggal_bergabung"
+                            value="{{ old('tanggal_bergabung', date('Y-m-d')) }}"
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
+                    </div>
+
+                    {{-- Status --}}
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Status
+                            Karyawan</label>
+                        <select name="status_karyawan" x-model="statusKaryawan" required
+                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
+                            <option value="Aktif">Aktif</option>
+                            <option value="Tidak Aktif">Tidak Aktif</option>
+                            <option value="Resign">Resign</option>
+                            <option value="PHK">PHK</option>
                         </select>
                     </div>
                 </div>
 
-                {{-- Alamat --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Alamat Rumah</label>
-                    <textarea name="alamat" rows="4" 
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium text-slate-600 leading-relaxed focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner resize-none"
-                        placeholder="Alamat lengkap...">{{ old('alamat') }}</textarea>
+                {{-- 4. FOOTER ACTIONS --}}
+                <div class="space-y-3 pt-4">
+                    <button type="submit"
+                        class="w-full py-5 bg-teal-800 text-white rounded-[1.5rem] text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
+                        Daftarkan Karyawan
+                    </button>
+                    <a href="{{ route('admin-global.karyawan', $kolaborasi->id) }}"
+                        class="block w-full py-4 bg-slate-200/50 text-slate-500 rounded-[1.5rem] text-sm font-black uppercase tracking-[0.2em] active:scale-95 transition-all text-center">
+                        Batal
+                    </a>
                 </div>
-            </div>
+            </form>
+        </div>
 
-            {{-- Card 4: Peran & Status Kerja --}}
-            <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-                
-                {{-- Peran --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Peran Kerja</label>
-                    <select name="peran" x-model="roleKaryawan" required
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
-                        <option value="Terapis">Terapis</option>
-                        <option value="Admin Kolaborasi">Admin Kolaborasi</option>
-                        <option value="Admin Global">Admin Global</option>
-                    </select>
-                </div>
+        {{-- BOTTOM NAVBAR --}}
+        <x-navigation.admin-global-navbar active="cabang" />
 
-                {{-- Tanggal Bergabung --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tanggal Bergabung</label>
-                    <input type="date" name="tanggal_bergabung" value="{{ old('tanggal_bergabung', date('Y-m-d')) }}"
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
-                </div>
-
-                {{-- Status --}}
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Status Karyawan</label>
-                    <select name="status_karyawan" x-model="statusKaryawan" required
-                        class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
-                        <option value="Aktif">Aktif</option>
-                        <option value="Tidak Aktif">Tidak Aktif</option>
-                        <option value="Resign">Resign</option>
-                        <option value="PHK">PHK</option>
-                    </select>
-                </div>
-            </div>
-
-            {{-- 4. FOOTER ACTIONS --}}
-            <div class="space-y-3 pt-4">
-                <button type="submit" class="w-full py-5 bg-teal-800 text-white rounded-[1.5rem] text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all">
-                    Daftarkan Karyawan
-                </button>
-                <a href="{{ route('admin-global.karyawan', $kolaborasi->id) }}" class="block w-full py-4 bg-slate-200/50 text-slate-500 rounded-[1.5rem] text-sm font-black uppercase tracking-[0.2em] active:scale-95 transition-all text-center">
-                    Batal
-                </a>
-            </div>
-        </form>
-    </div>
-
-    {{-- BOTTOM NAVBAR --}}
-    <x-navigation.admin-global-navbar active="cabang" />
-
-</x-layouts.mobile-app>
+    </x-layouts.mobile-app>
 
 @endsection
