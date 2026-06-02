@@ -228,15 +228,20 @@
             return s ? s.discount : 0;
         },
     
-        get biayaHomecare() {
+        get isHomecare() {
             let allIds = new Set();
             this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
-            let total = 0;
-            allIds.forEach(id => {
+            return [...allIds].some(id => {
                 let s = this.services.find(sv => sv.id === id);
-                if (s && s.homecare_price) total += s.homecare_price;
+                return s && s.homecare_price > 0;
             });
-            return total;
+        },
+
+        get biayaHomecare() {
+            if (this.isHomecare) {
+                return {{ (int) ($therapist->kolaborasi->homecare_harga ?? 0) }};
+            }
+            return 0;
         },
     
         get grandTotal() {

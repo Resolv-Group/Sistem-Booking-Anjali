@@ -73,14 +73,10 @@ get isHomecare() {
 },
     
 get biayaHomecare() {
-    let allIds = new Set();
-    this.patientSlots.forEach(slot => (slot.services || []).forEach(id => allIds.add(id)));
-    let total = 0;
-    allIds.forEach(id => {
-        let s = this.services.find(sv => sv.id === id);
-        if (s && s.homecare_price) total += s.homecare_price;
-    });
-    return total;
+    if (this.isHomecare && this.currentTherapist) {
+        return this.currentTherapist.homecare_price || 0;
+    }
+    return 0;
 },
     
 get grandTotal() {

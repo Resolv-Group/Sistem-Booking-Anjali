@@ -64,9 +64,18 @@
     items: @json($mappedBookings),
 
     get filteredItems() {
-        if (this.activeTab === "history") return this.items.filter(i => i.booking_status === "completed");
-        if (this.activeTab === "cancelled") return this.items.filter(i => i.booking_status === "cancelled" || i.booking_status === "rejected");
-        return this.items.filter(i => i.booking_status === this.activeTab);
+        let tab = this.activeTab.toLowerCase();
+
+        return this.items.filter(i => {
+            let status = i.booking_status.toLowerCase();
+
+            if (tab === "history") return status === "completed";
+            if (tab === "cancelled") return status === "cancelled" || status === "rejected";
+
+            if (tab === "approved") return status === "approved" || status === "disetujui";
+
+            return status === tab;
+        });
     },
 
     get finished() { return this.limit >= this.filteredItems.length; },
@@ -161,26 +170,60 @@
                 class="space-y-6">
 
                 {{-- TAB NAVIGATION (Segmented Control) --}}
-                <div class="px-1">
-                    <div class="flex p-1.5 bg-slate-200/50 backdrop-blur-sm rounded-xl border border-slate-200/50">
-                        <button @click="activeTab = `pending`; resetLimit()"
-                            :class="activeTab === `pending` ? `bg-white text-orange-600 shadow-sm` : `text-slate-500`"
-                            class="flex-1 py-3 text-[12px] font-semibold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2">
-                            Menunggu
-                            <span class="px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-md text-[9px]"
-                                x-text="items.filter(i => i.booking_status === `pending`).length"></span>
-                        </button>
-                        <button @click="activeTab = `approved`; resetLimit()"
-                            :class="activeTab === `approved` ? `bg-white text-emerald-600 shadow-sm` : `text-slate-500`"
-                            class="flex-1 py-3 text-[12px] font-semibold uppercase tracking-widest rounded-xl transition-all">
-                            Disetujui
-                        </button>
-                        <button @click="activeTab = `cancelled`; resetLimit()"
-                            :class="activeTab === `cancelled` ? `bg-white text-rose-600 shadow-sm` : `text-slate-500`"
-                            class="flex-1 py-3 text-[12px] font-semibold uppercase tracking-widest rounded-xl transition-all">
-                            Batal
-                        </button>
-                    </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <!-- Card Menunggu -->
+                    <button @click="activeTab = 'pending'; resetLimit()"
+                        :class="activeTab === 'pending' ?
+                            'bg-orange-500 text-white shadow-lg shadow-orange-200 ring-2 ring-orange-200' :
+                            'bg-white text-slate-400 border-slate-100'"
+                        class="p-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group active:scale-95">
+                        <p class="text-[9px] font-black uppercase tracking-wider opacity-80">Pending</p>
+                        <h3 class="text-xl font-black mt-1"
+                            x-text="items.filter(i => i.booking_status === 'pending').length"></h3>
+                        <div class="absolute -right-1 -bottom-1 opacity-20">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z" />
+                                <path d="M13 7h-2v6h6v-2h-4z" />
+                            </svg>
+                        </div>
+                    </button>
+
+                    <!-- Card Disetujui -->
+                    <button @click="activeTab = 'approved'; resetLimit()"
+                        :class="activeTab === 'approved' ?
+                            'bg-teal-700 text-white shadow-lg shadow-teal-200 ring-2 ring-teal-100' :
+                            'bg-white text-slate-400 border-slate-100'"
+                        class="p-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group active:scale-95">
+                        <p class="text-[9px] font-black uppercase tracking-wider opacity-80">Disetejui</p>
+                        <h3 class="text-xl font-black mt-1"
+                            x-text="items.filter(i => i.booking_status === 'approved' || i.booking_status === 'disetujui').length">
+                        </h3>
+                        <div class="absolute -right-1 -bottom-1 opacity-20">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.99 15.174l-3.462-3.463 1.415-1.414 2.047 2.047 4.547-4.548 1.414 1.414-5.961 5.964z" />
+                            </svg>
+                        </div>
+                    </button>
+
+                    <!-- Card Batal -->
+                    <button @click="activeTab = 'cancelled'; resetLimit()"
+                        :class="activeTab === 'cancelled' ?
+                            'bg-rose-600 text-white shadow-lg shadow-rose-200 ring-2 ring-rose-100' :
+                            'bg-white text-slate-400 border-slate-100'"
+                        class="p-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group active:scale-95">
+                        <p class="text-[9px] font-black uppercase tracking-wider opacity-80">Cancel/Ditolak</p>
+                        <h3 class="text-xl font-black mt-1"
+                            x-text="items.filter(i => i.booking_status === 'cancelled' || i.booking_status === 'rejected').length">
+                        </h3>
+                        <div class="absolute -right-1 -bottom-1 opacity-20">
+                            <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm4.207 12.793l-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793z" />
+                            </svg>
+                        </div>
+                    </button>
                 </div>
 
                 <div class="space-y-6">
@@ -302,8 +345,8 @@
                                                 </button>
                                             </form>
                                             <form :id="'form-reject-' + item.id_raw"
-                                                :action="'/admin-cabang/booking/' + item.id_raw + '/reject'" method="POST"
-                                                class="flex-1">
+                                                :action="'/admin-cabang/booking/' + item.id_raw + '/reject'"
+                                                method="POST" class="flex-1">
                                                 @csrf
                                                 <input type="hidden" name="alasan_status" value="">
                                                 <button type="button" @click="handleReject(item.id_raw)"
