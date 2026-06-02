@@ -33,17 +33,13 @@ class AuthenticatedSessionController extends Controller
 
         return match ($user->role) {
 
-            UserRole::ADMIN_GLOBAL
-                => redirect('/dashboard/admin-global'),
+            UserRole::ADMIN_GLOBAL => redirect('/dashboard/admin-global'),
 
-            UserRole::ADMIN_KOLABORASI
-                => redirect('/dashboard/admin-kolaborasi'),
+            UserRole::ADMIN_KOLABORASI => redirect('/dashboard/admin-kolaborasi'),
 
-            UserRole::THERAPIST
-                => redirect('/dashboard/therapist'),
+            UserRole::THERAPIST => redirect('/dashboard/therapist'),
 
-            default
-                => redirect('/dashboard/patient'),
+            default => redirect('/dashboard/patient'),
         };
     }
 

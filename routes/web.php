@@ -2,13 +2,15 @@
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyOtpController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KolaborasiController;
 use App\Http\Controllers\LayananController;
-use App\Http\Controllers\TherapistScheduleController;
-use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\OperasionalController;
+use App\Http\Controllers\TherapistScheduleController;
 use App\Http\Controllers\TherapistSessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -143,17 +145,10 @@ Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name(
 Route::view('/register', 'pages.auth.register')->name('view.auth.register');
 Route::post('register', [RegisteredUserController::class, 'store'])->name('auth.register');
 
-Route::view(
-    '/forgot-password',
-    'pages.auth.forgot-password'
-)->name('view.auth.forgot-password');
+// 1. Halaman minta OTP (Input Nomor Telepon)
+Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('view.auth.forgot-password');
+Route::post('/forgot-password/request', [PasswordResetLinkController::class, 'store'])->name('password.email');
 
-Route::view(
-    '/verification',
-    'pages.auth.verification'
-)->name('view.auth.verification');
-
-Route::view(
-    '/new-password',
-    'pages.auth.new-password'
-)->name('view.auth.new-password');
+// 2. Halaman Verifikasi OTP & Input Password Baru
+Route::get('/verify-otp', [VerifyOtpController::class, 'create'])->name('password.verify-otp');
+Route::post('/verify-otp/update', [VerifyOtpController::class, 'store'])->name('password.update-phone');

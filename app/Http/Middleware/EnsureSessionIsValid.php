@@ -26,7 +26,7 @@ class EnsureSessionIsValid
                 $request->session()->regenerateToken();
 
                 // 4. Redirect them to login with a clean slate
-                return redirect()->route('login')->with('error', 'Database was reset. Please log in again.');
+                return redirect()->route('auth.login')->with('error', 'Database di reset, silahkan login kembali');
             }
         }
 
