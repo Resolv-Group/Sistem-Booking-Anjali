@@ -328,7 +328,6 @@ class BookingController extends Controller
 
         $pasien = Pasien::create([
             'user_id' => $user->id,
-            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nama_pasien' => $request->name,
             'no_telp' => $request->phone,
             'tanggal_lahir' => $request->dob,
@@ -406,10 +405,12 @@ class BookingController extends Controller
 
                 $newPasien = Pasien::create([
                     'user_id' => $newUser->id,
-                    'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
                     'nama_pasien' => $slotData['name'] ?? 'Pasien Tambahan '.($i + 1),
                     'no_telp' => $phone,
                     'tanggal_lahir' => ! empty($slotData['dob']) ? $slotData['dob'] : null,
+                    'jenis_kelamin' => 'L',
+                    'created_by' => $primaryUser->id,
+                    'updated_by' => $primaryUser->id,
                 ]);
 
                 $pasienId = $newPasien->id;
@@ -489,7 +490,6 @@ class BookingController extends Controller
 
                 $newPasien = Pasien::create([
                     'user_id' => $newUser->id,
-                    'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
                     'nama_pasien' => $slotData['name'] ?? 'Pasien Baru',
                     'no_telp' => $phone,
                     'email' => $email,

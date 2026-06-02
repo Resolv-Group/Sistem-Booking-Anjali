@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Kolaborasi;
+use Illuminate\Support\Facades\Storage;
 
 class Karyawan extends Model
 {
+    use HasUuids;
+
     protected $table = 'karyawans';
 
     protected $fillable = [
-        'user_id',  
+        'user_id',
         'kode_karyawan',
         'nik',
         'nama_karyawan',
@@ -28,7 +31,7 @@ class Karyawan extends Model
         'foto_path',
         'foto_mime',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -37,10 +40,15 @@ class Karyawan extends Model
         'nilai_review' => 'decimal:2',
     ];
 
+    public function uniqueIds(): array
+    {
+        return ['kode_karyawan'];
+    }
+
     public function fotoUrl()
     {
         return $this->foto_path
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->foto_path)
+            ? Storage::disk('public')->url($this->foto_path)
             : null;
     }
 

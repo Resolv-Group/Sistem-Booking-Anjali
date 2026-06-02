@@ -12,11 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
-            $table->string('kode_karyawan')->unique();
+            $table->uuid('kode_karyawan')->default(DB::raw('gen_random_uuid()'))->unique();
             $table->string('nik', 16)->unique()->nullable();
             $table->string('nama_karyawan');
 
@@ -30,7 +32,7 @@ return new class extends Migration
             $table->enum('peran', ['Terapis', 'Admin Kolaborasi', 'Admin Global']);
 
             $table->decimal('nilai_review', 3, 2)->nullable();
-            $table->string('deskripsi_review')->nullable(); 
+            $table->string('deskripsi_review')->nullable();
 
             $table->date('tanggal_bergabung')->nullable();
             $table->foreignId('kolaborasi_id')->constrained('kolaborasi')->nullOnDelete();

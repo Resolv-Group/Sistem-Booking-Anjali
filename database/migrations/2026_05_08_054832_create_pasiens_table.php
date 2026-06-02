@@ -12,11 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        DB::statement('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+
         Schema::create('pasiens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
-            $table->string('pasien_public_id', 25)->unique();
+            $table->uuid('pasien_public_id')->default(DB::raw('gen_random_uuid()'))->unique();
 
             $table->string('nik', 16)->unique()->nullable();
             $table->string('nama_pasien');
