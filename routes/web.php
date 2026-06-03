@@ -10,6 +10,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KolaborasiController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\OperasionalController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TherapistScheduleController;
 use App\Http\Controllers\TherapistSessionController;
 use Illuminate\Support\Facades\Route;
@@ -75,10 +76,25 @@ Route::view(
 
 // Route::middleware('auth')->post('/patients/quick-register', [BookingController::class, 'quickRegisterPatient']);
 
-Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile');
-Route::view('/therapist/profile', 'pages.profile.therapist')->name('therapist.profile');
+// Admin Global Profile
 Route::view('/admin-global/profile', 'pages.profile.admin-global')->name('admin-global.profile');
+Route::get('/admin-global/profile/edit', [ProfileController::class, 'editProfileAdminGlobal'])->name('admin-global.profile.edit');
+Route::put('/admin-global/profile/update', [ProfileController::class, 'updateProfileAdminGlobal'])->name('admin-global.profile.update');
+
+// Pasien Profile
+Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile');
+Route::get('/patient/profile/edit', [ProfileController::class, 'editProfilePasien'])->name('patient.profile.edit');
+Route::put('/patient/profile/update', [ProfileController::class, 'updateProfilePasien'])->name('patient.profile.update');
+
+// Terapis Profile
+Route::view('/therapist/profile', 'pages.profile.therapist')->name('therapist.profile');
+Route::get('/therapist/profile/edit', [ProfileController::class, 'editProfileTherapist'])->name('therapist.profile.edit');
+Route::put('/therapist/profile/update', [ProfileController::class, 'updateProfileTherapist'])->name('therapist.profile.update');
+
+// Admin Cabang Profile
 Route::view('/admin-cabang/profile', 'pages.profile.admin-cabang')->name('admin-cabang.profile');
+Route::get('/admin-cabang/profile/edit', [ProfileController::class, 'editProfileAdminCabang'])->name('admin-cabang.profile.edit');
+Route::put('/admin-cabang/profile/update', [ProfileController::class, 'updateProfileAdminCabang'])->name('admin-cabang.profile.update');
 
 // therapist
 Route::view('/dashboard/therapist', 'pages.dashboard.therapist')->name('therapist.dashboard');

@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('kode_referral')->unique()->nullable();
             $table->integer('poin_referral')->default(0);
 
-            $table->string('foto_path')->nullable();
+            $table->text('foto')->nullable();
             $table->string('foto_mime', 100)->nullable();
 
             $table->integer('created_by')->nullable();

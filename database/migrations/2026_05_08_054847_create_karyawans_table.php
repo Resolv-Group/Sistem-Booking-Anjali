@@ -38,8 +38,11 @@ return new class extends Migration
             $table->foreignId('kolaborasi_id')->constrained('kolaborasi')->nullOnDelete();
             $table->enum('status_karyawan', ['Aktif', 'Tidak Aktif', 'Resign', 'PHK'])->default('Aktif');
 
-            $table->string('foto_path')->nullable();
+            $table->text('foto')->nullable();
             $table->string('foto_mime', 100)->nullable();
+
+            $table->integer('created_by')->nullable();
+            $table->integer('updated_by')->nullable();
 
             $table->timestamps();
         });

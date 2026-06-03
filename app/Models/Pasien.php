@@ -25,7 +25,7 @@ class Pasien extends Model
         'kode_referral',
         'poin_referral',
         'membership_tier',
-        'foto_path',
+        'foto',
         'foto_mime',
     ];
 
@@ -39,6 +39,18 @@ class Pasien extends Model
         return $this->foto_path
             ? Storage::disk('public')->url($this->foto_path)
             : null;
+    }
+
+    public function getFotoAttribute($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        if (is_resource($value)) {
+            return base64_encode(stream_get_contents($value));
+        }
+
+        return $value; // already base64 string
     }
 
     protected function casts(): array

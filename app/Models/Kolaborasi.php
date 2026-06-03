@@ -17,6 +17,8 @@ class Kolaborasi extends Model
         'nilai_review',
         'deskripsi_review',
         'homecare_harga',
+        'logo',
+        'logo_mime',
         'created_by',
         'updated_by',
     ];

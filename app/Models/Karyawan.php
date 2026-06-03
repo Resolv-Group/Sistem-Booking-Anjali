@@ -28,7 +28,7 @@ class Karyawan extends Model
         'tanggal_bergabung',
         'kolaborasi_id',
         'status_karyawan',
-        'foto_path',
+        'foto',
         'foto_mime',
         'created_by',
         'updated_by',
