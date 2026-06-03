@@ -226,7 +226,6 @@
                                                     </div>
 
                                                     {{-- Patient Profile Section --}}
-                                                    {{-- Patient Profile Section --}}
                                                     <div class="space-y-1">
                                                         <div class="flex items-center gap-2 flex-wrap">
                                                             <h5

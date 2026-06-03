@@ -22,8 +22,16 @@ export default defineConfig(({ mode }) => {
                 ignored: ["**/storage/framework/views/**"],
             },
             host: "0.0.0.0",
+            // Tambahkan port bawaan Vite secara eksplisit agar ngrok tidak tersesat
+            port: 5173,
             hmr: {
-                host: env.VITE_HMR_HOST || 'localhost',
+                // JIKA diakses lewat ngrok, paksa host HMR menggunakan domain ngrok itu sendiri
+                host: process.env.NGROK_SUBDOMAIN
+                    ? process.env.NGROK_SUBDOMAIN
+                    : (env.VITE_HMR_HOST || 'localhost'),
+                // Jika lewat ngrok, HMR wajib menggunakan port HTTPS (443)
+                clientPort: process.env.NGROK_SUBDOMAIN ? 443 : 5173,
+                protocol: process.env.NGROK_SUBDOMAIN ? 'wss' : 'ws',
             },
         },
     }
