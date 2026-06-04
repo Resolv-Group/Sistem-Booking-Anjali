@@ -10,6 +10,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KolaborasiController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\OperasionalController;
+use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TherapistScheduleController;
 use App\Http\Controllers\TherapistSessionController;
@@ -43,9 +44,9 @@ Route::view(
     'pages.dashboard.patient'
 )->name('patient.dashboard');
 
-Route::view(
+Route::get(
     '/therapist',
-    'pages.therapist.patient'
+    [PagesController::class, 'TherapistListView']
 )->name('patient.therapist');
 
 // booking
@@ -68,6 +69,12 @@ Route::view(
     '/booking/form-pasien/selesai',
     'pages.booking.patient.form-selesai'
 )->name('patient.booking.form-selesai');
+
+Route::get(
+    '/booking/patient/my-booking',
+    [BookingController::class, 'myBooking']
+)->name('patient.booking.my-booking');
+
 
 Route::view(
     '/booking/form/selesai',

@@ -472,7 +472,7 @@
         </div>
         </div>
 
-        <x-navigation.patient-navbar active="terapis" />
+        <x-navigation.patient-navbar active="booking" />
 
     </x-layouts.mobile-app>
 

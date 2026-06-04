@@ -19,9 +19,9 @@
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Beranda</span>
             </a>
 
-            <a href="#"
+            <a href="{{ route('patient.booking.my-booking') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
-                {{ $active === 'booking' ? 'text-teal-600' : 'text-slate-400' }}">
+                {{ $active === 'mybooking' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     stroke-width="{{ $active === 'booking' ? '2.5' : '2' }}">
                     <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -32,12 +32,13 @@
             {{-- Central Menu Button --}}
             <div class="flex flex-col items-center -mt-8 relative z-50">
                 <a href="{{ route('patient.booking.index') }}"
-                    class="w-14 h-14 bg-teal-800 text-white rounded-2xl shadow-xl shadow-teal-900/30 flex items-center justify-center transition-all active:scale-90">
+                    class="w-14 h-14 bg-teal-600 text-white rounded-2xl shadow-md shadow-teal-600/30 flex items-center justify-center transition-all active:scale-90
+                    {{ $active === 'booking' ? 'text-teal-600' : 'text-slate-400' }}">
                     <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path d="M12 4v16m8-8H4" />
                     </svg>
                 </a>
-                <span class="text-[10px] font-black text-teal-800 uppercase tracking-widest mt-2">Booking</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Booking</span>
             </div>
 
             <a href="{{ route('patient.therapist') }}"
@@ -45,7 +46,7 @@
                 {{ $active === 'therapists' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     stroke-width="{{ $active === 'therapists' ? '2.5' : '2' }}">
-                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path d="M15.477 12.89l1.515 8.526a.5.5 0 01-.81.47l-3.58-2.687a1 1 0 00-1.197 0l-3.586 2.686a.5.5 0 01-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>
                 </svg>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Terapis</span>
             </a>
