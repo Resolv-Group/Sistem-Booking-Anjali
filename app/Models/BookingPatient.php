@@ -46,6 +46,14 @@ class BookingPatient extends Model
         );
     }
 
+    public function status_pasien()
+    {
+        return $this->belongsTo(
+            Pasien::class,
+            'status_pasien'
+        );
+    }
+
     public function rekamMedis()
     {
         return $this->hasOne(RekamMedis::class, 'booking_pasien_id');
