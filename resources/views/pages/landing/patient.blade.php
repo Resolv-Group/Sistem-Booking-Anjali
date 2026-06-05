@@ -22,7 +22,7 @@
                     mencapai hasil terbaik bagi komunitas kami.
                 </p>
                 <div class="flex flex-col gap-3">
-                    <a href="{{ route('auth.login') }}"
+                    <a href="{{ route('patient.booking.form') }}"
                         class="w-full py-5 bg-teal-800 text-white rounded-2xl text-base font-semibold uppercase tracking-widest shadow-xl shadow-teal-900/20 text-center active:scale-95 transition-all">
                         Buat Janji
                     </a>
@@ -157,7 +157,7 @@
 
                             $photoUrl = $item->foto
                                 ? 'data:' . ($item->foto_mime ?? 'image/jpg') . ';base64,' . $item->foto
-                                : asset('images/logo_anjali.jpg'); // Mengarah ke public/images/logo.png jika foto di DB kosong
+                                : asset('images/logo_anjali.jpg'); 
                         @endphp
 
                         <div class="flex flex-col items-center">
@@ -298,57 +298,52 @@
 
             {{-- 7. CERTIFIED HOUSES --}}
             <div class="px-6 pt-20 space-y-8 pb-10">
-                <div class="space-y-3">
-                    {{-- Judul Utama diubah menjadi Kolaborasi --}}
-                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Kolaborasi</h3>
+    <div class="space-y-3">
+        {{-- Judul Utama diubah menjadi Kolaborasi --}}
+        <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Kolaborasi</h3>
+        
+        <p class="text-sm text-slate-500 font-medium leading-relaxed">
+            Sinergi eksklusif rumah terapi tersertifikasi untuk menghadirkan pelayanan kesehatan fisik dan mental terbaik di dekat Anda.
+        </p>
+        
+        <div class="flex gap-4 pt-2">
+            <span class="flex items-center gap-2 text-[10px] font-black text-teal-700 uppercase tracking-widest">
+                <i class="lucide-check-circle w-3 h-3"></i> Kerja Sama Resmi
+            </span>
+            <span class="flex items-center gap-2 text-[10px] font-black text-teal-700 uppercase tracking-widest">
+                <i class="lucide-globe w-3 h-3"></i> Standar Global
+            </span>
+        </div>
+    </div>
 
-                    <p class="text-sm text-slate-500 font-medium leading-relaxed">
-                        Sinergi eksklusif rumah terapi tersertifikasi untuk menghadirkan pelayanan kesehatan fisik dan
-                        mental terbaik di dekat Anda.
-                    </p>
-
-                    <div class="flex gap-4 pt-2">
-                        <span
-                            class="flex items-center gap-2 text-[10px] font-black text-teal-700 uppercase tracking-widest">
-                            <i class="lucide-check-circle w-3 h-3"></i> Kerja Sama Resmi
-                        </span>
-                        <span
-                            class="flex items-center gap-2 text-[10px] font-black text-teal-700 uppercase tracking-widest">
-                            <i class="lucide-globe w-3 h-3"></i> Standar Global
-                        </span>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    {{-- Pusat Layanan Terpadu di Surabaya --}}
-                    <div class="relative rounded-3xl overflow-hidden h-52 group shadow-lg">
-                        <img src="{{ asset('images/anjali_1.png') }}" class="w-full h-full object-cover">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90">
-                        </div>
-
-                        <div class="absolute bottom-6 left-6 right-6 text-white">
-                            <h4 class="text-xl font-bold uppercase tracking-widest mt-1">Anjali</h4>
-                            <p class="text-xs font-medium opacity-80 mt-1 leading-relaxed">
-                                Tersedia di surabaya.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="relative rounded-3xl overflow-hidden h-52 group shadow-lg">
-                        <img src="{{ asset('images/limajari_1.png') }}" class="w-full h-full object-cover">
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90">
-                        </div>
-
-                        <div class="absolute bottom-6 left-6 right-6 text-white">
-                            <h4 class="text-xl font-bold uppercase tracking-widest mt-1">Limajari</h4>
-                            <p class="text-xs font-medium opacity-80 mt-1 leading-relaxed">
-                                Tersedia di surabaya.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+    <div class="space-y-4">
+        {{-- Pusat Layanan Terpadu di Surabaya --}}
+        <div class="relative rounded-3xl overflow-hidden h-52 group shadow-lg">
+            <img src="{{ asset('images/anjali_1.png') }}"
+                class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90"></div>
+            
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+                <h4 class="text-xl font-bold uppercase tracking-widest mt-1">Anjali</h4>
+                <p class="text-xs font-medium opacity-80 mt-1 leading-relaxed">
+                    Tersedia di surabaya.
+                </p>
             </div>
+        </div>
+        <div class="relative rounded-3xl overflow-hidden h-52 group shadow-lg">
+            <img src="{{ asset('images/limajari_1.png') }}"
+                class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90"></div>
+            
+            <div class="absolute bottom-6 left-6 right-6 text-white">
+                <h4 class="text-xl font-bold uppercase tracking-widest mt-1">Limajari</h4>
+                <p class="text-xs font-medium opacity-80 mt-1 leading-relaxed">
+                    Tersedia di surabaya.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
             {{-- 8. FOOTER --}}
             <div class="px-10 py-16 text-center space-y-8 bg-white border-t border-slate-50">
@@ -371,7 +366,7 @@
         </div>
 
         {{-- BOTTOM NAVBAR --}}
-        <x-navigation.guest-navbar active="home" />
+        <x-navigation.patient-navbar active="home" />
 
     </x-layouts.mobile-app>
 

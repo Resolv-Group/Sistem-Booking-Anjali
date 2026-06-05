@@ -13,6 +13,10 @@
         $initials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
         $namaKolaborasi = $therapist->kolaborasi ? $therapist->kolaborasi->nama_kolaborasi : 'Rumah Terapi Anjali';
         $alamatKolaborasi = $therapist->kolaborasi ? $therapist->kolaborasi->alamat : 'Surabaya';
+
+        $photoPreview = $therapist->foto
+            ? 'data:' . ($therapist->foto_mime ?? 'image/jpg') . ';base64,' . $therapist->foto
+            : asset('images/logo_anjali.jpg'); 
     @endphp
 
     <script>
@@ -339,9 +343,9 @@
                     <div
                         class="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm">
                         <div class="flex items-center gap-4">
-                            <div
+                            <img src="{{ $photoPreview }}"
+                                alt="{{ $therapist->nama_karyawan }}"
                                 class="w-11 h-11 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 font-semibold text-lg">
-                                {{ $initials }}</div>
                             <div>
                                 <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Terapis</p>
                                 <p class="text-lg font-semibold text-slate-800">{{ $therapist->nama_karyawan }}</p>

@@ -198,10 +198,9 @@
                                 ', ' .
                                 substr($nextSession->waktu_mulai, 0, 5)
                             : 'Penuh';
-
-                        $photoUrl = $t->foto 
-                            ? 'data:' . ($t->foto_mime ?? 'image/jpeg') . ';base64,' . $t->foto 
-                            : 'https://ui-avatars.com/api/?name=' . urlencode($t->nama_karyawan) . '&background=0d766e&color=fff';
+                        $photoUrl = $t->foto
+                                ? 'data:' . ($t->foto_mime ?? 'image/jpg') . ';base64,' . $t->foto
+                                : asset('images/logo_anjali.jpg'); 
                     @endphp
 
                     <div x-show="shouldShow('{{ addslashes($t->nama_karyawan) }}', '{{ $kota }}', @js($layanans))"
@@ -212,7 +211,8 @@
                             <div class="relative mb-6">
                                 <div
                                     class="w-32 h-32 rounded-[2.5rem] bg-slate-50 overflow-hidden border-2 border-white shadow-md">
-                                    <div class="relative h-32 w-32 rounded-[2.8rem] p-1.5 bg-white shadow-2xl border border-white/50 overflow-hidden">
+                                    <div
+                                        class="relative h-32 w-32 rounded-[2.8rem] p-1.5 bg-white shadow-2xl border border-white/50 overflow-hidden">
                                         <img src="{{ $photoUrl }}"
                                             class="h-full w-full rounded-[2.4rem] object-cover hover:scale-110 transition-transform duration-700"
                                             alt="{{ $t->nama_karyawan }}">
@@ -230,59 +230,64 @@
                             {{-- Info --}}
                             <div class="text-center space-y-1.5">
                                 <h4 class="text-xl font-bold text-slate-800 tracking-tight">{{ $t->nama_karyawan }}</h4>
-                                <p class="text-xs font-semibold text-teal-600 uppercase tracking-widest">{{ $t->peran }}
+                                <p class="text-xs font-semibold text-teal-600 uppercase tracking-widest">
+                                    {{ $t->peran }}
                                 </p>
                                 <p class="text-sm font-medium text-slate-400">{{ $namaCabang }}, {{ $kota }}</p>
                             </div>
 
                             {{-- Kategori Layanan --}}
-{{-- Kategori Layanan (Show 2 items max + Popover for more) --}}
-<div class="mt-4 flex flex-wrap justify-center gap-2">
-    @foreach (collect($layanans)->take(2) as $layanan)
-        <span class="px-3 py-1.5 bg-slate-50 text-slate-500 text-[11px] font-semibold uppercase tracking-wider rounded-lg border border-slate-100">
-            {{ $layanan }}
-        </span>
-    @endforeach
+                            <div class="mt-4 flex flex-wrap justify-center gap-2">
+                                @foreach (collect($layanans)->take(2) as $layanan)
+                                    <span
+                                        class="px-3 py-1.5 bg-slate-50 text-slate-500 text-[11px] font-semibold uppercase tracking-wider rounded-lg border border-slate-100">
+                                        {{ $layanan }}
+                                    </span>
+                                @endforeach
 
-    @if (count($layanans) > 2)
-        {{-- Alpine Component untuk Dropdown per Terapis --}}
-        <div class="relative" x-data="{ open: false }">
-            {{-- Tombol +N --}}
-            <button @click="open = !open" @click.away="open = false" type="button"
-                class="px-2 py-1.5 bg-teal-50 text-teal-600 text-[11px] font-bold uppercase rounded-lg border border-teal-100 active:scale-95 transition-all flex items-center gap-1">
-                +{{ count($layanans) - 2 }}
-                <i data-lucide="chevron-down" class="w-3 h-3 transition-transform" :class="open ? 'rotate-180' : ''"></i>
-            </button>
+                                @if (count($layanans) > 2)
+                                    {{-- Alpine Component untuk Dropdown per Terapis --}}
+                                    <div class="relative" x-data="{ open: false }">
+                                        {{-- Tombol +N --}}
+                                        <button @click="open = !open" @click.away="open = false" type="button"
+                                            class="px-2 py-1.5 bg-teal-50 text-teal-600 text-[11px] font-bold uppercase rounded-lg border border-teal-100 active:scale-95 transition-all flex items-center gap-1">
+                                            +{{ count($layanans) - 2 }}
+                                            <i data-lucide="chevron-down" class="w-3 h-3 transition-transform"
+                                                :class="open ? 'rotate-180' : ''"></i>
+                                        </button>
 
-            {{-- Popover Dropdown --}}
-            <div x-show="open" 
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 p-3 space-y-2 text-left"
-                style="display: none;">
-                
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-1">
-                    Layanan Lainnya
-                </p>
-                <div class="max-h-40 overflow-y-auto custom-scrollbar space-y-1.5">
-                    @foreach (collect($layanans)->slice(2) as $other)
-                        <div class="flex items-center gap-2">
-                            <div class="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
-                            <span class="text-xs font-bold text-slate-700">{{ $other }}</span>
-                        </div>
-                    @endforeach
-                </div>
-                
-                {{-- Segitiga Penunjuk (Arrow) --}}
-                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-white"></div>
-            </div>
-        </div>
-    @endif
-</div>
+                                        {{-- Popover Dropdown --}}
+                                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                            x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                            x-transition:leave="transition ease-in duration-150"
+                                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                            x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 bg-white border border-slate-100 rounded-2xl shadow-2xl z-50 p-3 space-y-2 text-left"
+                                            style="display: none;">
+
+                                            <p
+                                                class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-1">
+                                                Layanan Lainnya
+                                            </p>
+                                            <div class="max-h-40 overflow-y-auto custom-scrollbar space-y-1.5">
+                                                @foreach (collect($layanans)->slice(2) as $other)
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-1.5 h-1.5 rounded-full bg-teal-400"></div>
+                                                        <span
+                                                            class="text-xs font-bold text-slate-700">{{ $other }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+
+                                            {{-- Segitiga Penunjuk (Arrow) --}}
+                                            <div
+                                                class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-white">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
 
                             {{-- Availability Pill --}}
                             <div
@@ -295,10 +300,16 @@
                             </div>
 
                             {{-- Action --}}
-                            <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
-                                class="mt-6 w-full py-4 bg-teal-700 text-white text-center rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-teal-700/20 active:shadow-none active:translate-y-1 transition-all">
-                                Buat Janji
-                            </a>
+                            @if ($nextTime != 'Penuh')
+                                <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
+                                    class="mt-6 w-full py-4 bg-teal-700 text-white text-center rounded-2xl text-sm font-bold uppercase tracking-widest shadow-xl shadow-teal-700/20 active:shadow-none active:translate-y-1 transition-all">
+                                    Buat Janji
+                                </a>
+                            @else
+                                <div class="mt-5 block text-center w-full py-4 bg-slate-500 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all">
+                                    Jadwal Tidak Tersedia
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach

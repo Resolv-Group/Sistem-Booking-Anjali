@@ -13,7 +13,9 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\BookingRescheduleHistory;
 
 class BookingController extends Controller
 {
@@ -40,106 +42,110 @@ class BookingController extends Controller
     }
 
     public function myBooking()
-    {
-        $user = auth()->user();
-        // dd($user);
-        if (!$user || !$user->pasien) {
-            abort(403, 'Akses ditolak. Anda bukan pasien.');
+{
+    $user = auth()->user();
+
+    if (!$user || !$user->pasien) {
+        abort(403, 'Akses ditolak. Anda bukan pasien.');
+    }
+
+    $patient = $user->pasien;
+
+//     dd([
+//     'user_id' => $user->id,
+//     'pasien_id' => $patient->id,
+//     'all_booking_patients' => BookingPatient::where('pasien_id', $patient->id)->get()->toArray(),
+//     'raw_all' => BookingPatient::all()->toArray(), // see everything in the table
+// ]);
+
+    $bookings = BookingPatient::where('pasien_id', $patient->id)
+        ->with(['booking.session.therapist', 'booking.session.kolaborasi', 'layanan'])
+        ->get()
+        ->groupBy('booking_id');
+
+    $mappedBookings = $bookings->map(function ($group) {
+        $bookingPatient = $group->first();
+        $booking = $bookingPatient->booking;
+        $session = $booking->session;
+        $kolaborasi = $session->kolaborasi;
+        $therapist = $session->therapist;
+
+        // Collect all layanan names
+        $layananNames = $group->pluck('layanan.nama')->filter()->implode(', ');
+
+        $statusText = '';
+        $statusColor = '';
+        $statusKey = '';
+
+        $patientStatus = $bookingPatient->status_pasien;
+        $parentStatus = $booking->status;
+
+        if ($patientStatus === 'sedang_berjalan' || $parentStatus === 'sedang_berjalan') {
+            $statusText = 'Sesi Dimulai';
+            $statusColor = 'bg-blue-100 text-blue-800';
+            $statusKey = 'sedang_berjalan';
+        } elseif ($parentStatus === 'rejected') {
+            $statusText = 'Ditolak';
+            $statusColor = 'bg-red-100 text-red-800';
+            $statusKey = 'rejected';
+        } elseif ($parentStatus === 'cancelled') {
+            $statusText = 'Dibatalkan';
+            $statusColor = 'bg-gray-100 text-gray-800';
+            $statusKey = 'cancelled';
+        } elseif ($patientStatus === 'selesai' || $parentStatus === 'completed') {
+            $statusText = 'Selesai';
+            $statusColor = 'bg-green-100 text-green-800';
+            $statusKey = 'completed';
+        } elseif ($parentStatus === 'approved') {
+            $statusText = 'Disetujui';
+            $statusColor = 'bg-green-100 text-green-800';
+            $statusKey = 'approved';
+        } else {
+            $statusText = 'Menunggu Verifikasi';
+            $statusColor = 'bg-yellow-100 text-yellow-800';
+            $statusKey = 'pending';
         }
 
-        $patient = $user->pasien;
+        $hour = (int) substr($session->waktu_mulai, 0, 2);
 
-        // Fetch bookings for the patient
-        $bookings = BookingPatient::where('pasien_id', $patient->id)
-            ->with(['booking.session.therapist', 'booking.session.kolaborasi', 'layanan'])
-            ->get();
-        // dd($bookings);
+        if ($hour < 12) {
+            $timeType = 'Pagi';
+        } elseif ($hour < 16) {
+            $timeType = 'Siang';
+        } elseif ($hour < 18) {
+            $timeType = 'Sore';
+        } else {
+            $timeType = 'Malam';
+        }
 
-        // Map bookings for Alpine.js
-        $mappedBookings = $bookings->map(function ($bookingPatient) {
-            $booking = $bookingPatient->booking;
-            $session = $booking->session;
-            $kolaborasi = $session->kolaborasi;
-            $therapist = $session->therapist;
+        $formattedWaktu = Carbon::parse($session->tanggal_sesi)->translatedFormat('l, d F Y') . ' • ' . $timeType . ', ' . substr($session->waktu_mulai, 0, 5);
 
-            // dump($booking, $session, $kolaborasi, $therapist);
+        $terapisFoto = $therapist->foto
+            ? 'data:' . ($therapist->foto_mime ?? 'image/jpeg') . ';base64,' . $therapist->foto
+            : asset('images/logo_anjali.jpg');
 
-            $statusText = '';
-            $statusColor = '';
-            $statusKey = '';
+        return [
+            'id_raw' => $bookingPatient->id,
+            'id' => 'BK-' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
+            'booking_id' => $booking->id,
+            'status_text' => $statusText,
+            'status_color' => $statusColor,
+            'status_key' => $statusKey,
+            'tipe' => $bookingPatient->tipe_sesi,
+            'layanan' => $layananNames,
+            'terapis' => $therapist->nama_karyawan ?? 'Unknown',
+            'kolaborasi' => $kolaborasi->nama_kolaborasi ?? 'Unknown',
+            'waktu' => $formattedWaktu,
+            'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? asset('storage/' . $booking->bukti_transfer_booking_path) : null,
+            'alasan_status' => $booking->alasan_status,
+            'batalkan_type' => $booking->batalkan_type,
+            'terapis_foto' => $terapisFoto,
+            'terapis_id' => $therapist->id,
+        ];
+    })->values();
 
-            $patientStatus = $bookingPatient->status_pasien; // Status di table booking_pasien
-$parentStatus = $booking->status;               // Status di table booking
-
-// Logika Prioritas: Cek status sedang_berjalan di level pasien terlebih dahulu
-if ($patientStatus === 'sedang_berjalan' || $parentStatus === 'sedang_berjalan') {
-    $statusText = 'Sesi Dimulai';
-    $statusColor = 'bg-blue-100 text-blue-800';
-    $statusKey = 'sedang_berjalan';
-} elseif ($parentStatus === 'rejected') {
-    $statusText = 'Ditolak';
-    $statusColor = 'bg-red-100 text-red-800';
-    $statusKey = 'rejected';
-} elseif ($parentStatus === 'cancelled') {
-    $statusText = 'Dibatalkan';
-    $statusColor = 'bg-gray-100 text-gray-800';
-    $statusKey = 'cancelled';
-} elseif ($patientStatus === 'selesai' || $parentStatus === 'completed') {
-    $statusText = 'Selesai';
-    $statusColor = 'bg-green-100 text-green-800';
-    $statusKey = 'completed';
-} elseif ($parentStatus === 'approved') {
-    $statusText = 'Disetujui';
-    $statusColor = 'bg-green-100 text-green-800';
-    $statusKey = 'approved';
-} else {
-    $statusText = 'Menunggu Verifikasi';
-    $statusColor = 'bg-yellow-100 text-yellow-800';
-    $statusKey = 'pending';
+    return view('pages.booking.patient.my-booking.index', compact('mappedBookings'));
 }
-
-            
-
-            $session = $bookingPatient->booking->session;
-            $hour = (int) substr($session->waktu_mulai, 0, 2);
-
-            // Tentukan Label Waktu
-            if ($hour < 12) {
-                $timeType = 'Pagi';
-            } elseif ($hour < 16) {
-                $timeType = 'Siang';
-            } elseif ($hour < 18) {
-                $timeType = 'Sore';
-            } else {
-                $timeType = 'Malam';
-            }
-
-            $formattedWaktu = Carbon::parse($session->tanggal_sesi)->translatedFormat('l, d F Y') . ' • ' . $timeType . ', ' . substr($session->waktu_mulai, 0, 5);
-
-            $terapisFoto = $therapist->foto ? 'data:' . ($therapist->foto_mime ?? 'image/jpeg') . ';base64,' . $therapist->foto : 'https://ui-avatars.com/api/?name=' . urlencode($therapist->nama_karyawan) . '&background=0d766e&color=fff';
-
-            return [
-                'id_raw' => $booking->id,
-                'id' => 'BK-' . str_pad($booking->id, 5, '0', STR_PAD_LEFT),
-                'status_text' => $statusText,
-                'status_color' => $statusColor,
-                'status_key' => $statusKey,
-                'tipe' => $bookingPatient->tipe_sesi,
-                'layanan' => $bookingPatient->layanan->nama ?? 'Unknown',
-                'terapis' => $therapist->nama_karyawan ?? 'Unknown',
-                'kolaborasi' => $kolaborasi->nama_kolaborasi ?? 'Unknown',
-                'waktu' => $formattedWaktu,
-                'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? asset('storage/' . $booking->bukti_transfer_booking_path) : null,
-                'alasan_status' => $booking->alasan_status,
-                'batalkan_type' => $booking->batalkan_type,
-                'terapis_foto' => $terapisFoto,
-                'terapis_id' => $therapist->id,
-            ];
-        });
-        // dd($mappedBookings);
-
-        return view('pages.booking.patient.my-booking.index', compact('mappedBookings'));
-    }
 
     public function adminBookingListIndex(Request $request)
     {
@@ -488,44 +494,58 @@ if ($patientStatus === 'sedang_berjalan' || $parentStatus === 'sedang_berjalan')
         ]);
 
         foreach ($patientsData as $i => $slotData) {
+            // if ($i === 1) {
+            //     // dump only the second slot
+            //     dd([
+            //         'index' => $i,
+            //         'type' => $slotData['type'] ?? 'NOT SET',
+            //         'id' => $slotData['id'] ?? 'NOT SET',
+            //         'name' => $slotData['name'] ?? 'NOT SET',
+            //     ]);
+            // }
             $serviceIds = $slotData['services'] ?? [];
 
             if (empty($serviceIds)) {
                 $booking->delete();
-
                 return redirect()->back()->with('error', 'Semua pasien harus memiliki minimal satu layanan.');
             }
 
             if ($i === 0) {
-                // Patient 1 is always the logged-in pasien
+                // Slot 1 is always the logged-in user
                 $pasienId = $primaryPasien->id;
             } else {
-                // Guests: create new user + pasien
-                $phone = !empty($slotData['phone']) ? $slotData['phone'] : $primaryUser->phone . '-' . ($i + 1) . '-' . Str::random(3);
-                $email = !empty($slotData['email']) ? $slotData['email'] : null;
+                $type = $slotData['type'] ?? 'baru';
 
-                $newUser = User::create([
-                    'name' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
-                    'email' => $email,
-                    'phone' => $phone,
-                    'password' => Hash::make(Carbon::parse($slotData['dob'])->format('d-m-Y')),
-                    'role' => UserRole::PATIENT,
-                ]);
+                if ($type === 'terdaftar') {
+                    // Registered patient — id is the actual pasien_id
+                    $pasienId = (int) $slotData['id'];
+                } else {
+                    // Guest ('baru') — create new user + pasien
+                    $phone = !empty($slotData['phone']) ? $slotData['phone'] : $primaryUser->phone . '-' . ($i + 1) . '-' . Str::random(3);
+                    $email = !empty($slotData['email']) ? $slotData['email'] : null;
 
-                $newPasien = Pasien::create([
-                    'user_id' => $newUser->id,
-                    'nama_pasien' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
-                    'no_telp' => $phone,
-                    'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
-                    'jenis_kelamin' => 'L',
-                    'created_by' => $primaryUser->id,
-                    'updated_by' => $primaryUser->id,
-                ]);
+                    $newUser = User::create([
+                        'name' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
+                        'email' => $email,
+                        'phone' => $phone,
+                        'password' => Hash::make(!empty($slotData['dob']) ? Carbon::parse($slotData['dob'])->format('d-m-Y') : 'password123'),
+                        'role' => UserRole::PATIENT,
+                    ]);
 
-                $pasienId = $newPasien->id;
+                    $newPasien = Pasien::create([
+                        'user_id' => $newUser->id,
+                        'nama_pasien' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
+                        'no_telp' => $phone,
+                        'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
+                        'jenis_kelamin' => 'L',
+                        'created_by' => $primaryUser->id,
+                        'updated_by' => $primaryUser->id,
+                    ]);
+
+                    $pasienId = $newPasien->id;
+                }
             }
 
-            // One BookingPatient row per service
             foreach ($serviceIds as $layananId) {
                 BookingPatient::create([
                     'booking_id' => $booking->id,
@@ -619,5 +639,90 @@ if ($patientStatus === 'sedang_berjalan' || $parentStatus === 'sedang_berjalan')
         }
 
         return redirect()->route('admin.booking.form-selesai')->with('success', 'Booking berhasil dibuat.');
+    }
+
+    public function getAvailableSessions(Booking $booking)
+    {
+        $therapistId = $booking->session->terapis_id;
+
+        $sessions = TherapistSession::where('terapis_id', $therapistId)
+            ->where('status', 'terbuka')
+            ->where('tanggal_sesi', '>=', now()->toDateString())
+            ->get()
+            ->filter(function ($session) use ($booking) {
+                if ($session->id === $booking->terapis_sesi_id) {
+                    return false;
+                }
+                return $session->remaining_capacity > 0;
+            })
+            ->map(function ($session) {
+                $dateFormatted = Carbon::parse($session->tanggal_sesi)->locale('id')->translatedFormat('l j F');
+                return [
+                    'id' => $session->id,
+                    'tanggal_formatted' => $dateFormatted,
+                    'waktu_mulai' => substr($session->waktu_mulai, 0, 5),
+                    'remaining_capacity' => $session->remaining_capacity,
+                ];
+            })
+            ->values();
+
+        return response()->json($sessions);
+    }
+
+    public function reschedule(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'new_sesi_id' => 'required|exists:terapis_sesi,id',
+        ]);
+
+        $newSesiId = $request->new_sesi_id;
+
+        $newSession = TherapistSession::findOrFail($newSesiId);
+        if ($newSession->status !== 'terbuka' || $newSession->remaining_capacity <= 0 || $newSession->tanggal_sesi < now()->toDateString() || $newSession->terapis_id !== $booking->session->terapis_id) {
+            return response()->json(['error' => 'Sesi tidak tersedia atau kapasitas penuh.'], 422);
+        }
+
+        DB::transaction(function () use ($booking, $newSesiId) {
+            BookingRescheduleHistory::create([
+                'booking_id' => $booking->id,
+                'old_terapis_sesi_id' => $booking->terapis_sesi_id,
+                'new_terapis_sesi_id' => $newSesiId,
+                'changed_by' => auth()->id(),
+            ]);
+
+            $booking->update([
+                'terapis_sesi_id' => $newSesiId
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal berhasil diperbarui'
+        ]);
+    }
+
+    public function cancel(Booking $booking)
+    {
+        if (!in_array($booking->status, ['pending', 'approved'])) {
+            return response()->json(['error' => 'Booking tidak dapat dibatalkan.'], 422);
+        }
+
+        DB::transaction(function () use ($booking) {
+            $booking->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancelled_by' => auth()->id(),
+                'alasan_status' => 'Dibatalkan oleh pasien',
+            ]);
+
+            $booking->bookingPatients()->update([
+                'status_pasien' => 'dibatalkan',
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking berhasil dibatalkan.'
+        ]);
     }
 }

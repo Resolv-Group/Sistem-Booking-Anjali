@@ -113,10 +113,10 @@
 
             {{-- 6. ACTION BUTTONS --}}
             <div class="w-full space-y-4">
-                <button onclick="window.location.href='{{ route('patient.dashboard') }}'"
+                {{-- <button onclick="window.location.href='{{ route('patient.dashboard') }}'"
                     class="w-full py-5 bg-teal-800 text-white rounded-2xl text-base font-semibold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/20 active:scale-95 transition-all cursor-pointer">
                     Lihat Dashboard Saya
-                </button>
+                </button> --}}
                 <button onclick="window.location.href='{{ route('landing') }}'"
                     class="w-full py-5 bg-white border border-slate-200 text-slate-500 rounded-2xl text-base font-semibold uppercase tracking-[0.2em] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer">
                     Kembali Ke Beranda

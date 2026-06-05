@@ -6,12 +6,6 @@
 
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen">
 
-        <x-ui.topbar title="Rumah Terapi Anjali">
-            <x-slot:right>
-                <a href="#"><img src="https://i.pravatar.cc/100" class="h-10 w-10 rounded-full object-cover"></a>
-            </x-slot:right>
-        </x-ui.topbar>
-
         {{-- MOVE x-data HERE to wrap everything --}}
         <div class="px-6 pt-8 pb-32 space-y-10" x-data="{
             showLokasi: false,
@@ -93,24 +87,20 @@
 
                 <div class="grid grid-cols-1 gap-4">
                     <!-- Filter Tanggal (Redesigned to match other filters) -->
-                    <div class="relative">
-                        {{-- Tombol Trigger (Visual Saja) --}}
+                    {{-- <div class="relative">
                         <div class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold transition-all"
                             :class="selectedDate ? 'text-slate-700 border-teal-500 ring-4 ring-teal-500/5' : 'text-slate-700'">
 
                             <div class="flex items-center gap-3">
-                                {{-- Icon Kalender --}}
                                 <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                {{-- Text Tanggal --}}
                                 <span x-text="formatDate(selectedDate)"></span>
                             </div>
 
                             <div class="flex items-center gap-2">
-                                {{-- Tombol Reset (Hanya muncul jika ada tanggal) --}}
                                 <button x-show="selectedDate" @click.stop="selectedDate = ''" type="button"
                                     class="p-1 text-slate-300 hover:text-rose-500 transition-colors z-20">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,18 +108,15 @@
                                             d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
-                                {{-- Chevron --}}
                                 <svg class="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
 
-                        {{-- Input Date Asli (Transparan & Menutupi Tombol) --}}
-                        {{-- Ini agar user bisa klik area mana saja dan picker HP muncul --}}
                         <input type="date" x-model="selectedDate"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    </div>
+                    </div> --}}
                     <div class="relative">
                         <button @click="showLokasi = !showLokasi"
                             class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-700">
@@ -303,7 +290,9 @@
 
                         $rating = $t->nilai_review ?: '5.0';
                         $harga = $t->layanans->min('base_harga') ?: 150000;
-                        $img = $t->fotoUrl() ?: 'https://i.pravatar.cc/150?u=' . $t->id;
+                        $img = $t->foto
+                                ? 'data:' . ($t->foto_mime ?? 'image/jpg') . ';base64,' . $t->foto
+                                : asset('images/logo_anjali.jpg'); 
 
                         // Build a flat array of "YYYY-MM-DD HH:MM" strings for all open future sessions
                         $availableSessions = $t->sessions

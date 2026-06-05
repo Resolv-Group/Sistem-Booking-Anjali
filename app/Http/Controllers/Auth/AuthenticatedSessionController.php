@@ -39,7 +39,9 @@ class AuthenticatedSessionController extends Controller
 
             UserRole::THERAPIST => redirect('/dashboard/therapist'),
 
-            default => redirect('/dashboard/patient'),
+            UserRole::PATIENT => redirect('/landing/patient'),
+
+            default => redirect('/'),
         };
     }
 

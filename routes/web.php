@@ -24,7 +24,7 @@ Route::get('/', function () {
     $user = auth()->user();
 
     return match ($user->role) {
-        UserRole::PATIENT => redirect()->route('patient.dashboard'),
+        UserRole::PATIENT => redirect()->route('patient.landing'),
         UserRole::THERAPIST => redirect()->route('therapist.dashboard'),
         UserRole::ADMIN_KOLABORASI => redirect()->route('admin-cabang.dashboard'),
         UserRole::ADMIN_GLOBAL => redirect()->route('admin-global.dashboard'),
@@ -34,15 +34,17 @@ Route::get('/', function () {
 
 Route::view('/layanan', 'pages.services.index')->name('layanan');
 
+Route::view('/about-us', 'pages.about.index')->name('about');
+
 Route::view(
     '/dashboard/admin-global',
     'pages.dashboard.admin-global'
 )->name('admin-global.dashboard');
 
 Route::view(
-    '/dashboard/patient',
-    'pages.dashboard.patient'
-)->name('patient.dashboard');
+    '/landing/patient',
+    'pages.landing.patient'
+)->name('patient.landing');
 
 Route::get(
     '/therapist',
@@ -74,6 +76,21 @@ Route::get(
     '/booking/patient/my-booking',
     [BookingController::class, 'myBooking']
 )->name('patient.booking.my-booking');
+
+Route::get(
+    '/booking/patient/my-booking/{booking}/available-sessions',
+    [BookingController::class, 'getAvailableSessions']
+)->name('patient.booking.available-sessions');
+
+Route::post(
+    '/booking/patient/my-booking/{booking}/reschedule',
+    [BookingController::class, 'reschedule']
+)->name('patient.booking.reschedule');
+
+Route::post(
+    '/booking/patient/my-booking/{booking}/cancel',
+    [BookingController::class, 'cancel']
+)->name('patient.booking.cancel');
 
 
 Route::view(
