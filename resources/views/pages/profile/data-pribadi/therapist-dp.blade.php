@@ -4,11 +4,9 @@
 
 @section('content')
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen pb-32" x-data="{
-        photoPreview: '{{ $therapist->foto
+        photoPreview: '{{ $therapist?->foto
             ? 'data:' . ($therapist->foto_mime ?? 'image/jpeg') . ';base64,' . $therapist->foto
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode($therapist->nama_karyawan) .
-                '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
         gender: '{{ old('jenis_kelamin', $therapist->jenis_kelamin ?? 'L') }}',
         openDropdown: false,
         showPw: false,

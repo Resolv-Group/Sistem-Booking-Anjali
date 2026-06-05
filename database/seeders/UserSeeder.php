@@ -77,21 +77,6 @@ class UserSeeder extends Seeder
         ]);
         $terapis1->layanans()->attach([1, 2, 3, 4]);
 
-        // Seed Therapist Schedule untuk Terapis 1
-        for ($day = 1; $day <= 7; $day++) {
-            TherapistSchedule::create([
-
-                'terapis_id' => $user3->id,
-
-                'hari' => $day,
-
-                'waktu_mulai' => '08:00:00',
-
-                'kuota' => 10,
-
-                'status' => 'Tidak Aktif',
-            ]);
-        }
 
         $user4 = User::create([
             'name' => 'Terapis 2',
@@ -110,21 +95,6 @@ class UserSeeder extends Seeder
         ]);
         $terapis2->layanans()->attach([5, 6, 7, 8, 9]);
 
-        // Seed Therapist Schedule untuk Terapis 2
-        for ($day = 1; $day <= 7; $day++) {
-            TherapistSchedule::create([
-
-                'terapis_id' => $user4->id,
-
-                'hari' => $day,
-
-                'waktu_mulai' => '08:00:00',
-
-                'kuota' => 10,
-
-                'status' => 'Tidak Aktif',
-            ]);
-        }
 
         // 2 Pasien
         $user5 = User::create([

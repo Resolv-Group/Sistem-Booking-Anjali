@@ -1,5 +1,5 @@
 @props([
-    'active' => 'dashboard',
+    'active' => 'home',
 ])
 
 <div x-data="{ open: false }" class="fixed bottom-0 left-1/2 z-[100] w-full max-w-[430px] -translate-x-1/2">
@@ -8,11 +8,11 @@
     <div class="bg-white border-t border-slate-100 px-4 pb-6 pt-2 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
         <div class="grid grid-cols-5 items-center">
 
-            <a href="{{ route('patient.dashboard') }}"
+            <a href="{{ route('patient.landing') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
-                {{ $active === 'dashboard' ? 'text-teal-600' : 'text-slate-400' }}">
+                {{ $active === 'home' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    stroke-width="{{ $active === 'dashboard' ? '2.5' : '2' }}">
+                    stroke-width="{{ $active === 'home' ? '2.5' : '2' }}">
                     <path
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>

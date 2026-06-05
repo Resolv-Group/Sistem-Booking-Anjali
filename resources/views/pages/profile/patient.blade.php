@@ -7,9 +7,9 @@
     @php $pasien = auth()->user()->pasien; @endphp
 
     <x-layouts.mobile-app class="bg-gradient-to-b from-[#e8f4f2] via-white to-white min-h-screen" x-data="{
-        photoPreview: '{{ $pasien->foto
+        photoPreview: '{{ $pasien?->foto
             ? 'data:' . ($pasien->foto_mime ?? 'image/jpeg') . ';base64,' . $pasien->foto
-            : 'https://ui-avatars.com/api/?name=' . urlencode($pasien->nama_pasien) . '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
     }">
 
         {{-- TOPBAR: Transparan & Floating --}}

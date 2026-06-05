@@ -130,10 +130,12 @@ class TherapistSessionController extends Controller
     public function startSession($id)
     {
         $bp = BookingPatient::findOrFail($id);
-        $bp->update([
-            'status_pasien' => 'sedang_berjalan',
-            'started_at' => now(),
-        ]);
+        BookingPatient::where('booking_id', $bp->booking_id)
+            ->where('pasien_id', $bp->pasien_id)
+            ->update([
+                'status_pasien' => 'sedang_berjalan',
+                'started_at' => now(),
+            ]);
 
         return redirect()->back()->with('success', "Sesi terapi untuk {$bp->pasien->nama_pasien} telah dimulai!");
     }
@@ -157,53 +159,57 @@ class TherapistSessionController extends Controller
      * Store notes draft or complete session.
      */
     public function saveCatatan(Request $request, $id)
-    {
-        $bp = BookingPatient::findOrFail($id);
+{
+    $bp = BookingPatient::findOrFail($id);
 
-        // Fetch or create the related RekamMedis model
-        $rekamMedis = $bp->rekamMedis;
-        if (! $rekamMedis) {
-            $rekamMedis = new RekamMedis(['booking_pasien_id' => $bp->id]);
-        }
-
-        // Capture all input fields for structured RekamMedis except system fields
-        $inputData = $request->except(['_token', 'ringkasan_sesi', 'action_type', 'status_pasien_action', 'status_pasien_radio']);
-
-        $rekamMedis->fill($inputData);
-        $rekamMedis->save();
-
-        $isComplete = $request->input('action_type') === 'complete' || $request->input('status_pasien_action') === 'complete';
-
-        $updatePayload = [
-            'ringkasan_sesi' => $request->input('ringkasan_sesi'),
-        ];
-
-        if ($isComplete) {
-            $updatePayload['status_pasien'] = 'selesai';
-            $updatePayload['finished_at'] = now();
-        } else {
-            $updatePayload['status_pasien'] = 'sedang_berjalan';
-        }
-
-        $bp->update($updatePayload);
-
-        // Check if all patients inside the parent booking have finished their treatments
-        $booking = $bp->booking;
-        if ($booking) {
-            $allBpFinished = $booking->bookingPatients()->where('status_pasien', '!=', 'selesai')->count() === 0;
-            if ($allBpFinished) {
-                $booking->update([
-                    'status' => 'completed',
-                    'completed_by' => auth()->id(),
-                    'completed_at' => now(),
-                ]);
-            }
-        }
-
-        $message = $isComplete
-            ? "Sesi rekam medis untuk {$bp->pasien->nama_pasien} berhasil diselesaikan!"
-            : 'Draft catatan berhasil disimpan.';
-
-        return redirect()->route('therapist.jadwal')->with('success', $message);
+    // Rekam medis stays per-row (one per layanan) — no change here
+    $rekamMedis = $bp->rekamMedis;
+    if (!$rekamMedis) {
+        $rekamMedis = new RekamMedis(['booking_pasien_id' => $bp->id]);
     }
+
+    $inputData = $request->except(['_token', 'ringkasan_sesi', 'action_type', 'status_pasien_action', 'status_pasien_radio']);
+    $rekamMedis->fill($inputData);
+    $rekamMedis->save();
+
+    $isComplete = $request->input('action_type') === 'complete' || $request->input('status_pasien_action') === 'complete';
+
+    $updatePayload = [
+        'ringkasan_sesi' => $request->input('ringkasan_sesi'),
+    ];
+
+    if ($isComplete) {
+        $updatePayload['status_pasien'] = 'selesai';
+        $updatePayload['finished_at'] = now();
+    } else {
+        $updatePayload['status_pasien'] = 'sedang_berjalan';
+    }
+
+    // Update all rows for this patient in this booking
+    BookingPatient::where('booking_id', $bp->booking_id)
+        ->where('pasien_id', $bp->pasien_id)
+        ->update($updatePayload);
+
+    // Check if all patients in the booking have finished
+    $booking = $bp->booking;
+    if ($booking) {
+        $allFinished = $booking->bookingPatients()
+            ->where('status_pasien', '!=', 'selesai')
+            ->count() === 0;
+
+        if ($allFinished) {
+            $booking->update([
+                'status' => 'completed',
+                'completed_by' => auth()->id(),
+                'completed_at' => now(),
+            ]);
+        }
+    }
+
+    $message = $isComplete
+        ? "Sesi rekam medis untuk {$bp->pasien->nama_pasien} berhasil diselesaikan!"
+        : 'Draft catatan berhasil disimpan.';
+
+    return redirect()->route('therapist.jadwal')->with('success', $message);
+}
 }

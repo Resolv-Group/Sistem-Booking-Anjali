@@ -25,28 +25,6 @@ class LayananSeeder extends Seeder
 
         Layanan::create([
             'kolaborasi_id' => 1,
-            'nama' => 'Bekam Medis',
-            'deskripsi' => 'Terapi bekam steril dengan protokol medis',
-            'base_harga' => 125000,
-            'homecare_harga' => 150000,
-            'status' => 'Tersedia',
-            'created_by' => '1',
-            'updated_by' => '1'
-        ]);
-
-        Layanan::create([
-            'kolaborasi_id' => 1,
-            'nama' => 'Refleksi',
-            'deskripsi' => 'Terapi pijat refleksi kaki dan tubuh',
-            'base_harga' => 100000,
-            'homecare_harga' => 150000,
-            'status' => 'Tersedia',
-            'created_by' => '1',
-            'updated_by' => '1'
-        ]);
-
-        Layanan::create([
-            'kolaborasi_id' => 1,
             'nama' => 'Stimulator',
             'deskripsi' => 'Terapi menggunakan alat stimulator',
             'base_harga' => 100000,
@@ -115,5 +93,28 @@ class LayananSeeder extends Seeder
             'created_by' => '1',
             'updated_by' => '1'
         ]);
+
+        Layanan::create([
+            'kolaborasi_id' => 1,
+            'nama' => 'Bekam Medis',
+            'deskripsi' => 'Terapi bekam steril dengan protokol medis',
+            'base_harga' => 125000,
+            'homecare_harga' => 150000,
+            'status' => 'Tersedia',
+            'created_by' => '1',
+            'updated_by' => '1'
+        ]);
+
+        Layanan::create([
+            'kolaborasi_id' => 1,
+            'nama' => 'Refleksi',
+            'deskripsi' => 'Terapi pijat refleksi kaki dan tubuh',
+            'base_harga' => 100000,
+            'homecare_harga' => 150000,
+            'status' => 'Tersedia',
+            'created_by' => '1',
+            'updated_by' => '1'
+        ]);
+
     }
 }

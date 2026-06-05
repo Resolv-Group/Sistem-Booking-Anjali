@@ -7,7 +7,7 @@
     @php $karyawan = auth()->user()->karyawan; @endphp
 
     <x-layouts.mobile-app class="bg-gradient-to-b from-[#e8f4f2] via-white to-white min-h-screen" x-data="{
-        photoPreview: '{{ $karyawan->foto
+        photoPreview: '{{ $karyawan?->foto
             ? 'data:' . ($karyawan->foto_mime ?? 'image/jpeg') . ';base64,' . $karyawan->foto
             : 'https://ui-avatars.com/api/?name=' .
                 urlencode($karyawan->nama_karyawan) .

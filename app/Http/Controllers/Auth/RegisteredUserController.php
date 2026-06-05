@@ -63,7 +63,6 @@ class RegisteredUserController extends Controller
 
         Pasien::create([
             'user_id' => $user->id,
-            'pasien_public_id' => 'PSN-'.strtoupper(Str::random(8)),
             'nik' => $request->nik,
             'nama_pasien' => $request->name,
             'tanggal_lahir' => $request->tanggal_lahir,

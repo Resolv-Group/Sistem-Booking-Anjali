@@ -25,7 +25,6 @@
         therapists: window.allTherapists,
         patients: window.patients,
         searchPatientInput: '',
-    
         complaint: '{{ old('complaint', '') }}',
         slots: {{ old('slots', 1) }},
         searchService: '',

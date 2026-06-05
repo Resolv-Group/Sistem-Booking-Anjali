@@ -80,7 +80,7 @@ return new class extends Migration
 
             $table->timestamp('cancelled_at')
                 ->nullable();
-
+                
             $table->foreignId('updated_by')
                 ->nullable()
                 ->constrained('users')

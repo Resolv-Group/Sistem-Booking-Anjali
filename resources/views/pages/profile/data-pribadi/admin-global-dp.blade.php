@@ -4,11 +4,9 @@
 
 @section('content')
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen pb-32" x-data="{
-        photoPreview: '{{ $admin_global->foto
+        photoPreview: '{{ $admin_global?->foto
             ? 'data:' . ($admin_global->foto_mime ?? 'image/jpeg') . ';base64,' . $admin_global->foto
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode($admin_global->nama_karyawan) .
-                '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
         gender: '{{ old('jenis_kelamin', $admin_global->jenis_kelamin ?? 'L') }}',
         openDropdown: false,
         showPw: false,
