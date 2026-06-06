@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Models\BookingPatient;
 
 class ProfileController extends Controller
 {
@@ -325,4 +326,48 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Profil Anda berhasil diperbarui!');
     }
+
+    public function medicalHistory()
+{
+    $user = auth()->user();
+    $patient = $user->pasien;
+
+    $records = BookingPatient::where('pasien_id', $patient->id)
+        ->where('status_pasien', 'selesai')
+        ->with([
+            'booking.session.therapist',
+            'booking.session.kolaborasi',
+            'layanan'
+        ])
+        ->get()
+        ->groupBy('booking_id')
+        ->map(function ($group) {
+            $first = $group->first();
+            $session = $first->booking->session;
+
+            // Collect all layanan names from the group
+            $layananNames = $group->pluck('layanan.nama')->filter()->implode(', ');
+
+            // Collect all keluhan (may differ per layanan)
+            $keluhan = $group->pluck('keluhan_pasien')->filter()->unique()->implode(' | ');
+
+            // Collect all catatan terapis
+            $catatan = $group->pluck('catatan_terapis')->filter()->unique()->implode(' | ');
+
+            return [
+                'id' => 'RM-' . str_pad($first->booking_id, 5, '0', STR_PAD_LEFT),
+                'tanggal' => \Carbon\Carbon::parse($session->tanggal_sesi)->translatedFormat('d F Y'),
+                'waktu' => substr($session->waktu_mulai, 0, 5),
+                'terapis' => $session->therapist->nama_karyawan,
+                'layanan' => $layananNames,
+                'kolaborasi' => $session->kolaborasi->nama_kolaborasi,
+                'keluhan' => $keluhan ?: 'Tidak ada keluhan tercatat.',
+                'catatan' => $catatan ?: 'Tidak ada catatan tambahan.',
+                'ringkasan' => $first->ringkasan_sesi ?? 'Ringkasan sesi belum tersedia.',
+            ];
+        })
+        ->values();
+
+    return view('pages.profile.riwayat-medis.patient', compact('records', 'patient'));
+}
 }
