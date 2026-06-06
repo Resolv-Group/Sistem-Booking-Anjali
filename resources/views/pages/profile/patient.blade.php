@@ -71,7 +71,7 @@
                         </svg>
                     </div>
                 </a>
-                <a href="#"
+                <a href="{{ route('patient.history-medis') }}"
                     class="w-full group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md border border-white/80 rounded-[1.8rem] shadow-sm hover:bg-white hover:shadow-md active:scale-[0.97] transition-all duration-300">
 
                     <div class="flex items-center gap-4 text-left">

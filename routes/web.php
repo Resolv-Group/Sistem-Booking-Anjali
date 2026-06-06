@@ -109,6 +109,7 @@ Route::put('/admin-global/profile/update', [ProfileController::class, 'updatePro
 Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile');
 Route::get('/patient/profile/edit', [ProfileController::class, 'editProfilePasien'])->name('patient.profile.edit');
 Route::put('/patient/profile/update', [ProfileController::class, 'updateProfilePasien'])->name('patient.profile.update');
+Route::get('/patient/history-medis', [ProfileController::class, 'medicalHistory'])->name('patient.history-medis');
 
 // Terapis Profile
 Route::view('/therapist/profile', 'pages.profile.therapist')->name('therapist.profile');
