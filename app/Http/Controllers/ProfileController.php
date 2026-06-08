@@ -283,6 +283,9 @@ class ProfileController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('pasiens', 'no_telp')->ignore($pasien->id)],
+            'tinggi_badan' => 'nullable|integer|min:0',
+            'berat_badan' => 'nullable|integer|min:0',
+            'golongan_darah' => 'nullable|string|max:10',
         ]);
 
         // Siapkan array kosong untuk menampung perubahan data User

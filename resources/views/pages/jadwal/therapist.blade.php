@@ -15,13 +15,44 @@
     }">
 
         {{-- 1. TOPBAR --}}
-        <x-ui.topbar title="Rumah Terapi Anjali">
-            <x-slot:right>
-                <div class="h-10 w-10 rounded-full border border-orange-100 p-0.5 bg-white">
-                    <img src="https://i.pravatar.cc/100?u=therapist" class="w-full h-full rounded-full object-cover">
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+                
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    {{-- <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a> --}}
+                    
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Agenda Sesi
+                        </h1>
+                    </div>
                 </div>
-            </x-slot:right>
-        </x-ui.topbar>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}" 
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
 
         <div class="px-6 pt-8 pb-32 space-y-8">
 
@@ -136,9 +167,19 @@
             </div>
 
             {{-- 5. DYNAMIC AGENDA LIST --}}
-            <div class="space-y-8">
-                @forelse($sessions as $session)
-                    <div x-data="{ open: {{ $session['status'] === 'ongoing' ? 'true' : 'false' }} }" class="relative">
+            <div class="space-y-10" x-data="{ showCompleted: false }">
+                
+                {{-- --- SECTION 1: AGENDA AKTIF (MENUNGGU & BERJALAN) --- --}}
+                <div class="space-y-8">
+                    @php $hasActive = false; @endphp
+                    @forelse($sessions as $session)
+                        @php 
+                            $activePatients = collect($session['patients'])->whereIn('status_pasien', ['menunggu', 'sedang_berjalan']);
+                        @endphp
+
+                        @if($activePatients->isNotEmpty())
+                            @php $hasActive = true; @endphp
+                            <div x-data="{ open: {{ $session['status'] === 'ongoing' ? 'true' : 'false' }} }" class="relative">
                         <div class="flex gap-4">
                             {{-- Timeline Marker --}}
                             <div class="flex flex-col items-center w-12 pt-1 shrink-0">
@@ -166,14 +207,8 @@
                                         </div>
                                         {{-- Patient Preview --}}
                                         <div x-show="!open" class="flex items-center gap-1.5 ml-3.5">
-                                            <p class="text-[11px] font-medium text-slate-400 truncate max-w-[180px]">
-                                                @foreach ($session['patients'] as $p)
-                                                    {{ explode(' ', $p['name'])[0] }}{{ !$loop->last ? ', ' : '' }}
-                                                @endforeach
-                                            </p>
-                                            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
                                             <span
-                                                class="text-[10px] font-bold text-teal-600/70">{{ count($session['patients']) }}
+                                                class="text-[10px] font-bold text-teal-600/70">{{ $activePatients->count() }}
                                                 Pasien</span>
                                         </div>
                                     </div>
@@ -191,7 +226,7 @@
                                 {{-- Patient List --}}
                                 <div x-show="open" x-collapse>
                                     <div class="space-y-4 pt-1 pb-6">
-                                        @forelse($session['patients'] as $patient)
+                                        @forelse($activePatients as $patient)
                                             <div
                                                 class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm transition-all hover:shadow-md">
                                                 <div class="flex flex-col space-y-4">
@@ -339,19 +374,85 @@
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="text-center py-20 bg-white rounded-3xl border border-slate-100">
-                        <div
-                            class="w-16 h-16 mx-auto bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4">
-                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                stroke-width="1.8">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                        @endif
+
+                    @empty
+                        <div class="text-center py-20 bg-white rounded-3xl border border-slate-100">
+                            <div
+                                class="w-16 h-16 mx-auto bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-400">Tidak ada sesi agenda terapis hari ini.</p>
                         </div>
-                        <p class="text-sm font-bold text-slate-400">Tidak ada sesi agenda terapis hari ini.</p>
+                    @endforelse
+
+                    {{-- Fallback: sessions exist but ALL patients are completed (no active ones) --}}
+                    @if(!$hasActive && count($sessions) > 0)
+                        <div class="text-center py-16 bg-white rounded-3xl border border-slate-100">
+                            <div class="w-16 h-16 mx-auto bg-teal-50 text-teal-400 rounded-2xl flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">Semua sesi hari ini telah selesai! 🎉</p>
+                            <p class="text-xs text-slate-400 font-medium mt-1">Tidak ada agenda aktif yang tersisa.</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- --- SECTION 2: COMPLETED SECTION --- --}}
+                @php 
+                    $completedPatients = collect($sessions)->flatMap(fn($s) => collect($s['patients'])->where('status_pasien', 'selesai')->map(function($p) use ($s) {
+                        $p['orig_time'] = $s['time_start'];
+                        return $p;
+                    }));
+                @endphp
+
+                @if($completedPatients->isNotEmpty())
+                    <div class="pt-4">
+                        <button @click="showCompleted = !showCompleted" class="w-full flex items-center gap-4 group active:scale-[0.98] transition-all">
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                            <div class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-full shadow-sm">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Selesai</span>
+                                <span class="bg-slate-100 text-slate-500 text-[9px] px-1.5 py-0.5 rounded-md font-bold">{{ $completedPatients->count() }}</span>
+                                <svg class="w-3 h-3 text-slate-400 transition-transform duration-300" :class="showCompleted ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
+                            </div>
+                            <div class="h-px flex-1 bg-slate-200"></div>
+                        </button>
+
+                        <div x-show="showCompleted" x-collapse>
+                            <div class="space-y-4 mt-8 opacity-75 grayscale-[0.4]">
+                                @foreach($completedPatients as $patient)
+                                    <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden">
+                                        <div class="absolute top-0 right-0">
+                                            <span class="bg-slate-50 text-slate-400 text-[8px] font-black uppercase px-3 py-1 rounded-bl-xl tracking-tighter">Archived</span>
+                                        </div>
+                                        <div class="flex flex-col space-y-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
+                                                </div>
+                                                <div>
+                                                    <h5 class="text-sm font-black text-slate-800 leading-tight">{{ $patient['name'] }}</h5>
+                                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ $patient['orig_time'] }} • {{ $patient['type'] }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-50/50 p-4 rounded-2xl border border-white space-y-1">
+                                                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Ringkasan:</p>
+                                                <p class="text-[11px] text-slate-500 leading-relaxed italic font-medium">"{{ $patient['ringkasan_sesi'] ?: 'Terapi selesai.' }}"</p>
+                                            </div>
+                                            <a href="{{ route('therapist.ringkasan-sesi', ['id' => $patient['id']]) }}" class="w-full py-3 bg-slate-100 text-slate-600 text-center rounded-xl text-[9px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all">Lihat Detail Catatan</a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
-                @endforelse
+                @endif
             </div>
 
         </div>

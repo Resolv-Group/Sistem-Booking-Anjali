@@ -49,7 +49,6 @@ return new class extends Migration
             $table->text('saran_rekomendasi')->nullable();
             $table->text('catatan_khusus')->nullable();
             $table->text('catatan_terapis')->nullable();
-            
             $table->timestamps();
         });
     }

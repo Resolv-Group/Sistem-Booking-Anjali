@@ -10,21 +10,48 @@
         gender: '{{ old('jenis_kelamin', $pasien->jenis_kelamin ?? 'L') }}',
         openDropdown: false,
         showPw: false,
-        showPwConf: false
+        showPwConf: false,
+        openGoldar: false,
+        goldar: '{{ old('golongan_darah', $pasien->golongan_darah ?? '') }}'
     }">
 
         {{-- 1. TOPBAR GLASSY --}}
-        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('patient.profile') }}"
-                    class="group flex items-center justify-center w-10 h-10 bg-slate-50 hover:bg-teal-50 rounded-xl transition-all duration-300 active:scale-90 border border-slate-100">
-                    <i data-lucide="chevron-left" class="w-5 h-5 text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <div class="flex flex-col">
-                    <span
-                        class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Pengaturan</span>
-                    <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none">Data Pribadi</h1>
+<nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+                
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Data Pribadi
+                        </h1>
+                    </div>
                 </div>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}" 
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </nav>
 
@@ -122,6 +149,48 @@
                                         :class="gender === 'P' ? 'text-teal-600 bg-teal-50' : 'text-slate-600'">Perempuan</button>
                                 </div>
                                 <input type="hidden" name="jenis_kelamin" :value="gender">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- PHYSICAL DATA --}}
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tinggi</label>
+                            <div class="relative flex items-center">
+                                <input type="number" name="tinggi_badan" value="{{ old('tinggi_badan', $pasien->tinggi_badan) }}" placeholder="0"
+                                    class="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-700 outline-none">
+                                <span class="absolute right-3 text-[9px] font-bold text-slate-300 uppercase">cm</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Berat</label>
+                            <div class="relative flex items-center">
+                                <input type="number" name="berat_badan" value="{{ old('berat_badan', $pasien->berat_badan) }}" placeholder="0"
+                                    class="w-full px-4 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-700 outline-none">
+                                <span class="absolute right-3 text-[9px] font-bold text-slate-300 uppercase">kg</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Gol. Darah</label>
+                            <div class="relative">
+                                <button type="button" @click="openGoldar = !openGoldar"
+                                    class="w-full flex items-center justify-between px-3 py-4 bg-slate-50 rounded-2xl text-xs font-bold text-slate-700">
+                                    <span x-text="goldar ? goldar : 'Pilih'"></span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform"
+                                        :class="openGoldar ? 'rotate-180' : ''"></i>
+                                </button>
+                                <div x-show="openGoldar" @click.away="openGoldar = false" x-cloak
+                                    class="absolute right-0 z-50 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-slate-100 p-1 overflow-hidden animate-in fade-in zoom-in duration-200">
+                                    @foreach (['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] as $opt)
+                                        <button type="button" @click="goldar = '{{ $opt }}'; openGoldar = false"
+                                            class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold hover:bg-teal-50"
+                                            :class="goldar === '{{ $opt }}' ? 'text-teal-600 bg-teal-50' : 'text-slate-600'">{{ $opt }}</button>
+                                    @endforeach
+                                </div>
+                                <input type="hidden" name="golongan_darah" :value="goldar">
                             </div>
                         </div>
                     </div>

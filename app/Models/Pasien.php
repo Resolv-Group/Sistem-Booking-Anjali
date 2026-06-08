@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class Pasien extends Model
 {
@@ -27,6 +28,13 @@ class Pasien extends Model
         'membership_tier',
         'foto',
         'foto_mime',
+        'golongan_darah',
+        'tinggi_badan',
+        'berat_badan',
+    ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date'
     ];
 
     public function uniqueIds(): array
@@ -40,6 +48,13 @@ class Pasien extends Model
             ? Storage::disk('public')->url($this->foto_path)
             : null;
     }
+
+    public function getAgeAttribute()
+{
+    if (!$this->tanggal_lahir) return null;
+
+    return \Carbon\Carbon::parse($this->tanggal_lahir)->age;
+}
 
     public function getFotoAttribute($value): ?string
     {

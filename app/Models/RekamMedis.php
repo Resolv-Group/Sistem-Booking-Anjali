@@ -50,4 +50,9 @@ class RekamMedis extends Model
     {
         return $this->belongsTo(BookingPatient::class, 'booking_pasien_id');
     }
+
+    public function fotos()
+    {
+        return $this->hasMany(RekamMedisFotos::class, 'rekam_medis_id');
+    }
 }

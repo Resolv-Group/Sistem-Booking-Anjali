@@ -33,20 +33,16 @@
             scrollbar-width: none;
             /* Firefox */
         }
-
-        /* Memperhalus pergerakan di mobile */
-        [x-ref="slider"] {
-            user-select: none;
-            -webkit-user-drag: none;
-        }
     </style>
 
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{
         searchQuery: '',
         lokasiTerpilih: 'Semua Lokasi',
-        activeCategory: 'Semua',
+        selectedServices: [],
         showLokasi: false,
+        showServices: false,
         searchLokasi: '',
+        searchService: '',
     
         // Data dari Controller
         daftarLokasi: window.uniqueCities,
@@ -55,16 +51,75 @@
         get filteredLokasi() {
             return this.daftarLokasi.filter(l => l.toLowerCase().includes(this.searchLokasi.toLowerCase()))
         },
+
+        get filteredServices() {
+            return this.daftarServices.filter(s => s.toLowerCase().includes(this.searchService.toLowerCase()))
+        },
+
+        toggleService(service) {
+            const idx = this.selectedServices.indexOf(service);
+            if (idx === -1) {
+                this.selectedServices.push(service);
+            } else {
+                this.selectedServices.splice(idx, 1);
+            }
+        },
+
+        get serviceLabel() {
+            if (this.selectedServices.length === 0) return 'Semua Layanan';
+            if (this.selectedServices.length === 1) return this.selectedServices[0];
+            return this.selectedServices[0] + ' +' + (this.selectedServices.length - 1) + ' lainnya';
+        },
     
         // Logika Filter Utama
         shouldShow(nama, city, services) {
             const matchSearch = nama.toLowerCase().includes(this.searchQuery.toLowerCase());
             const matchLokasi = this.lokasiTerpilih === 'Semua Lokasi' || city === this.lokasiTerpilih;
-            const matchCategory = this.activeCategory === 'Semua' || services.includes(this.activeCategory);
+            const matchCategory = this.selectedServices.length === 0 || this.selectedServices.some(s => services.includes(s));
     
             return matchSearch && matchLokasi && matchCategory;
         }
     }">
+    {{-- 1. TOPBAR --}}
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+                
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    {{-- <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a> --}}
+                    
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Daftar Terapis
+                        </h1>
+                    </div>
+                </div>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}" 
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
+
         <div class="px-6 pt-8 pb-32 space-y-10">
 
             {{-- 2. HERO SECTION --}}
@@ -78,8 +133,9 @@
             </div>
 
             {{-- 3. SEARCH & FILTERS --}}
-            <div class="space-y-6">
+            <div class="space-y-4">
                 {{-- Search Bar --}}
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Cari Terapis</p>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                         <svg class="w-5 h-5 text-slate-400 group-focus-within:text-teal-500 transition-colors"
@@ -91,65 +147,99 @@
                         class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-base font-medium focus:border-teal-500 focus:ring-4 focus:ring-teal-50/50 transition-all outline-none shadow-sm">
                 </div>
 
-                {{-- Category Carousel (Fixed Alignment) --}}
-                <div class="space-y-3" x-data="{
-                    isDown: false,
-                    startX: 0,
-                    scrollLeft: 0,
-                
-                    startDragging(e) {
-                        this.isDown = true;
-                        this.startX = e.pageX - $refs.slider.offsetLeft;
-                        this.scrollLeft = $refs.slider.scrollLeft;
-                    },
-                    stopDragging() {
-                        this.isDown = false;
-                    },
-                    move(e) {
-                        if (!this.isDown) return;
-                        e.preventDefault();
-                        const x = e.pageX - $refs.slider.offsetLeft;
-                        const walk = (x - this.startX) * 2;
-                        $refs.slider.scrollLeft = this.scrollLeft - walk;
-                    }
-                }">
+                {{-- Category Dropdown Multiselect --}}
+                <div class="space-y-2">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Kategori Layanan</p>
 
-                    {{-- Wrapper dengan -mx-6 untuk menjangkau pinggir layar HP --}}
-                    <div class="relative -mx-6 overflow-hidden">
-                        <div x-ref="slider" @mousedown="startDragging($event)" @mouseleave="stopDragging()"
-                            @mouseup="stopDragging()" @mousemove="move($event)" {{-- px-6 di sini memastikan item pertama dan terakhir sejajar dengan konten lainnya --}}
-                            class="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-6 cursor-grab active:cursor-grabbing select-none"
-                            style="-webkit-overflow-scrolling: touch; scroll-behavior: auto;">
+                    <div class="relative">
+                        {{-- Trigger Button --}}
+                        <button @click="showServices = !showServices"
+                            class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-700 transition-all"
+                            :class="selectedServices.length > 0 ? 'border-teal-400 ring-2 ring-teal-100' : ''">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="layers" class="w-5 h-5 text-teal-500"></i>
+                                <span x-text="serviceLabel" class="truncate max-w-[200px]"></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                {{-- Badge jumlah terpilih --}}
+                                <span x-show="selectedServices.length > 0"
+                                    class="inline-flex items-center justify-center w-5 h-5 bg-teal-600 text-white text-[10px] font-black rounded-full"
+                                    x-text="selectedServices.length"></span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-slate-300 transition-transform"
+                                    :class="showServices ? 'rotate-180' : ''"></i>
+                            </div>
+                        </button>
 
-                            {{-- Tombol Semua --}}
-                            <button @click="activeCategory = 'Semua'"
-                                :class="activeCategory === 'Semua' ?
-                                    'bg-teal-600 text-white shadow-lg shadow-teal-600/20 border-transparent' :
-                                    'bg-white text-slate-600 border-slate-200'"
-                                class="shrink-0 px-8 py-3 border rounded-2xl text-sm font-bold transition-all">
-                                Semua
-                            </button>
+                        {{-- Dropdown Panel --}}
+                        <div x-show="showServices" @click.outside="showServices = false" x-cloak
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                            class="absolute mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 p-3 space-y-3"
+                            style="display: none;">
 
-                            {{-- Looping Services --}}
-                            @foreach ($uniqueServices as $service)
-                                <button @click="activeCategory = '{{ $service }}'"
-                                    :class="activeCategory === '{{ $service }}' ?
-                                        'bg-teal-600 text-white shadow-lg shadow-teal-600/20 border-transparent' :
-                                        'bg-white text-slate-600 border-slate-200'"
-                                    class="shrink-0 px-8 py-3 border rounded-2xl text-sm font-bold transition-all">
-                                    {{ $service }}
+                            {{-- Search inside dropdown --}}
+                            <input type="text" x-model="searchService" placeholder="Cari layanan..."
+                                class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-teal-500/20">
+
+                            {{-- Clear all button --}}
+                            <div class="flex items-center justify-between px-1">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pilih Layanan</span>
+                                <button @click="selectedServices = []" x-show="selectedServices.length > 0"
+                                    class="text-[11px] font-bold text-rose-400 hover:text-rose-600 transition-colors">
+                                    Hapus Semua
                                 </button>
-                            @endforeach
+                            </div>
 
-                            {{-- Spacer Akhir: Menambahkan sedikit ruang kosong di akhir agar tombol terakhir tidak menempel ke pinggir saat di-scroll mentok --}}
-                            <div class="shrink-0 w-3"></div>
+                            {{-- Options list --}}
+                            <div class="max-h-52 overflow-y-auto space-y-1 custom-scrollbar">
+                                <template x-for="service in filteredServices" :key="service">
+                                    <button @click="toggleService(service)"
+                                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition-all text-left"
+                                        :class="selectedServices.includes(service) ? 'bg-teal-50 text-teal-700' : ''">
+                                        <div class="flex items-center gap-3">
+                                            {{-- Custom checkbox --}}
+                                            <span class="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all"
+                                                :class="selectedServices.includes(service) ? 'bg-teal-600 border-teal-600' : 'border-slate-300'">
+                                                <svg x-show="selectedServices.includes(service)" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                                    <path d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            </span>
+                                            <span x-text="service"></span>
+                                        </div>
+                                    </button>
+                                </template>
+
+                                {{-- Empty state --}}
+                                <p x-show="filteredServices.length === 0"
+                                    class="text-center text-sm text-slate-400 py-4">
+                                    Tidak ada layanan ditemukan.
+                                </p>
+                            </div>
                         </div>
+                    </div>
+
+                    {{-- Selected tags chip --}}
+                    <div x-show="selectedServices.length > 0" class="flex flex-wrap gap-2 pt-1">
+                        <template x-for="s in selectedServices" :key="s">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white text-xs font-bold rounded-full">
+                                <span x-text="s"></span>
+                                <button @click="toggleService(s)" class="hover:opacity-70 transition-opacity">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                        <path d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </span>
+                        </template>
                     </div>
                 </div>
 
                 {{-- Advanced Filters --}}
                 <div class="grid grid-cols-1 gap-4">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Lokasi</p>
                     <div class="relative">
                         <button @click="showLokasi = !showLokasi"
                             class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-700">

@@ -12,6 +12,7 @@ use App\Http\Controllers\LayananController;
 use App\Http\Controllers\OperasionalController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TherapistController;
 use App\Http\Controllers\TherapistScheduleController;
 use App\Http\Controllers\TherapistSessionController;
 use Illuminate\Support\Facades\Route;
@@ -122,7 +123,8 @@ Route::get('/admin-cabang/profile/edit', [ProfileController::class, 'editProfile
 Route::put('/admin-cabang/profile/update', [ProfileController::class, 'updateProfileAdminCabang'])->name('admin-cabang.profile.update');
 
 // therapist
-Route::view('/dashboard/therapist', 'pages.dashboard.therapist')->name('therapist.dashboard');
+Route::get('/dashboard/therapist', [TherapistController::class, 'dashboard'])->name('therapist.dashboard');
+Route::get('/therapist/layanan', [TherapistController::class, 'myLayanan'])->name('therapist.layanan');
 Route::get('/jadwal/therapist', [TherapistSessionController::class, 'index'])->name('therapist.jadwal');
 Route::post('/jadwal/therapist/session/{id}/start', [TherapistSessionController::class, 'startSession'])->name('therapist.session.start');
 Route::get('/jadwal/therapist/atur-jam-kerja', [TherapistScheduleController::class, 'index'])->name('therapist.atur-jam-kerja');
@@ -131,6 +133,8 @@ Route::get('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController
 Route::post('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController::class, 'saveCatatan'])->name('therapist.ringkasan-sesi.store');
 Route::view('/therapist/booking/list', 'pages.booking.therapist.index')->name('therapist.booking');
 Route::view('/therapist/booking/history', 'pages.booking.therapist.history')->name('therapist.booking.history');
+Route::get('/therapist/patient/list', [TherapistController::class, 'MyPatientTherapist'])->name('therapist.pasien.list');
+Route::get('/therapist/patient/history/{id}', [TherapistController::class, 'patientHistory'])->name('therapist.pasien.history');
 
 // admin cabang / kolaborasi
 Route::view('/dashboard/admin-kolaborasi', 'pages.dashboard.admin-cabang')->name('admin-cabang.dashboard');
