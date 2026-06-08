@@ -14,16 +14,28 @@
     }">
 
         {{-- 1. TOPBAR GLASSY --}}
-        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('therapist.profile') }}"
-                    class="group flex items-center justify-center w-10 h-10 bg-slate-50 hover:bg-teal-50 rounded-xl transition-all duration-300 active:scale-90 border border-slate-100">
-                    <i data-lucide="chevron-left" class="w-5 h-5 text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <div class="flex flex-col">
-                    <span
-                        class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Pengaturan</span>
-                    <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none">Data Pribadi</h1>
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="javascript:void(0)" onclick="window.history.back()"
+                        class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor"
+                            stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <span
+                            class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">Data
+                            Pribadi</span>
+                        <h1
+                            class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase truncate max-w-[180px]">
+                            Profil Anda
+                        </h1>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden">
+                    <img src="{{ asset('images/logo_anjali.jpg') }}" class="w-full h-full object-cover">
                 </div>
             </div>
         </nav>
@@ -208,7 +220,7 @@
             </form>
         </div>
 
-        <x-navigation.therapist-navbar active="profile" />
+        <x-navigation.therapist-navbar active="profil" />
     </x-layouts.mobile-app>
 
     @if (session('success'))

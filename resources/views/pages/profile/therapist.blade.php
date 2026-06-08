@@ -9,21 +9,46 @@
     <x-layouts.mobile-app class="bg-gradient-to-b from-[#e8f4f2] via-white to-white min-h-screen" x-data="{
         photoPreview: '{{ $karyawan?->foto
             ? 'data:' . ($karyawan->foto_mime ?? 'image/jpeg') . ';base64,' . $karyawan->foto
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode($karyawan->nama_karyawan) .
-                '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
     }">
 
-        {{-- TOPBAR: Transparan & Floating --}}
-        <x-ui.topbar title="Profil Anda" class="bg-transparent border-none">
-            <x-slot:left>
-                <button class="p-2 text-teal-800 active:scale-90 transition-transform">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            </x-slot:left>
-        </x-ui.topbar>
+        {{-- TOPBAR --}}
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    {{-- <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a> --}}
+
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            {{-- Avatar dengan Ring Status --}}
+                            <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                                <img src="{{ asset('images/logo_anjali.jpg') }}"
+                                    class="w-full h-full rounded-[10px] object-cover bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Profil Anda
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
         <div class="p-5 pb-32 flex flex-col items-center">
 
@@ -96,7 +121,7 @@
 
         </div>
 
-        <x-navigation.therapist-navbar active="profile" />
+        <x-navigation.therapist-navbar active="profil" />
 
     </x-layouts.mobile-app>
 

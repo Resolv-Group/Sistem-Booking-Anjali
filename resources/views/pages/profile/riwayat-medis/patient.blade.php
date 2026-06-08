@@ -7,28 +7,55 @@
 </script>
 
 @section('content')
-    <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen pb-32" x-data="{ 
+    <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen pb-32" x-data="{
         search: '',
         activeId: null,
         records: window.records
     }">
 
         {{-- 1. TOPBAR GLASSY --}}
-        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('patient.profile') }}" 
-                   class="group flex items-center justify-center w-10 h-10 bg-slate-50 hover:bg-teal-50 rounded-xl transition-all duration-300 active:scale-90 border border-slate-100">
-                    <i data-lucide="chevron-left" class="w-5 h-5 text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <div class="flex flex-col">
-                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Informasi Medis</span>
-                    <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none">Rekam Medis</h1>
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    <a href="javascript:void(0)" onclick="window.history.back()"
+                        class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor"
+                            stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Rekam Medis Saya
+                        </h1>
+                    </div>
                 </div>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}"
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </nav>
 
         <div class="px-6 pt-8 space-y-8">
-            
+
             {{-- 2. PATIENT MINI CARD --}}
             <div class="bg-teal-900 rounded-[2.2rem] p-6 text-white shadow-xl shadow-teal-900/20 relative overflow-hidden">
                 <div class="relative z-10 space-y-4">
@@ -37,7 +64,8 @@
                             <p class="text-[10px] font-bold text-teal-300 uppercase tracking-widest">Pasien Utama</p>
                             <h3 class="text-xl font-black tracking-tight">{{ $patient->nama_pasien }}</h3>
                         </div>
-                        <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                        <div
+                            class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
                             <i data-lucide="database" class="w-6 h-6 text-teal-200"></i>
                         </div>
                     </div>
@@ -60,31 +88,38 @@
             {{-- 3. SEARCH HISTORY --}}
             <div class="relative group px-1">
                 <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300"></i>
-                <input type="text" x-model="search" placeholder="Cari tanggal atau nama terapis..." 
+                <input type="text" x-model="search" placeholder="Cari tanggal atau nama terapis..."
                     class="w-full pl-12 pr-5 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/5 outline-none shadow-sm transition-all">
             </div>
 
             {{-- 4. MEDICAL LIST --}}
             <div class="space-y-4">
-                <template x-for="record in records.filter(r => r.tanggal.toLowerCase().includes(search.toLowerCase()) || r.terapis.toLowerCase().includes(search.toLowerCase()))" :key="record.id">
+                <template
+                    x-for="record in records.filter(r => r.tanggal.toLowerCase().includes(search.toLowerCase()) || r.terapis.toLowerCase().includes(search.toLowerCase()))"
+                    :key="record.id">
                     <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden transition-all duration-300"
                         :class="activeId === record.id ? 'ring-2 ring-teal-500/20 shadow-lg' : ''">
-                        
+
                         {{-- Collapsed State (Header) --}}
-                        <div @click="activeId = activeId === record.id ? null : record.id" 
+                        <div @click="activeId = activeId === record.id ? null : record.id"
                             class="p-5 flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-teal-600 border border-slate-100">
+                                <div
+                                    class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-teal-600 border border-slate-100">
                                     <i data-lucide="calendar-check" class="w-6 h-6"></i>
                                 </div>
                                 <div class="space-y-0.5">
                                     <h4 class="text-sm font-black text-slate-800" x-text="record.layanan"></h4>
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter" x-text="record.tanggal"></p>
+                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tighter"
+                                        x-text="record.tanggal"></p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase rounded-md border border-emerald-100">Selesai</span>
-                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-300 transition-transform duration-300" :class="activeId === record.id ? 'rotate-180 text-teal-500' : ''"></i>
+                                <span
+                                    class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase rounded-md border border-emerald-100">Selesai</span>
+                                <i data-lucide="chevron-down"
+                                    class="w-4 h-4 text-slate-300 transition-transform duration-300"
+                                    :class="activeId === record.id ? 'rotate-180 text-teal-500' : ''"></i>
                             </div>
                         </div>
 
@@ -97,11 +132,13 @@
                                 {{-- Info Grid --}}
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Terapis</p>
+                                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
+                                            Terapis</p>
                                         <p class="text-xs font-bold text-slate-700" x-text="record.terapis"></p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Lokasi</p>
+                                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
+                                            Lokasi</p>
                                         <p class="text-xs font-bold text-slate-700" x-text="record.kolaborasi"></p>
                                     </div>
                                 </div>
@@ -113,7 +150,8 @@
                                             <i data-lucide="activity" class="w-3 h-3"></i>
                                             <p class="text-[9px] font-black uppercase tracking-widest">Keluhan Awal</p>
                                         </div>
-                                        <p class="text-xs font-medium text-slate-600 leading-relaxed" x-text="record.keluhan"></p>
+                                        <p class="text-xs font-medium text-slate-600 leading-relaxed"
+                                            x-text="record.keluhan"></p>
                                     </div>
 
                                     <div class="p-4 bg-teal-50/50 rounded-2xl border border-teal-100/50 space-y-2">
@@ -121,7 +159,8 @@
                                             <i data-lucide="file-text" class="w-3 h-3"></i>
                                             <p class="text-[9px] font-black uppercase tracking-widest">Ringkasan Sesi</p>
                                         </div>
-                                        <p class="text-xs font-bold text-teal-900 leading-relaxed" x-text="record.ringkasan"></p>
+                                        <p class="text-xs font-bold text-teal-900 leading-relaxed"
+                                            x-text="record.ringkasan"></p>
                                     </div>
 
                                     <div class="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-2">
@@ -129,7 +168,8 @@
                                             <i data-lucide="lightbulb" class="w-3 h-3"></i>
                                             <p class="text-[9px] font-black uppercase tracking-widest">Catatan Ahli</p>
                                         </div>
-                                        <p class="text-xs font-medium text-slate-500 italic leading-relaxed" x-text="record.catatan"></p>
+                                        <p class="text-xs font-medium text-slate-500 italic leading-relaxed"
+                                            x-text="record.catatan"></p>
                                     </div>
                                 </div>
 
@@ -144,7 +184,8 @@
 
                 {{-- EMPTY STATE --}}
                 <div x-show="records.length === 0" class="text-center py-20 px-10 space-y-4">
-                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100">
+                    <div
+                        class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto border border-slate-100">
                         <i data-lucide="clipboard-x" class="w-8 h-8 text-slate-200"></i>
                     </div>
                     <div class="space-y-1">
@@ -165,12 +206,23 @@
         lucide.createIcons();
         // Hook for Alpine transitions if needed
         document.addEventListener('alpine:init', () => {
-            Alpine.effect(() => { lucide.createIcons(); });
+            Alpine.effect(() => {
+                lucide.createIcons();
+            });
         });
     </script>
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        [x-cloak] { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 @endsection

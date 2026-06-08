@@ -24,6 +24,10 @@ return new class extends Migration
             $table->string('nama_pasien');
             $table->date('tanggal_lahir')->nullable();
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
+            
+            $table->string('golongan_darah', 10)->nullable();
+            $table->integer('tinggi_badan')->nullable();
+            $table->integer('berat_badan')->nullable();
 
             $table->text('alamat')->nullable();
             $table->string('no_telp', 20)->unique();
