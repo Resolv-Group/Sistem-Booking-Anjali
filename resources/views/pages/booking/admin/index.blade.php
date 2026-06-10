@@ -7,13 +7,36 @@
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen">
 
         {{-- 1. TOPBAR --}}
-        <x-ui.topbar title="Rumah Terapi Anjali">
-            <x-slot:right>
-                <div class="w-10 h-10 rounded-xl border-2 border-orange-200 p-0.5 bg-white shadow-sm overflow-hidden">
-                    <img src="https://i.pravatar.cc/100?u=admin" class="w-full h-full rounded-lg object-cover">
+<nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{ auth()->user()->karyawan->kolaborasi->nama_kolaborasi ?? 'Rumah Terapi Anjali' }}
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Booking
+                        </h1>
+                    </div>
                 </div>
-            </x-slot:right>
-        </x-ui.topbar>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}"
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
+
 
         <div class="px-6 pt-8 pb-32 space-y-8">
 
@@ -47,7 +70,7 @@
             {{-- 4. SECTION HEADER --}}
             <div class="flex justify-between items-end px-1">
                 <h3 class="text-lg font-semibold text-slate-800 tracking-tight">Antrian Saat Ini</h3>
-                <a href="{{ route('therapist.booking.history') }}"
+                <a href="{{ route('admin-cabang.booking.history') }}"
                     class="text-xs font-semibold text-teal-600 flex items-center gap-1 hover:underline">
                     Lihat Histori
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">

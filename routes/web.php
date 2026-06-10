@@ -12,6 +12,7 @@ use App\Http\Controllers\LayananController;
 use App\Http\Controllers\OperasionalController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminKolaborasiController;
 use App\Http\Controllers\TherapistController;
 use App\Http\Controllers\TherapistScheduleController;
 use App\Http\Controllers\TherapistSessionController;
@@ -132,18 +133,39 @@ Route::post('/jadwal/therapist/atur-jam-kerja/form', [TherapistScheduleControlle
 Route::get('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController::class, 'catatanForm'])->name('therapist.ringkasan-sesi');
 Route::post('/jadwal/therapist/session/{id}/catatan', [TherapistSessionController::class, 'saveCatatan'])->name('therapist.ringkasan-sesi.store');
 Route::view('/therapist/booking/list', 'pages.booking.therapist.index')->name('therapist.booking');
-Route::view('/therapist/booking/history', 'pages.booking.therapist.history')->name('therapist.booking.history');
+Route::get('/therapist/booking/history', [AdminKolaborasiController::class, 'bookingHistory'])->name('therapist.booking.history');
 Route::get('/therapist/patient/list', [TherapistController::class, 'MyPatientTherapist'])->name('therapist.pasien.list');
 Route::get('/therapist/patient/history/{id}', [TherapistController::class, 'patientHistory'])->name('therapist.pasien.history');
 
 // admin cabang / kolaborasi
-Route::view('/dashboard/admin-kolaborasi', 'pages.dashboard.admin-cabang')->name('admin-cabang.dashboard');
+Route::get('/dashboard/admin-kolaborasi', [AdminKolaborasiController::class, 'dashboard'])->name('admin-cabang.dashboard');
 Route::get('/admin-cabang/booking/list', [BookingController::class, 'adminBookingListIndex'])->name('admin-cabang.booking.list');
 Route::post('/admin-cabang/booking/{booking}/accept', [BookingController::class, 'accept'])->name('admin-cabang.booking.accept');
 Route::post('/admin-cabang/booking/{booking}/reject', [BookingController::class, 'reject'])->name('admin-cabang.booking.reject');
 Route::post('/admin-cabang/booking/{booking}/cancel-approval', [BookingController::class, 'cancelApproval'])->name('admin-cabang.booking.cancel');
 Route::get('/admin-cabang/booking/form', [BookingController::class, 'adminBookingForm'])->name('admin-cabang.booking.form');
 Route::post('/admin-cabang/booking/form', [BookingController::class, 'adminBookingStore'])->name('admin-cabang.booking.store');
+Route::get('/admin-cabang/booking/history', [AdminKolaborasiController::class, 'bookingHistory'])->name('admin-cabang.booking.history');
+Route::get('/admin-cabang/therapist/list', [AdminKolaborasiController::class, 'TherapistList'])->name('admin-cabang.therapist.list');
+Route::get('/admin-cabang/therapist/{id}', [AdminKolaborasiController::class, 'TherapistDetail'])->name('admin-cabang.therapist.detail');
+
+// Patient management
+Route::get('/admin-cabang/patient/list', [AdminKolaborasiController::class, 'PatientList'])->name('admin-cabang.patient.list');
+Route::get('/admin-cabang/patient/{id}', [AdminKolaborasiController::class, 'PatientDetail'])->name('admin-cabang.patient.detail');
+
+// Service (Layanan) CRUD
+Route::get('/admin-cabang/layanan', [AdminKolaborasiController::class, 'layananIndex'])->name('admin-cabang.layanan.index');
+Route::get('/admin-cabang/layanan/create', [AdminKolaborasiController::class, 'layananCreate'])->name('admin-cabang.layanan.create');
+Route::post('/admin-cabang/layanan/store', [AdminKolaborasiController::class, 'layananStore'])->name('admin-cabang.layanan.store');
+Route::get('/admin-cabang/layanan/{id}/edit', [AdminKolaborasiController::class, 'layananEdit'])->name('admin-cabang.layanan.edit');
+Route::put('/admin-cabang/layanan/{id}', [AdminKolaborasiController::class, 'layananUpdate'])->name('admin-cabang.layanan.update');
+Route::delete('/admin-cabang/layanan/{id}', [AdminKolaborasiController::class, 'layananDestroy'])->name('admin-cabang.layanan.destroy');
+
+// Collaboration Profile
+Route::get('/admin-cabang/profil-kolaborasi', [AdminKolaborasiController::class, 'KolaborasiProfile'])->name('admin-cabang.kolaborasi.profile');
+Route::put('/admin-cabang/profil-kolaborasi', [AdminKolaborasiController::class, 'KolaborasiProfileUpdate'])->name('admin-cabang.kolaborasi.profile.update');
+
+
 
 // admin global
 Route::view('/lainnya/admin-global', 'pages.lainnya.admin-global')->name('global.dashboard');

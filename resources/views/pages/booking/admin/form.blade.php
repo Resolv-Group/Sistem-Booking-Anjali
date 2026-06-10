@@ -275,18 +275,44 @@
     }">
 
         {{-- TOPBAR --}}
-        <x-ui.topbar title="Rumah Terapi Anjali">
-            <x-slot:left>
-                <button type="button" onclick="window.history.back()" class="p-2 -ml-2 text-slate-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            </x-slot:left>
-            <x-slot:right>
-                <img src="https://i.pravatar.cc/100?u=anjali" class="w-9 h-9 rounded-full border border-slate-200">
-            </x-slot:right>
-        </x-ui.topbar>
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    {{-- <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a> --}}
+
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Buat Janji Temu
+                        </h1>
+                    </div>
+                </div>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}"
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
 
         <div class="px-6 pt-8 pb-32 space-y-10">
 
