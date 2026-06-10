@@ -344,7 +344,9 @@ class BookingController extends Controller
                 return [
                     'id' => $t->id,
                     'name' => $t->nama_karyawan,
-                    'image' => $t->fotoUrl() ?: 'https://i.pravatar.cc/150?u=' . $t->id,
+                    'image' => $t->foto
+                        ? 'data:' . ($t->foto_mime ?? 'image/jpeg') . ';base64,' . $t->foto
+                        : asset('images/logo_anjali.jpg'),
                     'homecare_price' => (int) ($t->kolaborasi->homecare_harga ?? 0),
                     // Map layanan spesifik terapis ini
                     'services' => $t->layanans->map(function ($l) {

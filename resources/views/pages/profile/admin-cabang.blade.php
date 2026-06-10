@@ -4,26 +4,53 @@
 
 @section('content')
 
-    @php $karyawan = auth()->user()->karyawan; @endphp
+    @php $karyawan = auth()->user()->karyawan?->load('kolaborasi'); @endphp
 
     <x-layouts.mobile-app class="bg-gradient-to-b from-[#e8f4f2] via-white to-white min-h-screen" x-data="{
         photoPreview: '{{ $karyawan?->foto
             ? 'data:' . ($karyawan->foto_mime ?? 'image/jpeg') . ';base64,' . $karyawan->foto
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode($karyawan->nama_karyawan) .
-                '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
     }">
 
         {{-- TOPBAR: Transparan & Floating --}}
-        <x-ui.topbar title="Profil Anda" class="bg-transparent border-none">
-            <x-slot:left>
-                <button class="p-2 text-teal-800 active:scale-90 transition-transform">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            </x-slot:left>
-        </x-ui.topbar>
+<nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+            <div class="flex items-center justify-between">
+
+                {{-- Left: Navigation & Context --}}
+                <div class="flex items-center gap-4">
+                    {{-- Tombol Back/Menu dengan Hitbox Luas --}}
+                    {{-- <a href="javascript:void(0)" onclick="window.history.back()" 
+                    class="group flex items-center justify-center w-10 h-10 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-teal-50 transition-all active:scale-90">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a> --}}
+
+                    <div class="flex flex-col">
+                        {{-- Nama Cabang/Kolaborasi --}}
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{-- {{ $sessions[0]['kolaborasi'] ?? 'Rumah Terapi Anjali' }} --}}
+                            ANJALI SADINA MULYO
+                        </span>
+                        <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
+                            Profil Saya
+                        </h1>
+                    </div>
+                </div>
+
+                {{-- Right: Profile with Status Indicator --}}
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        {{-- Avatar dengan Ring Status --}}
+                        <div class="w-10 h-10 rounded-xl border-2 border-white shadow-md p-0.5">
+                            <img src="{{ asset('images/logo_anjali.jpg') }}"
+                                class="w-full h-full rounded-[10px] object-cover bg-white">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </nav>
 
         <div class="p-5 pb-32 flex flex-col items-center">
 
@@ -42,7 +69,11 @@
                 <div class="mt-2 flex items-center justify-center gap-2">
                     <span
                         class="px-4 py-1 bg-teal-100/80 text-teal-700 text-[10px] font-black uppercase tracking-[0.1em] rounded-full border border-teal-200/50">
-                        {{ Auth::user()->role ?? 'User' }}
+                        @if(Auth::user()->role?->value === 'admin_kolaborasi' && $karyawan?->kolaborasi)
+                            Admin {{ $karyawan->kolaborasi->nama_kolaborasi }}
+                        @else
+                            {{ str_replace('_', ' ', Auth::user()->role?->value ?? 'User') }}
+                        @endif
                     </span>
                 </div>
             </div>
@@ -63,6 +94,31 @@
                                 Data Pribadi
                             </p>
                             <p class="text-[11px] font-medium text-slate-400 mt-1.5">Informasi Kontak dan Alamat</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex items-center text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all duration-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </a>
+
+                <a href="{{ route('admin-cabang.kolaborasi.profile') }}"
+                    class="w-full group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md border border-white/80 rounded-[1.8rem] shadow-sm hover:bg-white hover:shadow-md active:scale-[0.97] transition-all duration-300">
+
+                    <div class="flex items-center gap-4 text-left">
+                        <div
+                            class="h-12 w-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors duration-300">
+                            <i data-lucide="building" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p
+                                class="text-sm font-bold text-slate-700 leading-none group-hover:text-slate-900 transition-colors">
+                                Profil Kolaborasi
+                            </p>
+                            <p class="text-[11px] font-medium text-slate-400 mt-1.5">Pengaturan Informasi Cabang</p>
                         </div>
                     </div>
 

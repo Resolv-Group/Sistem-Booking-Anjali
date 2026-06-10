@@ -12,23 +12,30 @@
         class="absolute bottom-24 left-6 right-6 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-8 z-[101]"
         x-cloak>
         <div class="grid grid-cols-3 gap-6">
-            <a href="#" class="flex flex-col items-center gap-3 group">
-                <div
-                    class="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center text-2xl group-active:scale-90 transition-all shadow-sm">
-                    💰</div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Keuangan</span>
+            <a href="{{ route('admin-cabang.patient.list') }}" class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
+                {{ $active === 'pasien' ? 'text-teal-600' : 'text-slate-400' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="{{ $active === 'pasien' ? '2.5' : '2' }}">
+                    <path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.25 0 1 1-5.25 0 2.625 2.25 0 0 1 5.25 0Z" />
+                </svg>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Pasien</span>
             </a>
-            <a href="#" class="flex flex-col items-center gap-3 group">
-                <div
-                    class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl group-active:scale-90 transition-all shadow-sm">
-                    📊</div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Laporan</span>
+            <a href="{{ route('admin-cabang.layanan.index') }}" class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
+                {{ $active === 'layanan' ? 'text-teal-600' : 'text-slate-400' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="{{ $active === 'layanan' ? '2.5' : '2' }}">
+                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Layanan</span>
             </a>
-            <a href="#" class="flex flex-col items-center gap-3 group">
-                <div
-                    class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl group-active:scale-90 transition-all shadow-sm">
-                    🏢</div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Cabang</span>
+            <a href="{{ route('admin-cabang.kolaborasi.profile') }}" class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90 
+                {{ $active === 'profil-kolaborasi' ? 'text-teal-600' : 'text-slate-400' }}">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="{{ $active === 'profil-kolaborasi' ? '2.5' : '2' }}">
+                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Profil
+                    Kolaborasi</span>
             </a>
         </div>
 
@@ -47,7 +54,7 @@
     <div class="bg-white border-t border-slate-100 px-4 pb-6 pt-2 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
         <div class="grid grid-cols-5 items-center">
 
-            <button
+            <a href="{{ route('admin-cabang.dashboard') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
                 {{ $active === 'dashboard' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -56,7 +63,7 @@
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Beranda</span>
-            </button>
+            </a>
 
             <a href="{{ route('admin-cabang.booking.list') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
@@ -86,26 +93,15 @@
                 <span class="text-[10px] font-black text-teal-800 uppercase tracking-widest mt-2">Menu</span>
             </div>
 
-            <button
+            <a href="{{ route('admin-cabang.therapist.list') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
                 {{ $active === 'terapis' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     stroke-width="{{ $active === 'terapis' ? '2.5' : '2' }}">
-                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path d="M15.477 12.89l1.515 8.526a.5.5 0 01-.81.47l-3.58-2.687a1 1 0 00-1.197 0l-3.586 2.686a.5.5 0 01-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>
                 </svg>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Terapis</span>
-            </button>
-
-            {{-- <button
-                class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
-                {{ $active === 'pasien' ? 'text-teal-600' : 'text-slate-400' }}">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    stroke-width="{{ $active === 'pasien' ? '2.5' : '2' }}">
-                    <path
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Pasien</span>
-            </button> --}}
+            </a>
 
             <a href="{{ route('admin-cabang.profile') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
