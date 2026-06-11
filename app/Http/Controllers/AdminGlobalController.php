@@ -96,7 +96,7 @@ class AdminGlobalController extends Controller
     {
         $search = $request->query('search', '');
 
-        $admins = Karyawan::whereIn('peran', ['Admin Global', 'Admin Kolaborasi'])
+        $admins = Karyawan::whereIn('peran', ['Admin Kolaborasi'])
             ->with(['user', 'kolaborasi'])
             ->orderBy('nama_karyawan')
             ->get();
