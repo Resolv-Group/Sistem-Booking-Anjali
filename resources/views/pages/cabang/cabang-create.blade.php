@@ -1,66 +1,150 @@
 @extends('components.layouts.app')
 
-@section('title', 'Direktori Cabang')
+@section('title', 'Tambah Cabang')
 
 @section('content')
-<x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{ search: '' }">
+    <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen">
 
-    {{-- 1. HEADER WITH ADD ACTION --}}
-    <div class="px-6 py-6 bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Cabang<span class="text-blue-600">.</span></h1>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Manajemen Lokasi MJA</p>
-            </div>
-            
-            {{-- ADD BUTTON ON TOP --}}
-            <a href="{{ route('admin-global.cabang.create') }}" 
-                class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-200 active:scale-90 transition-all">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M12 4v16m8-8H4"/></svg>
-            </a>
-        </div>
-
-        {{-- SEARCH BAR --}}
-        <div class="relative group">
-            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" x-model="search" placeholder="Cari nama cabang atau kota..." 
-                class="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all outline-none shadow-inner">
-        </div>
-    </div>
-
-    {{-- 2. BRANCH LIST (SCALABLE) --}}
-    <div class="px-6 py-8 space-y-4 pb-32">
-        @php
-            $branches = [
-                ['id' => 1, 'name' => 'Rumah Terapi Anjali', 'loc' => 'Surabaya Pusat', 'staff' => 12, 'theme' => 'teal'],
-                ['id' => 2, 'name' => 'Lima Jari', 'loc' => 'Malang Kota', 'staff' => 8, 'theme' => 'blue'],
-                ['id' => 3, 'name' => 'Anjali Jakarta', 'loc' => 'Jakarta Selatan', 'staff' => 24, 'theme' => 'teal'],
-            ];
-        @endphp
-
-        @foreach($branches as $b)
-        <a href="{{ route('cabang.show', $b['id']) }}" 
-            class="block p-5 bg-white border border-slate-100 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-200 transition-all active:scale-[0.98] group">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg {{ $b['theme'] === 'teal' ? 'bg-teal-600 shadow-teal-100' : 'bg-blue-600 shadow-blue-100' }}">
-                        {{ substr($b['name'], 0, 2) }}
+        {{-- HEADER --}}
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="javascript:void(0)" onclick="window.history.back()" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Tambah Kolaborasi Baru
+                        </h1>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">
+                            Daftarkan kolaborasi baru
+                        </p>
                     </div>
-                    <div>
-                        <h4 class="text-base font-black text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">{{ $b['name'] }}</h4>
-                        <div class="flex items-center gap-2 mt-1.5">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ $b['loc'] }}</span>
-                            <div class="w-1 h-1 rounded-full bg-slate-200"></div>
-                            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{{ $b['staff'] }} Staff</span>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        {{-- FORM BODY --}}
+        <div class="px-6 py-8 space-y-6 pb-32">
+
+            @if (session('success'))
+                <div class="p-4 bg-teal-50 border border-teal-100 rounded-2xl text-teal-700 text-sm font-semibold">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-semibold space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <div>• {{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
+            <form action="{{ route('admin-global.cabang.store') }}" method="POST" class="space-y-6">
+                @csrf
+
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-5">
+
+                    <div class="space-y-2">
+                        <label for="nama_kolaborasi" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Nama Cabang/Kolaborasi <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="nama_kolaborasi" name="nama_kolaborasi"
+                               value="{{ old('nama_kolaborasi') }}"
+                               required
+                               placeholder="Contoh: Rumah Terapi Anjali"
+                               class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:bg-white transition-all outline-none">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="alamat_kolaborasi" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Alamat Lengkap
+                        </label>
+                        <textarea id="alamat_kolaborasi" name="alamat_kolaborasi" rows="3"
+                                  placeholder="Alamat lengkap cabang..."
+                                  class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:bg-white transition-all outline-none resize-none">{{ old('alamat_kolaborasi') }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="kota_kolaborasi" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Kota
+                        </label>
+                        <input type="text" id="kota_kolaborasi" name="kota_kolaborasi"
+                               value="{{ old('kota_kolaborasi') }}"
+                               placeholder="Contoh: Surabaya"
+                               class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:bg-white transition-all outline-none">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="no_telp_kolaborasi" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            No. Telepon / WhatsApp
+                        </label>
+                        <input type="text" id="no_telp_kolaborasi" name="no_telp_kolaborasi"
+                               value="{{ old('no_telp_kolaborasi') }}"
+                               placeholder="Contoh: 08123456789"
+                               class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:bg-white transition-all outline-none">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="email_kolaborasi" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Alamat Email
+                        </label>
+                        <input type="email" id="email_kolaborasi" name="email_kolaborasi"
+                               value="{{ old('email_kolaborasi') }}"
+                               placeholder="Contoh: cabang@anjali.com"
+                               class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:bg-white transition-all outline-none">
+                    </div>
+
+                </div>
+
+                <div class="bg-teal-50/50 p-6 rounded-[2rem] border border-teal-100/60 shadow-sm space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-teal-700 uppercase tracking-widest">Biaya Layanan Home Care</h4>
+                            <p class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5">Flat rate per booking</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="homecare_harga" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Tarif Homecare (Rp) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rp</span>
+                            <input type="number" id="homecare_harga" name="homecare_harga"
+                                   value="{{ old('homecare_harga', 0) }}"
+                                   required min="0" step="1000"
+                                   class="w-full pl-12 pr-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-100 focus:border-teal-300 transition-all outline-none">
                         </div>
                     </div>
                 </div>
-                <svg class="w-5 h-5 text-slate-200 group-hover:text-slate-800 transition-all transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
-            </div>
-        </a>
-        @endforeach
-    </div>
 
-    <x-navigation.admin-global-navbar active="cabang" />
-</x-layouts.mobile-app>
+                <div class="pt-4">
+                    <button type="submit"
+                            class="w-full py-5 bg-teal-900 text-white rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-teal-900/10 active:scale-95 transition-all">
+                        Simpan Cabang Baru
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <x-navigation.admin-global-navbar active="cabang" />
+    </x-layouts.mobile-app>
 @endsection

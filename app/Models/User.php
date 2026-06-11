@@ -24,7 +24,7 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    
+
     protected function casts(): array
     {
         return [
@@ -47,5 +47,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Booking::class,'booked_by_user_id');
     }
-    
 }

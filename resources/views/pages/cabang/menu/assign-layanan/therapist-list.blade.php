@@ -5,39 +5,54 @@
 @section('content')
 
     <script>
-        window.TherapistData = @json($therapists);
+        window.TherapistData = @json($therapists->values());
+        window.TherapistDefaultImage = @json(asset('images/logo_anjali.jpg'));
     </script>
 
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{
         search: '',
-        therapists: window.TherapistData,
+        therapists: window.TherapistData || [],
+        defaultImage: window.TherapistDefaultImage,
         get filteredTherapists() {
             if (!this.search) return this.therapists;
             return this.therapists.filter(t =>
                 t.name.toLowerCase().includes(this.search.toLowerCase())
             );
-        }
+        },
     }">
 
         {{-- 1. TOPBAR --}}
-        <div
-            class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('admin-global.cabang.menu', $kolaborasiId) }}"
-                    class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" />
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="javascript:void(0)" onclick="window.history.back()" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{ $kolaborasiId->nama_kolaborasi }}
+                        </span>
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Manajemen Layanan Terapis
+                        </h1>
+                    </div>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                </a>
-                <h1 class="text-lg font-bold text-teal-800 uppercase tracking-widest leading-none">
-                    {{ $kolaborasiId->nama_kolaborasi }}</h1>
+                </div>
             </div>
         </div>
 
         <div class="px-6 pt-8 pb-32 space-y-8">
             {{-- 2. TITLE --}}
             <div class="space-y-3">
-                <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none text-left">Manajemen <br> Layanan
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none text-left">Manajemen <br> Layanan ({{ $kolaborasiId->nama_kolaborasi }})
                 </h2>
                 <p class="text-sm font-medium text-slate-500 leading-relaxed text-left">
                     Silakan pilih terapis di bawah ini untuk melihat dan mengelola jadwal layanan yang tersedia.
@@ -62,7 +77,7 @@
                         <div class="flex items-center gap-5">
                             <div
                                 class="w-16 h-16 rounded-2xl bg-slate-100 border-2 border-white shadow-md overflow-hidden shrink-0">
-                                <img :src="t.image" class="w-full h-full object-cover">
+                                <img :src="t.image || defaultImage" :alt="t.name" class="w-full h-full object-cover">
                             </div>
                             <div class="space-y-1">
                                 <h4 class="text-lg font-black text-slate-800 leading-none" x-text="t.name"></h4>

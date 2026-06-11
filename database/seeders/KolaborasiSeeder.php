@@ -39,5 +39,10 @@ class KolaborasiSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ]
         ]);
+
+        // Keep PostgreSQL auto-increment in sync after explicit IDs
+        DB::statement(
+            "SELECT setval(pg_get_serial_sequence('kolaborasi', 'id'), (SELECT COALESCE(MAX(id), 1) FROM kolaborasi))"
+        );
     }
 }

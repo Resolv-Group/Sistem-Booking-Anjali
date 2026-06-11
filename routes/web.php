@@ -174,7 +174,8 @@ Route::get('/cabang/admin-global', [KolaborasiController::class, 'index'])->name
 Route::get('/cabang/admin-global/menu/{id_kolaborasi}', [KolaborasiController::class, 'menuIndex'])->name('admin-global.cabang.menu');
 Route::get('/cabang/admin-global/edit/{id_kolaborasi}', [KolaborasiController::class, 'edit'])->name('admin-global.cabang.edit');
 Route::put('/cabang/admin-global/update/{id_kolaborasi}', [KolaborasiController::class, 'update'])->name('admin-global.cabang.update');
-Route::view('/cabang/admin-global/create', 'pages.cabang.cabang-create')->name('admin-global.cabang.create');
+Route::get('/cabang/admin-global/create', [KolaborasiController::class, 'create'])->name('admin-global.cabang.create');
+Route::post('/cabang/admin-global/create', [KolaborasiController::class, 'store'])->name('admin-global.cabang.store');
 Route::get('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'index'])->name('admin-global.operasional-jadwal');
 Route::post('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'update'])->name('admin-global.operasional-jadwal.update');
 

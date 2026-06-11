@@ -9,7 +9,7 @@
         {{-- 1. HEADER WITH ADD ACTION --}}
         <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
             <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
-            
+
             <div class="px-6 pt-5 pb-4">
                 <div class="flex items-center justify-between mb-5">
                     <div class="flex flex-col">
@@ -17,10 +17,10 @@
                             Anjali Sadina Mulyo
                         </span>
                         <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none uppercase">
-                            Direktori Cabang
+                            Direktori Kolaborasi
                         </h1>
                     </div>
-                    
+
                     {{-- Right Slot: Decorative Icon --}}
                     <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 border border-teal-100 shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@
                             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <input type="text" x-model="search" placeholder="Cari nama cabang atau kota..."
+                    <input type="text" x-model="search" placeholder="Cari nama kolaborasi atau kota..."
                         class="w-full pl-11 pr-5 py-3.5 bg-slate-100/50 border border-slate-200/50 rounded-2xl text-xs font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white focus:border-teal-200 transition-all outline-none shadow-inner">
                 </div>
             </div>
@@ -47,8 +47,8 @@
 
             @foreach ($cabangs as $b)
                 <a href="{{ route('admin-global.cabang.menu', ['id_kolaborasi' => $b->id]) }}"
-                    x-show="search === '' || 
-                    '{{ strtolower($b['nama_kolaborasi']) }}'.includes(search.toLowerCase()) || 
+                    x-show="search === '' ||
+                    '{{ strtolower($b['nama_kolaborasi']) }}'.includes(search.toLowerCase()) ||
                     '{{ strtolower($b['kota_kolaborasi']) }}'.includes(search.toLowerCase())"
                     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
                     x-transition:enter-end="opacity-100 scale-100"
@@ -84,7 +84,7 @@
             <div x-cloak
                 x-show="search !== '' && !Array.from($el.parentNode.children).some(el => el.tagName === 'A' && el.style.display !== 'none')"
                 class="text-center py-12">
-                <p class="text-sm font-bold text-slate-400">Cabang atau kota tidak ditemukan.</p>
+                <p class="text-sm font-bold text-slate-400">Kolaborasi atau kota tidak ditemukan.</p>
             </div>
 
         </div>
@@ -103,7 +103,7 @@
                     <div class="flex items-center gap-3">
                         <span
                             class="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tambah
-                            Cabang</span>
+                            Kolaborasi</span>
                         <a href="{{ route('admin-global.cabang.create') }}"
                             class="w-12 h-12 bg-white text-teal-700 rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 active:scale-95 transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

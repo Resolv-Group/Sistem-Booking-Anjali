@@ -9,21 +9,28 @@
     <x-layouts.mobile-app class="bg-gradient-to-b from-[#e8f4f2] via-white to-white min-h-screen" x-data="{
         photoPreview: '{{ $karyawan?->foto
             ? 'data:' . ($karyawan->foto_mime ?? 'image/jpeg') . ';base64,' . $karyawan->foto
-            : 'https://ui-avatars.com/api/?name=' .
-                urlencode($karyawan->nama_karyawan) .
-                '&background=0d766e&color=fff&size=128' }}',
+            : asset('images/logo_anjali.jpg') }}',
     }">
 
         {{-- TOPBAR: Transparan & Floating --}}
-        <x-ui.topbar title="Profil Anda" class="bg-transparent border-none">
-            <x-slot:left>
-                <button class="p-2 text-teal-800 active:scale-90 transition-transform">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col">
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Pengaturan Profil
+                        </h1>
+                    </div>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                </button>
-            </x-slot:left>
-        </x-ui.topbar>
+                </div>
+            </div>
+        </div>
 
         <div class="p-5 pb-32 flex flex-col items-center">
 
