@@ -125,17 +125,23 @@
                     Jadwal Operasional</h3>
 
                 <div class="space-y-3">
-                    @forelse($schedules as $sched)
-                        <div
-                            class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100/50">
-                            <span class="text-xs font-bold text-slate-700">{{ $dayNames[$sched->hari] ?? '-' }}</span>
-                            <div class="flex items-center gap-3">
-                                <span
-                                    class="px-2 py-0.5 bg-teal-50 text-teal-600 text-[9px] font-bold rounded border border-teal-100">
-                                    {{ substr($sched->waktu_mulai, 0, 5) }}
-                                </span>
-                                <span class="text-[10px] font-medium text-slate-400">Kuota:
-                                    <strong>{{ $sched->kuota }}</strong></span>
+                    @forelse($schedulesByDay as $hari => $daySchedules)
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100/50 space-y-3">
+                            <span class="text-xs font-black text-slate-700 uppercase tracking-wide">
+                                {{ $dayNames[$hari] ?? '-' }}
+                            </span>
+                            <div class="space-y-2">
+                                @foreach ($daySchedules as $sched)
+                                    <div class="flex items-center justify-between pl-3 border-l-2 border-teal-200">
+                                        <span
+                                            class="px-2 py-0.5 bg-teal-50 text-teal-600 text-[9px] font-bold rounded border border-teal-100">
+                                            {{ substr($sched->waktu_mulai, 0, 5) }}
+                                        </span>
+                                        <span class="text-[10px] font-medium text-slate-400">
+                                            Kuota: <strong class="text-slate-600">{{ $sched->kuota }}</strong>
+                                        </span>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @empty

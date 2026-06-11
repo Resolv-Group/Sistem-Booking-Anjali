@@ -11,7 +11,7 @@
         <div class="flex items-center justify-between">
             <div class="flex flex-col">
                 <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
-                    Rumah Terapi Anjali
+                    Anjali Sadina Mulyo
                 </span>
                 <h1 class="text-sm font-black text-slate-800 tracking-tight leading-none uppercase">
                     Dashboard Global
@@ -54,20 +54,20 @@
             <div class="flex items-center px-1">
                 <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Statistik Sistem</h3>
             </div>
-            
+
             <div class="grid grid-cols-3 gap-3">
                 {{-- Total Kolaborasi --}}
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Total Cabang</span>
                     <span class="text-2xl font-black text-teal-800 tracking-tight">{{ $totalKolaborasi }}</span>
                 </div>
-                
+
                 {{-- Total Terapis --}}
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Terapis Aktif</span>
                     <span class="text-2xl font-black text-teal-800 tracking-tight">{{ $totalTerapis }}</span>
                 </div>
-                
+
                 {{-- Total Karyawan --}}
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Karyawan</span>
@@ -81,13 +81,13 @@
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Total Pasien</span>
                     <span class="text-2xl font-black text-teal-800 tracking-tight">{{ $totalPasien }}</span>
                 </div>
-                
+
                 {{-- Booking Hari Ini --}}
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Booking Hari Ini</span>
                     <span class="text-2xl font-black text-teal-800 tracking-tight">{{ $bookingHariIni }}</span>
                 </div>
-                
+
                 {{-- Booking Bulan Ini --}}
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-2 hover:scale-[1.02] active:scale-95 transition-all duration-300">
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-tight">Booking Bulan Ini</span>
@@ -101,7 +101,7 @@
             <div class="flex items-center px-1">
                 <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Tren Booking (30 Hari Terakhir)</h3>
             </div>
-            
+
             <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
                 <div class="h-48 w-full relative">
                     <canvas id="bookingChart"></canvas>
@@ -121,7 +121,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('bookingChart').getContext('2d');
-        
+
         const labels = {!! json_encode($chartLabels) !!};
         const values = {!! json_encode($chartValues) !!};
 

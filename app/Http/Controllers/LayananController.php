@@ -30,9 +30,10 @@ class LayananController extends Controller
                     'reviews' => 120,
                     'count' => $t->layanans_count,
                     'status' => 'Tersedia hari ini',
-                    'image' => $t->fotoUrl() ?: 'https://i.pravatar.cc/150?u='.$t->id,
+                    'image' => $t->fotoUrlOrDefault(),
                 ];
-            });
+            })
+            ->values();
 
         return view('pages.cabang.menu.assign-layanan.therapist-list', compact('therapists', 'kolaborasiId'));
     }

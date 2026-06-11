@@ -30,7 +30,7 @@
     </div>
 
     {{-- Full Screen Loader Overlay (Shows on Navigation) --}}
-    <div x-show="navigating" 
+    <div x-show="navigating"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
@@ -51,11 +51,11 @@
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             if (!link) return;
-            
+
             // Bypass for new tabs, downloads, or non-http links
             if (link.target === '_blank' || link.hasAttribute('download')) return;
             if (!link.href || link.href.startsWith('javascript:') || link.href.startsWith('mailto:') || link.href.startsWith('tel:')) return;
-            
+
             // Bypass for cross-origin or anchor links on the same page
             try {
                 const url = new URL(link.href, window.location.origin);
@@ -67,7 +67,7 @@
 
             e.preventDefault();
             window.dispatchEvent(new Event('start-navigation'));
-            
+
             setTimeout(() => {
                 window.location.href = link.href;
             }, 300); // 300ms gives enough time for the loader to fade in beautifully

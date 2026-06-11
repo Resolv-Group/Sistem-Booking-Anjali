@@ -97,19 +97,19 @@ class AdminGlobalController extends Controller
         $search = $request->query('search', '');
 
         $admins = Karyawan::whereIn('peran', ['Admin Global', 'Admin Kolaborasi'])
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('nama_karyawan', 'like', "%{$search}%")
-                      ->orWhere('no_telp', 'like', "%{$search}%");
-                });
-            })
             ->with(['user', 'kolaborasi'])
             ->orderBy('nama_karyawan')
             ->get();
 
         $branches = Kolaborasi::orderBy('nama_kolaborasi')->get(['id', 'nama_kolaborasi']);
 
-        return view('pages.admin-global.kelola-admin', compact('admins', 'branches', 'search'));
+        $adminSearchData = $admins->map(fn ($admin) => [
+            'nama' => $admin->nama_karyawan,
+            'telp' => $admin->no_telp,
+            'cabang' => $admin->kolaborasi?->nama_kolaborasi ?? '',
+        ])->values()->all();
+
+        return view('pages.admin-global.kelola-admin', compact('admins', 'branches', 'search', 'adminSearchData'));
     }
 
     /**
@@ -145,7 +145,6 @@ class AdminGlobalController extends Controller
 
             Karyawan::create([
                 'user_id' => $user->id,
-                'kode_karyawan' => 'KRY-' . strtoupper(Str::random(5)),
                 'nama_karyawan' => $request->nama_karyawan,
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -211,7 +210,7 @@ class AdminGlobalController extends Controller
     public function toggleStatus($id)
     {
         $karyawan = Karyawan::findOrFail($id);
-        
+
         if ($karyawan->user_id === auth()->id()) {
             return back()->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri!');
         }
@@ -239,9 +238,14 @@ class AdminGlobalController extends Controller
             'peran' => 'required|string',
         ]);
 
-        $matchName = strtolower(trim($karyawan->nama_karyawan)) === strtolower(trim($request->nama_karyawan));
+        $normalizeName = fn (?string $name) => mb_strtolower(trim(preg_replace('/\s+/', ' ', $name ?? '')));
+
+        $registeredName = $normalizeName($karyawan->nama_karyawan);
+        $submittedName = $normalizeName($request->nama_karyawan);
+        $matchName = $registeredName !== '' && $registeredName === $submittedName;
+
         $matchPhone = trim($karyawan->no_telp) === trim($request->no_telp) || trim($user->phone) === trim($request->no_telp);
-        $matchRole = strtolower(trim($karyawan->peran)) === strtolower(trim($request->peran));
+        $matchRole = mb_strtolower(trim($karyawan->peran)) === mb_strtolower(trim($request->peran));
 
         if (!$matchName || !$matchPhone || !$matchRole) {
             return back()->with('error', 'Gagal mereset password: Data verifikasi tidak cocok dengan data terdaftar.');
@@ -252,7 +256,7 @@ class AdminGlobalController extends Controller
         }
 
         $dob = Carbon::parse($karyawan->tanggal_lahir)->format('d-m-Y');
-        
+
         $user->update([
             'password' => Hash::make($dob)
         ]);

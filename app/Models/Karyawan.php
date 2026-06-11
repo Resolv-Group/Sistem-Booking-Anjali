@@ -45,11 +45,22 @@ class Karyawan extends Model
         return ['kode_karyawan'];
     }
 
-    public function fotoUrl()
+    public function fotoUrl(): ?string
     {
-        return $this->foto_path
-            ? Storage::disk('public')->url($this->foto_path)
-            : null;
+        if ($this->foto) {
+            return 'data:' . ($this->foto_mime ?? 'image/jpeg') . ';base64,' . $this->foto;
+        }
+
+        if (! empty($this->foto_path)) {
+            return Storage::disk('public')->url($this->foto_path);
+        }
+
+        return null;
+    }
+
+    public function fotoUrlOrDefault(?string $default = null): string
+    {
+        return $this->fotoUrl() ?? ($default ?? asset('images/logo_anjali.jpg'));
     }
 
     public function user()

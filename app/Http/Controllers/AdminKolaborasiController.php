@@ -58,12 +58,14 @@ class AdminKolaborasiController extends Controller
         // Get therapist's services
         $services = $therapist->layanans;
 
-        // Get therapist's schedules
-        $schedules = TherapistSchedule::where('terapis_id', $id)
+        // Get therapist's schedules, grouped by day
+        $schedulesByDay = TherapistSchedule::where('terapis_id', $id)
             ->where('status', 'Aktif')
             ->orderBy('hari', 'asc')
             ->orderBy('waktu_mulai', 'asc')
-            ->get();
+            ->get()
+            ->groupBy('hari')
+            ->sortKeys();
 
         $dayNames = [
             1 => 'Senin',
@@ -80,7 +82,7 @@ class AdminKolaborasiController extends Controller
             ? 'data:' . ($therapist->foto_mime ?? 'image/jpeg') . ';base64,' . $therapist->foto
             : asset('images/logo_anjali.jpg');
 
-        return view('pages.admin-kolaborasi.therapist-detail', compact('therapist', 'services', 'schedules', 'dayNames', 'fotoUrl'));
+        return view('pages.admin-kolaborasi.therapist-detail', compact('therapist', 'services', 'schedulesByDay', 'dayNames', 'fotoUrl'));
     }
 
     public function dashboard()

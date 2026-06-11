@@ -32,6 +32,13 @@
                     <p class="mt-2 text-base text-gray-500">Silakan masuk ke akun Anda.</p>
                 </div>
 
+                {{-- Error Alert --}}
+                @if (session('error'))
+                    <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-bold text-rose-800">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 {{-- Success Alert --}}
                 @if (session('success'))
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
@@ -51,7 +58,7 @@
                     </div>
                 @endif
 
-                <form action="#" method="POST" class="space-y-6">
+                <form action="{{ route('auth.login') }}" method="POST" class="space-y-6">
                     @csrf
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-gray-700 ml-1">Nomor Telepon</label>
