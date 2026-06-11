@@ -7,17 +7,30 @@
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{ search: '' }">
 
         {{-- 1. TOPBAR --}}
-        <div
-            class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}"
-                    class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" />
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{ $kolaborasi->nama_kolaborasi }}
+                        </span>
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Kelola Layanan
+                        </h1>
+                    </div>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
-                </a>
-                <h1 class="text-xl font-bold text-teal-800 uppercase tracking-widest leading-none">
-                    {{ $kolaborasi->nama_kolaborasi }}</h1>
+                </div>
             </div>
         </div>
 
@@ -126,44 +139,46 @@
         </div>
 
         {{-- 5. FLOATING ACTION BUTTON --}}
-        <div x-data="{ open: false }" class="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
-            {{-- Speed Dial Items --}}
-            <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 translate-y-4 scale-90"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 scale-90" class="flex flex-col items-end gap-3 mb-2">
-                {{-- Tambah Layanan --}}
-                <div class="flex items-center gap-3">
-                    <span
-                        class="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tambah
-                        Layanan</span>
-                    <a href="{{ route('admin-global.layanan.create', $kolaborasi->id) }}"
-                        class="w-12 h-12 bg-white text-teal-700 rounded-xl flex items-center justify-center shadow-lg border border-slate-100 active:scale-95 transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                    </a>
+        <div class="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[430px] pointer-events-none px-6 z-50">
+            <div x-data="{ open: false }" class="flex flex-col items-end gap-3 pointer-events-auto w-full">
+                {{-- Speed Dial Items --}}
+                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 translate-y-4 scale-90"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 scale-90" class="flex flex-col items-end gap-3 mb-2">
+                    {{-- Tambah Layanan --}}
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tambah
+                            Layanan</span>
+                        <a href="{{ route('admin-global.layanan.create', $kolaborasi->id) }}"
+                            class="w-12 h-12 bg-white text-teal-700 rounded-xl flex items-center justify-center shadow-lg border border-slate-100 active:scale-95 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </a>
+                    </div>
                 </div>
-            </div>
 
-            <button @click="open = !open"
-                :class="open ? 'bg-slate-800 shadow-slate-900/40' : 'bg-teal-900 shadow-teal-900/40'"
-                class="w-14 h-14 text-white rounded-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-300 relative overflow-hidden">
-                <svg x-show="!open" x-transition:enter="transition duration-300"
-                    x-transition:enter-start="opacity-0 scale-50 rotate-90"
-                    x-transition:enter-end="opacity-100 scale-100 rotate-0" class="w-7 h-7" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <svg x-show="open" x-transition:enter="transition duration-300"
-                    x-transition:enter-start="opacity-0 scale-50 -rotate-90"
-                    x-transition:enter-end="opacity-100 scale-100 rotate-0" class="w-7 h-7" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24" x-cloak>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+                <button @click="open = !open"
+                    :class="open ? 'bg-slate-800 shadow-slate-900/40' : 'bg-teal-900 shadow-teal-900/40'"
+                    class="w-14 h-14 text-white rounded-xl flex items-center justify-center shadow-2xl active:scale-90 transition-all duration-300 relative overflow-hidden">
+                    <svg x-show="!open" x-transition:enter="transition duration-300"
+                        x-transition:enter-start="opacity-0 scale-50 rotate-90"
+                        x-transition:enter-end="opacity-100 scale-100 rotate-0" class="w-7 h-7" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <svg x-show="open" x-transition:enter="transition duration-300"
+                        x-transition:enter-start="opacity-0 scale-50 -rotate-90"
+                        x-transition:enter-end="opacity-100 scale-100 rotate-0" class="w-7 h-7" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         {{-- 6. BOTTOM NAVBAR --}}

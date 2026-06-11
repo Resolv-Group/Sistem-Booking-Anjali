@@ -38,9 +38,9 @@ Route::view('/layanan', 'pages.services.index')->name('layanan');
 
 Route::view('/about-us', 'pages.about.index')->name('about');
 
-Route::view(
+Route::get(
     '/dashboard/admin-global',
-    'pages.dashboard.admin-global'
+    [App\Http\Controllers\AdminGlobalController::class, 'dashboard']
 )->name('admin-global.dashboard');
 
 Route::view(
@@ -177,6 +177,13 @@ Route::put('/cabang/admin-global/update/{id_kolaborasi}', [KolaborasiController:
 Route::view('/cabang/admin-global/create', 'pages.cabang.cabang-create')->name('admin-global.cabang.create');
 Route::get('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'index'])->name('admin-global.operasional-jadwal');
 Route::post('/cabang/admin-global/menu/{id_kolaborasi}/operasional', [OperasionalController::class, 'update'])->name('admin-global.operasional-jadwal.update');
+
+// Kelola Admin CRUD
+Route::get('/admin-global/kelola-admin', [App\Http\Controllers\AdminGlobalController::class, 'kelolaAdmin'])->name('admin-global.kelola-admin');
+Route::post('/admin-global/kelola-admin', [App\Http\Controllers\AdminGlobalController::class, 'storeAdmin'])->name('admin-global.store-admin');
+Route::put('/admin-global/kelola-admin/{id}', [App\Http\Controllers\AdminGlobalController::class, 'updateAdmin'])->name('admin-global.update-admin');
+Route::post('/admin-global/kelola-admin/{id}/toggle-status', [App\Http\Controllers\AdminGlobalController::class, 'toggleStatus'])->name('admin-global.toggle-admin-status');
+Route::post('/admin-global/kelola-admin/{id}/reset-password', [App\Http\Controllers\AdminGlobalController::class, 'resetPassword'])->name('admin-global.reset-admin-password');
 
 // Layanan CRUD (scoped to kolaborasi)
 Route::get('/layanan/{id_kolaborasi}', [LayananController::class, 'layananIndex'])->name('admin-global.layanan');

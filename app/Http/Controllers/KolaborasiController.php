@@ -19,9 +19,18 @@ class KolaborasiController extends Controller
 
     public function menuIndex($id_kolaborasi)
     {
-        $kolaborasi = Kolaborasi::where('id', $id_kolaborasi)->first();
+        $kolaborasi = Kolaborasi::findOrFail($id_kolaborasi);
 
-        return view('pages.cabang.menu', compact('kolaborasi'));
+        $layananCount = \App\Models\Layanan::where('kolaborasi_id', $id_kolaborasi)
+            ->where('status', 'Tersedia')
+            ->count();
+
+        $terapisCount = \App\Models\Karyawan::where('kolaborasi_id', $id_kolaborasi)
+            ->where('peran', 'Terapis')
+            ->where('status_karyawan', 'Aktif')
+            ->count();
+
+        return view('pages.cabang.menu', compact('kolaborasi', 'layananCount', 'terapisCount'));
     }
 
     public function edit($id_kolaborasi)
