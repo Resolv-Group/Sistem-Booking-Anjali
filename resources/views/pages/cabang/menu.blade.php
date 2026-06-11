@@ -6,18 +6,29 @@
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen">
 
         {{-- 1. CONTEXT HEADER --}}
-        <div class="px-6 py-6 bg-white border-b border-slate-100 sticky top-0 z-50 backdrop-blur-xl bg-white/90">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('admin-global.cabang') }}" class="p-2 -ml-2 text-slate-400 hover:text-blue-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" />
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin-global.cabang') }}" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{ $kolaborasi->nama_kolaborasi }}
+                        </span>
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Cabang & Biaya
+                        </h1>
+                    </div>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                </a>
-                <div>
-                    <h1 class="text-lg font-black text-slate-800 uppercase tracking-widest leading-none">
-                        {{ $kolaborasi->nama_kolaborasi }}</h1>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">Dashboard Pengaturan
-                        Cabang</p>
                 </div>
             </div>
         </div>
@@ -32,14 +43,14 @@
 
             {{-- 2. OPERATIONAL QUICK STATS (Visual Feedback) --}}
             <div class="grid grid-cols-2 gap-3">
-                <div class="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-                    <p class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Layanan Aktif</p>
-                    <p class="text-xl font-black text-blue-700">24 <span class="text-xs font-bold opacity-50">Menu</span>
+                <div class="p-4 bg-teal-50/50 border border-teal-100/75 rounded-2xl">
+                    <p class="text-[9px] font-black text-teal-600/70 uppercase tracking-widest mb-1">Layanan Aktif</p>
+                    <p class="text-xl font-black text-teal-800">{{ $layananCount }} <span class="text-xs font-bold opacity-50">Menu</span>
                     </p>
                 </div>
-                <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                    <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Terapis</p>
-                    <p class="text-xl font-black text-emerald-700">12 <span
+                <div class="p-4 bg-emerald-50/50 border border-emerald-100/75 rounded-2xl">
+                    <p class="text-[9px] font-black text-emerald-600/70 uppercase tracking-widest mb-1">Terapis Aktif</p>
+                    <p class="text-xl font-black text-emerald-800">{{ $terapisCount }} <span
                             class="text-xs font-bold opacity-50">Orang</span></p>
                 </div>
             </div>

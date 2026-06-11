@@ -13,7 +13,7 @@
     }">
 
         {{-- TOPBAR: Transparan & Floating --}}
-<nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
+        <nav class="sticky top-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100/80 px-6 py-4">
             <div class="flex items-center justify-between">
 
                 {{-- Left: Navigation & Context --}}
@@ -69,7 +69,7 @@
                 <div class="mt-2 flex items-center justify-center gap-2">
                     <span
                         class="px-4 py-1 bg-teal-100/80 text-teal-700 text-[10px] font-black uppercase tracking-[0.1em] rounded-full border border-teal-200/50">
-                        @if(Auth::user()->role?->value === 'admin_kolaborasi' && $karyawan?->kolaborasi)
+                        @if (Auth::user()->role?->value === 'admin_kolaborasi' && $karyawan?->kolaborasi)
                             Admin {{ $karyawan->kolaborasi->nama_kolaborasi }}
                         @else
                             {{ str_replace('_', ' ', Auth::user()->role?->value ?? 'User') }}

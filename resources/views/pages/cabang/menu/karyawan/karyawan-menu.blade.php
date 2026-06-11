@@ -22,17 +22,30 @@
     }">
 
         {{-- 1. TOPBAR GLASSY --}}
-        <div
-            class="px-6 py-5 flex justify-between items-center bg-white/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
-            <div class="flex items-center gap-4">
-                <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}"
-                    class="p-1 -ml-1 text-slate-400 hover:text-teal-600 transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" />
+        <div class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100/80 shadow-sm">
+            <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin-global.cabang.menu', $kolaborasi->id) }}" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </a>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-[0.2em] leading-none mb-1">
+                            {{ $kolaborasi->nama_kolaborasi }}
+                        </span>
+                        <h1 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">
+                            Kelola Karyawan
+                        </h1>
+                    </div>
+                </div>
+                {{-- Right Slot: Simple Decorative Brand Icon --}}
+                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                </a>
-                <h1 class="text-lg font-bold text-teal-800 uppercase tracking-widest leading-none">
-                    {{ $kolaborasi->nama_kolaborasi }}</h1>
+                </div>
             </div>
         </div>
 
@@ -196,19 +209,21 @@
 
         {{-- FAB for Add New (Only in Cabang Tab) --}}
         <div x-show="activeTab === 'cabang' && !isAllSelected"
-            class="fixed bottom-28 right-6 z-40 animate-in zoom-in duration-300">
-            <a href="{{ route('admin-global.karyawan.create', $kolaborasi->id) }}"
-                class="w-14 h-14 bg-teal-950 text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-teal-900/40 active:scale-90 transition-all">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path d="M12 4v16m8-8H4" />
-                </svg>
-            </a>
+            class="fixed bottom-28 left-1/2 -translate-x-1/2 w-full max-w-[430px] pointer-events-none px-6 z-40">
+            <div class="flex justify-end pointer-events-auto">
+                <a href="{{ route('admin-global.karyawan.create', $kolaborasi->id) }}"
+                    class="w-14 h-14 bg-teal-950 text-white rounded-2xl flex items-center justify-center shadow-2xl shadow-teal-900/40 active:scale-90 transition-all animate-in zoom-in duration-300">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M12 4v16m8-8H4" />
+                    </svg>
+                </a>
+            </div>
         </div>
 
         {{-- Floating Action Bar for Multi-Mapping (Only when items selected) --}}
         <div x-show="activeTab === 'mapping' && isAllSelected" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
-            class="fixed bottom-28 left-6 right-6 z-50">
+            class="fixed bottom-28 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-6 z-50">
             <form action="{{ route('admin-global.karyawan.map', $kolaborasi->id) }}" method="POST">
                 @csrf
                 <template x-for="id in selectedIds" :key="id">

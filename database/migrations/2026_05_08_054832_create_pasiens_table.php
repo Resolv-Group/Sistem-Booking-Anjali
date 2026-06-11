@@ -12,13 +12,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+        }
 
         Schema::create('pasiens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
-            $table->uuid('pasien_public_id')->default(DB::raw('gen_random_uuid()'))->unique();
+            if (DB::getDriverName() === 'pgsql') {
+                $table->uuid('pasien_public_id')->default(DB::raw('gen_random_uuid()'))->unique();
+            } else {
+                $table->uuid('pasien_public_id')->unique();
+            }
 
             $table->string('nik', 16)->unique()->nullable();
             $table->string('nama_pasien');
