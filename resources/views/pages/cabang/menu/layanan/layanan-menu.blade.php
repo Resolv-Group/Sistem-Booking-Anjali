@@ -73,6 +73,11 @@
                     ({{ $layanans->count() }})</h3>
 
                 @forelse($layanans as $item)
+                @php
+                    // Hitung harga setelah diskon
+                    $potongan = ($item->base_harga * $item->diskon_persentase) / 100;
+                    $hargaFinal = $item->base_harga - $potongan;
+                @endphp
                     <a href="{{ route('admin-global.layanan.detail', [$kolaborasi->id, $item->id]) }}"
                         class="bg-white rounded-[1.8rem] p-5 shadow-sm border border-slate-100 flex items-center justify-between group active:scale-[0.98] transition-all"
                         x-show="'{{ strtolower($item->nama) }}'.includes(search.toLowerCase()) || search === ''">
@@ -104,12 +109,27 @@
                                         </span>
                                     @endif
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <p class="text-sm font-black text-slate-700">
-                                        Rp{{ number_format($item->base_harga, 0, ',', '.') }}</p>
+                                <div class="flex flex-col">
                                     @if ($item->diskon_persentase > 0)
-                                        <span
-                                            class="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-md">-{{ $item->diskon_persentase }}%</span>
+                                        {{-- Harga Asli (Dicoret) & Badge Diskon --}}
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-[11px] font-bold text-slate-400 line-through decoration-slate-400 decoration-2">
+                                                Rp{{ number_format($item->base_harga, 0, ',', '.') }}
+                                            </p>
+                                            <span class="text-[9px] font-black text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                -{{ $item->diskon_persentase }}%
+                                            </span>
+                                        </div>
+
+                                        {{-- Harga Asli Setelah Diskon (Fokus Utama) --}}
+                                        <p class="text-sm font-black text-teal-700 leading-tight">
+                                            Rp{{ number_format($hargaFinal, 0, ',', '.') }}
+                                        </p>
+                                    @else
+                                        {{-- Jika Tidak Ada Diskon --}}
+                                        <p class="text-sm font-black text-slate-700">
+                                            Rp{{ number_format($item->base_harga, 0, ',', '.') }}
+                                        </p>
                                     @endif
                                 </div>
                             </div>
