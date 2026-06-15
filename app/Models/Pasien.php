@@ -85,6 +85,25 @@ class Pasien extends Model
         return $this->hasMany(BookingPatient::class);
     }
 
+    public function referrals()
+    {
+        return $this->hasMany(Referral::class, 'referer_id');
+    }
+
+    public function referee()
+    {
+        return $this->hasOne(Referral::class, 'referee_id');
+    }
+
+    public static function generateUniqueReferralCode(): string
+    {
+        do {
+            $code = 'ANJALI-' . strtoupper(\Illuminate\Support\Str::random(5));
+        } while (self::where('kode_referral', $code)->exists());
+
+        return $code;
+    }
+
     public function scopeSearch($query, $term)
     {
         return $query->when($term, function ($q) use ($term) {

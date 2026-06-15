@@ -124,6 +124,30 @@
                         </svg>
                     </div>
                 </a>
+                <a href="{{ route('patient.referral') }}"
+                    class="w-full group flex items-center justify-between p-4 bg-white/60 backdrop-blur-md border border-white/80 rounded-[1.8rem] shadow-sm hover:bg-white hover:shadow-md active:scale-[0.97] transition-all duration-300">
+
+                    <div class="flex items-center gap-4 text-left">
+                        <div
+                            class="h-12 w-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors duration-300">
+                            <i data-lucide="gift" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p
+                                class="text-sm font-bold text-slate-700 leading-none group-hover:text-slate-900 transition-colors">
+                                Program Referral
+                            </p>
+                            <p class="text-[11px] font-medium text-slate-400 mt-1.5">Undang Teman & Dapatkan Poin</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex items-center text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all duration-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </a>
             </div>
 
             {{-- SIGN OUT BUTTON: Neutral but distinct --}}

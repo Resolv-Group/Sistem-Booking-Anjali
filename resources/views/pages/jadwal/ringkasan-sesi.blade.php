@@ -352,7 +352,8 @@
             <div class="space-y-3">
                 <div class="flex items-center gap-3 ml-1">
                     <div class="w-1.5 h-4 bg-teal-500 rounded-full"></div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Ringkasan Sesi</h3>
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Ringkasan Sesi <span
+                            class="text-red-500">*</span></h3>
                 </div>
                 <textarea name="ringkasan_sesi" :required="isDone && !isSelesai" :readonly="isSelesai"
                     placeholder="Tuliskan ringkasan singkat terapi (diperlukan jika sesi selesai)..."

@@ -63,7 +63,7 @@
                                 Ongoing
                             </span>
                             <h4 class="text-xl font-semibold pt-2">{{ $activeSession['nama'] }}</h4>
-                            <p class="text-xs text-teal-100/60 uppercase tracking-widest font-medium">{{ $activeSession['layanan'] }} • ID: {{ $activeSession['public_id'] }}</p>
+                            <p class="text-xs text-teal-100/60 uppercase tracking-widest font-medium">• {{ $activeSession['layanan'] }} <br>• ID: {{ $activeSession['public_id'] }}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] font-semibold text-teal-400 uppercase tracking-widest">Durasi</p>

@@ -51,10 +51,19 @@ class TherapistController extends Controller
                     : sprintf('00:%02d:%02d', $diff->i, $diff->s);
             }
 
+                $activeLayanan = BookingPatient::where('booking_id', $activeBp->booking_id)
+        ->where('pasien_id', $activeBp->pasien_id)
+        ->with('layanan')
+        ->get()
+        ->pluck('layanan.nama')
+        ->filter()
+        ->implode(', ');
+
+
             $activeSession = [
                 'bp_id'     => $activeBp->id,
                 'nama'      => $activeBp->pasien?->nama_pasien ?? 'Pasien',
-                'layanan'   => $activeBp->layanan?->nama ?? 'Terapi',
+                'layanan'   => $activeLayanan ?: 'Terapi',
                 'public_id' => $activeBp->pasien?->pasien_public_id ?? '-',
                 'durasi'    => $durasiText ?? '00:00:00',
             ];
@@ -72,11 +81,16 @@ class TherapistController extends Controller
         $upcoming = [];
         foreach ($upcomingSessions as $sess) {
             foreach ($sess->bookings as $booking) {
-                foreach ($booking->bookingPatients->where('status_pasien', 'menunggu') as $bp) {
+                $grouped = $booking->bookingPatients
+                    ->where('status_pasien', 'menunggu')
+                    ->groupBy('pasien_id');
+                foreach ($grouped as $pasienId => $bpGroup) {
+                    $first = $bpGroup->first();
+                    $layananNames = $bpGroup->pluck('layanan.nama')->filter()->implode(', ');
                     $upcoming[] = [
                         'time'    => Carbon::parse($sess->waktu_mulai)->format('H:i'),
-                        'name'    => $bp->pasien?->nama_pasien ?? 'Pasien',
-                        'type'    => $bp->layanan?->nama ?? 'Terapi',
+                        'name'    => $first->pasien?->nama_pasien ?? 'Pasien',
+                        'type'    => $layananNames ?: 'Terapi',
                         'status'  => $booking->status, // 'approved'
                     ];
                 }
