@@ -40,6 +40,7 @@ class RegisteredUserController extends Controller
             'password' => ['nullable', Rules\Password::defaults()],
             'tanggal_lahir' => ['required', 'date'],
             'jenis_kelamin' => ['required', 'in:L,P'],
+            'referral_code' => ['nullable', 'string', 'exists:pasiens,kode_referral'],
         ], [
             'name.required' => 'Nama lengkap wajib diisi',
             'phone.required' => 'Nomor telepon wajib diisi',
@@ -48,6 +49,7 @@ class RegisteredUserController extends Controller
             'tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
             'jenis_kelamin.required' => 'Jenis kelamin wajib diisi',
             'password.min' => 'Kata sandi minimal 8 karakter',
+            'referral_code.exists' => 'Kode referral tidak valid.',
         ]);
 
         $finalPassword = $request->password
@@ -61,7 +63,12 @@ class RegisteredUserController extends Controller
             'role' => UserRole::PATIENT,
         ]);
 
-        Pasien::create([
+        $referer = null;
+        if ($request->filled('referral_code')) {
+            $referer = Pasien::where('kode_referral', $request->referral_code)->first();
+        }
+
+        $pasien = Pasien::create([
             'user_id' => $user->id,
             'nik' => $request->nik,
             'nama_pasien' => $request->name,
@@ -70,6 +77,15 @@ class RegisteredUserController extends Controller
             'no_telp' => $request->phone,
             'email' => $request->email,
         ]);
+
+        if ($referer) {
+            \App\Models\Referral::create([
+                'referer_id' => $referer->id,
+                'referee_id' => $pasien->id,
+                'points_awarded' => 0,
+                'completed_at' => null,
+            ]);
+        }
 
         event(new Registered($user));
 

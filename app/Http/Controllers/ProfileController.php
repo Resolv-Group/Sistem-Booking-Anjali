@@ -373,4 +373,51 @@ class ProfileController extends Controller
 
     return view('pages.profile.riwayat-medis.patient', compact('records', 'patient'));
 }
+
+    public function referralIndex(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->pasien) {
+            abort(403, 'Akses ditolak. Anda bukan pasien.');
+        }
+
+        $pasien = $user->pasien;
+
+        $referrals = \App\Models\Referral::with('referee')
+            ->where('referer_id', $pasien->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $currentMonthCount = \App\Models\Referral::where('referer_id', $pasien->id)
+            ->whereNotNull('completed_at')
+            ->where('points_awarded', '>', 0)
+            ->whereMonth('completed_at', now()->month)
+            ->whereYear('completed_at', now()->year)
+            ->count();
+
+        return view('pages.profile.referral.index', compact('pasien', 'referrals', 'currentMonthCount'));
+    }
+
+    public function generateReferralCode(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->pasien) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        $pasien = $user->pasien;
+
+        if ($pasien->kode_referral) {
+            return response()->json(['error' => 'Kode referral sudah dibuat.'], 400);
+        }
+
+        $code = \App\Models\Pasien::generateUniqueReferralCode();
+        $pasien->update(['kode_referral' => $code]);
+
+        return response()->json([
+            'success' => true,
+            'kode_referral' => $code,
+            'message' => 'Kode referral berhasil dibuat!'
+        ]);
+    }
 }

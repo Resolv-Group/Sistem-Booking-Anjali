@@ -112,6 +112,8 @@ Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile'
 Route::get('/patient/profile/edit', [ProfileController::class, 'editProfilePasien'])->name('patient.profile.edit');
 Route::put('/patient/profile/update', [ProfileController::class, 'updateProfilePasien'])->name('patient.profile.update');
 Route::get('/patient/history-medis', [ProfileController::class, 'medicalHistory'])->name('patient.history-medis');
+Route::get('/patient/referral', [ProfileController::class, 'referralIndex'])->name('patient.referral');
+Route::post('/patient/referral/generate', [ProfileController::class, 'generateReferralCode'])->name('patient.referral.generate');
 
 // Terapis Profile
 Route::view('/therapist/profile', 'pages.profile.therapist')->name('therapist.profile');
@@ -208,6 +210,8 @@ Route::put('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [
 Route::delete('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'destroy'])->name('admin-global.karyawan.destroy');
 Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/map-batch', [KaryawanController::class, 'mapToCabang'])
     ->name('admin-global.karyawan.map');
+Route::get('/bukti-transfer/{filename}', [BookingController::class, 'viewBuktiTransfer'])->name('bukti-transfer.view');
+
 // login
 Route::view('/login', 'pages.auth.login')->name('view.auth.login');
 Route::post('login', [

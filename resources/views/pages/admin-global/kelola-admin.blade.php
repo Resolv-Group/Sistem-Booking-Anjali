@@ -315,7 +315,7 @@
 
                 {{-- Nama --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="addForm.nama_karyawan" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Contoh: Budi Santoso">
@@ -323,7 +323,7 @@
 
                 {{-- Phone --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="addForm.no_telp" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Contoh: 08123456789">
@@ -339,14 +339,14 @@
 
                 {{-- DOB (untuk default password) --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Lahir (Password default)</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Lahir (Password default) <span class="text-rose-500">*</span></label>
                     <input type="date" name="tanggal_lahir" x-model="addForm.tanggal_lahir" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
                 </div>
 
                 {{-- Jenis Kelamin --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Jenis Kelamin</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Jenis Kelamin <span class="text-rose-500">*</span></label>
                     <select name="jenis_kelamin" x-model="addForm.jenis_kelamin" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
                         <option value="L">Laki-laki</option>
@@ -356,7 +356,7 @@
 
                 {{-- Peran --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin <span class="text-rose-500">*</span></label>
                     <select name="peran" x-model="addForm.peran" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
                         <option value="Admin Kolaborasi">Admin Kolaborasi (Cabang)</option>
@@ -366,7 +366,7 @@
 
                 {{-- Kolaborasi ID (Cabang) --}}
                 <div class="space-y-1" x-show="addForm.peran === 'Admin Kolaborasi'">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang <span class="text-rose-500">*</span></label>
                     <select name="kolaborasi_id" x-model="addForm.kolaborasi_id" :required="addForm.peran === 'Admin Kolaborasi'"
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
                         <option value="">-- Pilih Cabang --</option>
@@ -423,7 +423,7 @@
 
                 {{-- Nama --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="editForm.nama_karyawan" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Contoh: Budi Santoso">
@@ -431,7 +431,7 @@
 
                 {{-- Phone --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="editForm.no_telp" required
                         class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Contoh: 08123456789">
@@ -447,7 +447,7 @@
 
                 {{-- Peran --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin <span class="text-rose-500">*</span></label>
                     <div class="relative" @click.outside="openDropdown = null">
                         <button type="button" @click.stop="openDropdown = openDropdown === 'editPeran' ? null : 'editPeran'"
                             class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition-all"
@@ -482,7 +482,7 @@
 
                 {{-- Kolaborasi ID (Cabang) --}}
                 <div class="space-y-1" x-show="editForm.peran === 'Admin Kolaborasi'">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang <span class="text-rose-500">*</span></label>
                     <div class="relative" @click.outside="openDropdown = null">
                         <button type="button" @click.stop="openDropdown = openDropdown === 'editBranch' ? null : 'editBranch'"
                             class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition-all"
@@ -579,7 +579,7 @@
 
                 {{-- Verify Nama --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Nama</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Nama <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="resetForm.nama_karyawan" required
                         class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Ketik nama lengkap...">
@@ -587,7 +587,7 @@
 
                 {{-- Verify Phone --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi No. Telp</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi No. Telp <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="resetForm.no_telp" required
                         class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none"
                         placeholder="Ketik nomor telepon...">
@@ -595,7 +595,7 @@
 
                 {{-- Verify Peran --}}
                 <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Peran</label>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Peran <span class="text-rose-500">*</span></label>
                     <select name="peran" x-model="resetForm.peran" required
                         class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none">
                         <option value="Admin Kolaborasi">Admin Kolaborasi</option>

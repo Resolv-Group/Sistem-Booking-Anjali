@@ -49,10 +49,6 @@
                             placeholder="357811XXXXXXXXXX" maxlength="16" minlength="16"
                             class="h-14 rounded-2xl bg-white/50 px-5 text-lg {{ $errors->has('nik') ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-200' }}"
                             x-data @input="$el.value = $el.value.replace(/[^0-9]/g, '')" value="{{ old('nik') }}" />
-                        @error('nik')
-                            <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1"><span
-                                    class="text-xs">⚠️</span> {{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Nama Lengkap --}}
@@ -63,10 +59,6 @@
                             value="{{ old('name') }}" maxlength="50" minlength="2"
                             class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
                             {{ $errors->has('name') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
-                        @error('name')
-                            <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1"><span
-                                    class="text-xs">⚠️</span> {{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Email --}}
@@ -77,10 +69,6 @@
                             maxlength="50" minlength="5"
                             class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
                             {{ $errors->has('email') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
-                        @error('email')
-                            <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1"><span
-                                    class="text-xs">⚠️</span> {{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Nomor Telepon --}}
@@ -91,10 +79,6 @@
                             placeholder="081977785978" maxlength="13" minlength="10"
                             class="h-14 rounded-2xl bg-white/50 px-5 text-lg {{ $errors->has('phone') ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-200' }}"
                             x-data @input="$el.value = $el.value.replace(/[^0-9]/g, '')" value="{{ old('phone') }}" />
-                        @error('phone')
-                            <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1"><span
-                                    class="text-xs">⚠️</span> {{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Tanggal Lahir --}}
@@ -104,10 +88,6 @@
                         <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}"
                             class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
                             {{ $errors->has('tanggal_lahir') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
-                        @error('tanggal_lahir')
-                            <p class="mt-1.5 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1"><span
-                                    class="text-xs">⚠️</span> {{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Jenis Kelamin --}}
@@ -115,7 +95,17 @@
                         :options="[
                             'L' => 'Laki-laki',
                             'P' => 'Perempuan',
-                        ]" required />
+                        ]" :required="true" />
+
+                    {{-- Kode Referral --}}
+                    <div>
+                        <label class="mb-1.5 block text-sm font-semibold text-gray-700 ml-1">Kode Referral <span
+                                class="font-medium text-gray-500">(Opsional)</span></label>
+                        <input type="text" name="referral_code" placeholder="Masukkan kode referral teman Anda"
+                            value="{{ old('referral_code') }}" maxlength="50"
+                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
+                            {{ $errors->has('referral_code') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
+                    </div>
 
                     {{-- Kata Sandi --}}
                     <div x-data="{ show: false }">

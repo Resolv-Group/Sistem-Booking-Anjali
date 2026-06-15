@@ -136,7 +136,7 @@ class BookingController extends Controller
             'terapis' => $therapist->nama_karyawan ?? 'Unknown',
             'kolaborasi' => $kolaborasi->nama_kolaborasi ?? 'Unknown',
             'waktu' => $formattedWaktu,
-            'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? asset('storage/' . $booking->bukti_transfer_booking_path) : null,
+            'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['filename' => basename($booking->bukti_transfer_booking_path)]) : null,
             'alasan_status' => $booking->alasan_status,
             'batalkan_type' => $booking->batalkan_type,
             'terapis_foto' => $terapisFoto,
@@ -192,7 +192,7 @@ class BookingController extends Controller
                 'showPeserta' => false,
                 'terapis' => $booking->session->therapist->nama_karyawan ?? 'Unknown',
                 'waktu' => Carbon::parse($booking->session->tanggal_sesi)->translatedFormat('d F Y') . ' • ' . substr($booking->session->waktu_mulai, 0, 5),
-                'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? asset('storage/' . $booking->bukti_transfer_booking_path) : null,
+                'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['filename' => basename($booking->bukti_transfer_booking_path)]) : null,
                 'alasan_status' => $booking->alasan_status,
                 'batalkan_type' => $booking->batalkan_type,
             ];
@@ -726,5 +726,25 @@ class BookingController extends Controller
             'success' => true,
             'message' => 'Booking berhasil dibatalkan.'
         ]);
+    }
+
+    public function viewBuktiTransfer($filename)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(403, 'Akses ditolak. Silakan login terlebih dahulu.');
+        }
+
+        $filename = basename($filename);
+        $filePath = storage_path('app/public/bukti_transfer/' . $filename);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File bukti transfer tidak ditemukan.');
+        }
+
+        $file = file_get_contents($filePath);
+        $type = mime_content_type($filePath);
+
+        return response($file, 200)->header("Content-Type", $type);
     }
 }
