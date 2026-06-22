@@ -127,7 +127,7 @@
                     </p>
 
                     <div class="pt-2">
-                        <a href="{{ route('view.auth.login') }}"
+                        <a href="{{ route('login') }}"
                             class="text-sm font-bold text-gray-400 hover:text-primary transition-all">
                             Kembali Ke Halaman Login
                         </a>

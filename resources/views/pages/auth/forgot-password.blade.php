@@ -43,7 +43,7 @@
                 </form>
 
                 <div class="mt-10">
-                    <a href="{{ route('view.auth.login') }}"
+                    <a href="{{ route('login') }}"
                         class="text-sm font-bold text-gray-500 hover:text-primary transition-all">
                         Kembali Ke Halaman Login
                     </a>

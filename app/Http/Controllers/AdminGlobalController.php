@@ -262,6 +262,6 @@ class AdminGlobalController extends Controller
         ]);
 
         return redirect()->route('admin-global.kelola-admin')
-            ->with('success', 'Password admin ' . $karyawan->nama_karyawan . ' berhasil direset ke default (' . $dob . ')!');
+            ->with('success', 'Password admin ' . $karyawan->nama_karyawan . ' berhasil direset ke default.');
     }
 }
