@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\BookingRescheduleHistory;
+use App\Models\TherapistReview;
 
 class BookingController extends Controller
 {
@@ -51,19 +52,15 @@ class BookingController extends Controller
 
     $patient = $user->pasien;
 
-//     dd([
-//     'user_id' => $user->id,
-//     'pasien_id' => $patient->id,
-//     'all_booking_patients' => BookingPatient::where('pasien_id', $patient->id)->get()->toArray(),
-//     'raw_all' => BookingPatient::all()->toArray(), // see everything in the table
-// ]);
+    // Fetch reviewed booking IDs to avoid N+1 query issue inside loop
+    $reviewedBookingIds = TherapistReview::where('pasien_id', $patient->id)->pluck('booking_id')->toArray();
 
     $bookings = BookingPatient::where('pasien_id', $patient->id)
         ->with(['booking.session.therapist', 'booking.session.kolaborasi', 'layanan'])
         ->get()
         ->groupBy('booking_id');
 
-    $mappedBookings = $bookings->map(function ($group) {
+    $mappedBookings = $bookings->map(function ($group) use ($reviewedBookingIds) {
         $bookingPatient = $group->first();
         $booking = $bookingPatient->booking;
         $session = $booking->session;
@@ -141,11 +138,80 @@ class BookingController extends Controller
             'batalkan_type' => $booking->batalkan_type,
             'terapis_foto' => $terapisFoto,
             'terapis_id' => $therapist->id,
+            'is_reviewed' => in_array($booking->id, $reviewedBookingIds),
         ];
     })->values();
 
     return view('pages.booking.patient.my-booking.index', compact('mappedBookings'));
 }
+
+    public function storeReview(Request $request, Booking $booking)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->pasien) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+        $pasien = $user->pasien;
+
+        // Check if the booking belongs to this patient
+        if ($booking->booking_oleh_pasien_id !== $pasien->id) {
+            return response()->json(['error' => 'Booking ini bukan milik Anda.'], 403);
+        }
+
+        // A session is reviewable if either:
+        // 1. The parent booking status is 'completed' (all patients finished), OR
+        // 2. This patient's individual session status is 'selesai' (their session is done)
+        $patientFinished = BookingPatient::where('booking_id', $booking->id)
+            ->where('pasien_id', $pasien->id)
+            ->where('status_pasien', 'selesai')
+            ->exists();
+
+        if ($booking->status !== 'completed' && !$patientFinished) {
+            return response()->json(['error' => 'Sesi belum selesai. Anda hanya dapat memberi ulasan untuk sesi yang sudah selesai.'], 422);
+        }
+
+        $existingReview = TherapistReview::where('booking_id', $booking->id)->exists();
+        if ($existingReview) {
+            return response()->json(['error' => 'Anda sudah memberikan ulasan untuk sesi ini.'], 422);
+        }
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'deskripsi' => 'nullable|string|max:500',
+        ]);
+
+        $therapistId = $booking->session->terapis_id;
+
+        DB::transaction(function () use ($booking, $pasien, $therapistId, $request) {
+            TherapistReview::create([
+                'booking_id' => $booking->id,
+                'pasien_id' => $pasien->id,
+                'terapis_id' => $therapistId,
+                'rating' => $request->rating,
+                'deskripsi' => $request->deskripsi,
+            ]);
+
+            // Recalculate average rating for this therapist
+            $averageRating = TherapistReview::where('terapis_id', $therapistId)->avg('rating');
+
+            // Find the latest review with a non-null description
+            $latestReview = TherapistReview::where('terapis_id', $therapistId)
+                ->whereNotNull('deskripsi')
+                ->where('deskripsi', '!=', '')
+                ->latest()
+                ->first();
+
+            Karyawan::where('id', $therapistId)->update([
+                'nilai_review' => $averageRating,
+                'deskripsi_review' => $latestReview ? $latestReview->deskripsi : null,
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ulasan Anda berhasil dikirim!'
+        ]);
+    }
 
     public function adminBookingListIndex(Request $request)
     {
@@ -233,17 +299,27 @@ class BookingController extends Controller
         }
 
         $session = $booking->session;
-        if ($session->remaining_capacity < 0) {
+        $confirmedUsed = $session->bookings
+            ->whereIn('status', ['approved', 'completed'])
+            ->sum(function ($b) {
+                return $b->bookingPatients->unique('pasien_id')->count();
+            });
+
+        $bookingSlots = $booking->bookingPatients->unique('pasien_id')->count();
+
+        if ($confirmedUsed + $bookingSlots > $session->kuota) {
             return redirect()->back()->with('error', 'Kapasitas kuota sesi terapis tidak mencukupi untuk menerima janji ini.');
         }
 
-        $booking->update([
-            'status' => 'approved',
-            'updated_at' => now(),
-            'updated_by' => $user->id,
-            'approved_at' => now(),
-            'approved_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($booking, $user) {
+            $booking->update([
+                'status' => 'approved',
+                'updated_at' => now(),
+                'updated_by' => $user->id,
+                'approved_at' => now(),
+                'approved_by' => $user->id,
+            ]);
+        });
 
         // Keep status_pasien as 'menunggu' — patient stays confirmed for the session
 
@@ -272,18 +348,20 @@ class BookingController extends Controller
             'alasan_status' => 'required|string|max:500',
         ]);
 
-        $booking->update([
-            'status' => 'rejected',
-            'alasan_status' => $request->alasan_status,
-            'updated_at' => now(),
-            'updated_by' => $user->id,
-            'rejected_at' => now(),
-            'rejected_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($booking, $request, $user) {
+            $booking->update([
+                'status' => 'rejected',
+                'alasan_status' => $request->alasan_status,
+                'updated_at' => now(),
+                'updated_by' => $user->id,
+                'rejected_at' => now(),
+                'rejected_by' => $user->id,
+            ]);
 
-        $booking->bookingPatients()->update([
-            'status_pasien' => 'dibatalkan',
-        ]);
+            $booking->bookingPatients()->update([
+                'status_pasien' => 'dibatalkan',
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Janji temu berhasil ditolak.');
     }
@@ -311,19 +389,21 @@ class BookingController extends Controller
             'batalkan_type' => 'nullable|string|max:100',
         ]);
 
-        $booking->update([
-            'status' => 'cancelled',
-            'alasan_status' => $request->alasan_status,
-            'batalkan_type' => $request->batalkan_type,
-            'updated_at' => now(),
-            'updated_by' => $user->id,
-            'cancelled_at' => now(),
-            'cancelled_by' => $user->id,
-        ]);
+        DB::transaction(function () use ($booking, $request, $user) {
+            $booking->update([
+                'status' => 'cancelled',
+                'alasan_status' => $request->alasan_status,
+                'batalkan_type' => $request->batalkan_type,
+                'updated_at' => now(),
+                'updated_by' => $user->id,
+                'cancelled_at' => now(),
+                'cancelled_by' => $user->id,
+            ]);
 
-        $booking->bookingPatients()->update([
-            'status_pasien' => 'dibatalkan',
-        ]);
+            $booking->bookingPatients()->update([
+                'status_pasien' => 'dibatalkan',
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Janji temu berhasil dibatalkan.');
     }
@@ -431,31 +511,37 @@ class BookingController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => 'required|string|max:20|unique:users,phone|unique:pasiens,no_telp',
             'dob' => 'required|date',
         ]);
 
-        // Create user account
-        $user = User::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->dob), // DOB as default password
-            'role' => UserRole::PATIENT,
-        ]);
+        try {
+            return DB::transaction(function () use ($request) {
+                // Create user account
+                $user = User::create([
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                    'password' => Hash::make($request->dob), // DOB as default password
+                    'role' => UserRole::PATIENT,
+                ]);
 
-        $pasien = Pasien::create([
-            'user_id' => $user->id,
-            'nama_pasien' => $request->name,
-            'no_telp' => $request->phone,
-            'tanggal_lahir' => $request->dob,
-        ]);
+                $pasien = Pasien::create([
+                    'user_id' => $user->id,
+                    'nama_pasien' => $request->name,
+                    'no_telp' => $request->phone,
+                    'tanggal_lahir' => $request->dob,
+                ]);
 
-        return response()->json([
-            'pasien_id' => $pasien->id,
-            'nama_pasien' => $pasien->nama_pasien,
-            'pasien_public_id' => $pasien->pasien_public_id,
-            'tanggal_lahir' => $pasien->tanggal_lahir,
-        ]);
+                return response()->json([
+                    'pasien_id' => $pasien->id,
+                    'nama_pasien' => $pasien->nama_pasien,
+                    'pasien_public_id' => $pasien->pasien_public_id,
+                    'tanggal_lahir' => $pasien->tanggal_lahir,
+                ]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal mendaftarkan pasien: ' . $e->getMessage()], 422);
+        }
     }
 
     public function store(Request $request)
@@ -478,6 +564,14 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Data pasien tidak valid.');
         }
 
+        // Capacity check
+        $session = TherapistSession::findOrFail($request->terapis_sesi_id);
+        $session->load('bookings.bookingPatients');
+        $slotsRequired = (int) $request->slots;
+        if ($session->remaining_capacity < $slotsRequired) {
+            return redirect()->back()->with('error', 'Kapasitas kuota sesi terapis tidak mencukupi untuk jumlah pasien yang dipilih (Kuota sisa: ' . $session->remaining_capacity . ').');
+        }
+
         // Upload payment proof
         $path = null;
         $mime = null;
@@ -487,76 +581,85 @@ class BookingController extends Controller
             $mime = $file->getClientMimeType();
         }
 
-        $booking = Booking::create([
-            'booking_oleh_pasien_id' => $primaryPasien->id,
-            'terapis_sesi_id' => $request->terapis_sesi_id,
-            'status' => 'pending',
-            'bukti_transfer_booking_path' => $path,
-            'bukti_transfer_booking_mime' => $mime,
-        ]);
-
-        foreach ($patientsData as $i => $slotData) {
-            // if ($i === 1) {
-            //     // dump only the second slot
-            //     dd([
-            //         'index' => $i,
-            //         'type' => $slotData['type'] ?? 'NOT SET',
-            //         'id' => $slotData['id'] ?? 'NOT SET',
-            //         'name' => $slotData['name'] ?? 'NOT SET',
-            //     ]);
-            // }
-            $serviceIds = $slotData['services'] ?? [];
-
-            if (empty($serviceIds)) {
-                $booking->delete();
-                return redirect()->back()->with('error', 'Semua pasien harus memiliki minimal satu layanan.');
-            }
-
-            if ($i === 0) {
-                // Slot 1 is always the logged-in user
-                $pasienId = $primaryPasien->id;
-            } else {
-                $type = $slotData['type'] ?? 'baru';
-
-                if ($type === 'terdaftar') {
-                    // Registered patient — id is the actual pasien_id
-                    $pasienId = (int) $slotData['id'];
-                } else {
-                    // Guest ('baru') — create new user + pasien
-                    $phone = !empty($slotData['phone']) ? $slotData['phone'] : $primaryUser->phone . '-' . ($i + 1) . '-' . Str::random(3);
-                    $email = !empty($slotData['email']) ? $slotData['email'] : null;
-
-                    $newUser = User::create([
-                        'name' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
-                        'email' => $email,
-                        'phone' => $phone,
-                        'password' => Hash::make(!empty($slotData['dob']) ? Carbon::parse($slotData['dob'])->format('d-m-Y') : 'password123'),
-                        'role' => UserRole::PATIENT,
-                    ]);
-
-                    $newPasien = Pasien::create([
-                        'user_id' => $newUser->id,
-                        'nama_pasien' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
-                        'no_telp' => $phone,
-                        'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
-                        'jenis_kelamin' => 'L',
-                        'created_by' => $primaryUser->id,
-                        'updated_by' => $primaryUser->id,
-                    ]);
-
-                    $pasienId = $newPasien->id;
-                }
-            }
-
-            foreach ($serviceIds as $layananId) {
-                BookingPatient::create([
-                    'booking_id' => $booking->id,
-                    'pasien_id' => $pasienId,
-                    'layanan_id' => $layananId,
-                    'keluhan_pasien' => $slotData['complaint'] ?? null,
-                    'status_pasien' => 'menunggu',
+        try {
+            DB::transaction(function () use ($request, $primaryUser, $primaryPasien, $patientsData, $path, $mime) {
+                $booking = Booking::create([
+                    'booking_oleh_pasien_id' => $primaryPasien->id,
+                    'terapis_sesi_id' => $request->terapis_sesi_id,
+                    'status' => 'pending',
+                    'bukti_transfer_booking_path' => $path,
+                    'bukti_transfer_booking_mime' => $mime,
                 ]);
-            }
+
+                foreach ($patientsData as $i => $slotData) {
+                    $serviceIds = $slotData['services'] ?? [];
+
+                    if (empty($serviceIds)) {
+                        throw new \Exception('Semua pasien harus memiliki minimal satu layanan.');
+                    }
+
+                    if ($i === 0) {
+                        // Slot 1 is always the logged-in user
+                        $pasienId = $primaryPasien->id;
+                    } else {
+                        $type = $slotData['type'] ?? 'baru';
+
+                        if ($type === 'terdaftar') {
+                            // Registered patient — id is the actual pasien_id
+                            $pasienId = (int) $slotData['id'];
+                        } else {
+                            // Guest ('baru') — create new user + pasien
+                            $phone = !empty($slotData['phone']) ? $slotData['phone'] : $primaryUser->phone . '-' . ($i + 1) . '-' . Str::random(3);
+                            $email = !empty($slotData['email']) ? $slotData['email'] : null;
+
+                            // Phone uniqueness check
+                            $existsUser = User::where('phone', $phone)->exists();
+                            $existsPasien = Pasien::where('no_telp', $phone)->exists();
+                            if ($existsUser || $existsPasien) {
+                                throw new \Exception("Nomor telepon '" . $phone . "' sudah terdaftar.");
+                            }
+                            if ($email) {
+                                $existsPasienEmail = Pasien::where('email', $email)->exists();
+                                if ($existsPasienEmail) {
+                                    throw new \Exception("Email '" . $email . "' sudah terdaftar.");
+                                }
+                            }
+
+                            $newUser = User::create([
+                                'name' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
+                                'phone' => $phone,
+                                'password' => Hash::make(!empty($slotData['dob']) ? Carbon::parse($slotData['dob'])->format('d-m-Y') : 'password123'),
+                                'role' => UserRole::PATIENT,
+                            ]);
+
+                            $newPasien = Pasien::create([
+                                'user_id' => $newUser->id,
+                                'nama_pasien' => $slotData['name'] ?? 'Pasien Tambahan ' . ($i + 1),
+                                'no_telp' => $phone,
+                                'email' => $email,
+                                'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
+                                'jenis_kelamin' => 'L',
+                                'created_by' => $primaryUser->id,
+                                'updated_by' => $primaryUser->id,
+                            ]);
+
+                            $pasienId = $newPasien->id;
+                        }
+                    }
+
+                    foreach ($serviceIds as $layananId) {
+                        BookingPatient::create([
+                            'booking_id' => $booking->id,
+                            'pasien_id' => $pasienId,
+                            'layanan_id' => $layananId,
+                            'keluhan_pasien' => $slotData['complaint'] ?? null,
+                            'status_pasien' => 'menunggu',
+                        ]);
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
 
         return redirect()->route('patient.booking.form-selesai')->with('success', 'Booking berhasil diajukan! Menunggu verifikasi.');
@@ -577,67 +680,89 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Data pasien tidak valid.');
         }
 
-        // dd($patientsData);
+        // Capacity check
+        $session = TherapistSession::findOrFail($request->terapis_sesi_id);
+        $session->load('bookings.bookingPatients');
+        $slotsRequired = (int) $request->slots;
+        if ($session->remaining_capacity < $slotsRequired) {
+            return redirect()->back()->with('error', 'Kapasitas kuota sesi terapis tidak mencukupi untuk jumlah pasien yang dipilih (Kuota sisa: ' . $session->remaining_capacity . ').');
+        }
 
-        // Create the booking (no payment proof for admin — direct confirm or pending)
-        $booking = Booking::create([
-            'booking_oleh_pasien_id' => null, // admin booking, no primary patient
-            'terapis_sesi_id' => $request->terapis_sesi_id,
-            'status' => 'approved', // admin bookings skip payment verification
-            'booking_oleh_karyawan_id' => $request->admin_id,
-            'approved_at' => now(),
-            'approved_by' => $request->admin_id,
-        ]);
-
-        foreach ($patientsData as $i => $slotData) {
-            $serviceIds = $slotData['services'] ?? [];
-
-            // Each patient must have at least one service
-            if (empty($serviceIds)) {
-                $booking->delete();
-
-                return redirect()->back()->with('error', 'Semua pasien harus memiliki minimal satu layanan.');
-            }
-
-            $pasienId = null;
-
-            if ($slotData['type'] === 'terdaftar' && !empty($slotData['id'])) {
-                // Existing registered patient
-                $pasienId = $slotData['id'];
-            } else {
-                // New patient — create user + pasien record
-                $phone = $slotData['phone'] ?? 'admin-' . Str::random(6);
-                $email = !empty($slotData['email']) ? $slotData['email'] : null;
-
-                $newUser = User::create([
-                    'name' => $slotData['name'] ?? 'Pasien Baru',
-                    'email' => $email,
-                    'phone' => $phone,
-                    'password' => Hash::make(Carbon::parse($slotData['dob'])->format('d-m-Y')),
-                    'role' => UserRole::PATIENT,
+        try {
+            DB::transaction(function () use ($request, $patientsData) {
+                // Create the booking (no payment proof for admin — direct confirm or pending)
+                $booking = Booking::create([
+                    'booking_oleh_pasien_id' => null, // admin booking, no primary patient
+                    'terapis_sesi_id' => $request->terapis_sesi_id,
+                    'status' => 'approved', // admin bookings skip payment verification
+                    'booking_oleh_karyawan_id' => $request->admin_id,
+                    'approved_at' => now(),
+                    'approved_by' => $request->admin_id,
                 ]);
 
-                $newPasien = Pasien::create([
-                    'user_id' => $newUser->id,
-                    'nama_pasien' => $slotData['name'] ?? 'Pasien Baru',
-                    'no_telp' => $phone,
-                    'email' => $email,
-                    'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
-                ]);
+                foreach ($patientsData as $i => $slotData) {
+                    $serviceIds = $slotData['services'] ?? [];
 
-                $pasienId = $newPasien->id;
-            }
+                    // Each patient must have at least one service
+                    if (empty($serviceIds)) {
+                        throw new \Exception('Semua pasien harus memiliki minimal satu layanan.');
+                    }
 
-            // Create one BookingPatient row per service per patient
-            foreach ($serviceIds as $layananId) {
-                BookingPatient::create([
-                    'booking_id' => $booking->id,
-                    'pasien_id' => $pasienId,
-                    'layanan_id' => $layananId,
-                    'keluhan_pasien' => $slotData['complaint'] ?? null,
-                    'status_pasien' => 'menunggu',
-                ]);
-            }
+                    $pasienId = null;
+
+                    if ($slotData['type'] === 'terdaftar' && !empty($slotData['id'])) {
+                        // Existing registered patient
+                        $pasienId = $slotData['id'];
+                    } else {
+                        // New patient — create user + pasien record
+                        $phone = $slotData['phone'] ?? 'admin-' . Str::random(6);
+                        $email = !empty($slotData['email']) ? $slotData['email'] : null;
+
+                        // Phone uniqueness check
+                        $existsUser = User::where('phone', $phone)->exists();
+                        $existsPasien = Pasien::where('no_telp', $phone)->exists();
+                        if ($existsUser || $existsPasien) {
+                            throw new \Exception("Nomor telepon '" . $phone . "' sudah terdaftar.");
+                        }
+                        if ($email) {
+                            $existsPasienEmail = Pasien::where('email', $email)->exists();
+                            if ($existsPasienEmail) {
+                                throw new \Exception("Email '" . $email . "' sudah terdaftar.");
+                            }
+                        }
+
+                        $newUser = User::create([
+                            'name' => $slotData['name'] ?? 'Pasien Baru',
+                            'phone' => $phone,
+                            'password' => Hash::make(Carbon::parse($slotData['dob'])->format('d-m-Y')),
+                            'role' => UserRole::PATIENT,
+                        ]);
+
+                        $newPasien = Pasien::create([
+                            'user_id' => $newUser->id,
+                            'nama_pasien' => $slotData['name'] ?? 'Pasien Baru',
+                            'no_telp' => $phone,
+                            'email' => $email,
+                            'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
+                        ]);
+
+                        $pasienId = $newPasien->id;
+                    }
+
+                    // Create one BookingPatient row per service per patient
+                    foreach ($serviceIds as $layananId) {
+                        BookingPatient::create([
+                            'booking_id' => $booking->id,
+                            'pasien_id' => $pasienId,
+                            'layanan_id' => $layananId,
+                            'keluhan_pasien' => $slotData['complaint'] ?? null,
+                            'status_pasien' => 'menunggu',
+                        ]);
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
 
         return redirect()->route('admin.booking.form-selesai')->with('success', 'Booking berhasil dibuat.');
@@ -646,16 +771,17 @@ class BookingController extends Controller
     public function getAvailableSessions(Booking $booking)
     {
         $therapistId = $booking->session->terapis_id;
+        $bookingPatientsCount = $booking->bookingPatients->unique('pasien_id')->count();
 
         $sessions = TherapistSession::where('terapis_id', $therapistId)
             ->where('status', 'terbuka')
             ->where('tanggal_sesi', '>=', now()->toDateString())
             ->get()
-            ->filter(function ($session) use ($booking) {
+            ->filter(function ($session) use ($booking, $bookingPatientsCount) {
                 if ($session->id === $booking->terapis_sesi_id) {
                     return false;
                 }
-                return $session->remaining_capacity > 0;
+                return $session->remaining_capacity >= $bookingPatientsCount;
             })
             ->map(function ($session) {
                 $dateFormatted = Carbon::parse($session->tanggal_sesi)->locale('id')->translatedFormat('l j F');
@@ -680,7 +806,9 @@ class BookingController extends Controller
         $newSesiId = $request->new_sesi_id;
 
         $newSession = TherapistSession::findOrFail($newSesiId);
-        if ($newSession->status !== 'terbuka' || $newSession->remaining_capacity <= 0 || $newSession->tanggal_sesi < now()->toDateString() || $newSession->terapis_id !== $booking->session->terapis_id) {
+        $bookingPatientsCount = $booking->bookingPatients->unique('pasien_id')->count();
+
+        if ($newSession->status !== 'terbuka' || $newSession->remaining_capacity < $bookingPatientsCount || $newSession->tanggal_sesi < now()->toDateString() || $newSession->terapis_id !== $booking->session->terapis_id) {
             return response()->json(['error' => 'Sesi tidak tersedia atau kapasitas penuh.'], 422);
         }
 

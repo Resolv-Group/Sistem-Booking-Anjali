@@ -17,6 +17,48 @@
         rescheduleStep: 1,
         toastMessage: '',
         showToast: false,
+
+        reviewOpen: false,
+        reviewBooking: null,
+        reviewRating: 5,
+        reviewDeskripsi: '',
+
+        openReviewModal(item) {
+            this.reviewBooking = item;
+            this.reviewRating = 5;
+            this.reviewDeskripsi = '';
+            this.reviewOpen = true;
+        },
+
+        submitReview() {
+            if (!this.reviewRating) return;
+            
+            fetch(`/booking/patient/my-booking/${this.reviewBooking.booking_id}/review`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    rating: this.reviewRating,
+                    deskripsi: this.reviewDeskripsi
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    this.triggerToast('✓ Ulasan berhasil dikirim!');
+                    this.reviewOpen = false;
+                    setTimeout(() => { window.location.reload(); }, 1500);
+                } else {
+                    Swal.fire('Gagal', data.error || 'Terjadi kesalahan.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Gagal', 'Terjadi kesalahan saat mengirim ulasan.', 'error');
+            });
+        },
     
     
         get upcomingItems() {
@@ -400,12 +442,26 @@
                                 </div>
                             </template>
                             <template x-if="item.status_key === 'completed'">
-                                <div class="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-100">
-                                    <div class="flex items-center gap-3 text-slate-500">
-                                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                                        <p class="text-[13px] font-bold uppercase tracking-tighter" x-text="item.waktu">
-                                        </p>
+                                <div class="space-y-4">
+                                    <div class="bg-slate-50 rounded-2xl p-4 space-y-2 border border-slate-100">
+                                        <div class="flex items-center gap-3 text-slate-500">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                            <p class="text-[13px] font-bold uppercase tracking-tighter" x-text="item.waktu">
+                                            </p>
+                                        </div>
                                     </div>
+                                    <template x-if="!item.is_reviewed">
+                                        <button @click="openReviewModal(item)"
+                                            class="w-full py-3.5 bg-teal-700 hover:bg-teal-800 text-white rounded-2xl text-[13px] font-bold uppercase tracking-[0.2em] active:scale-95 transition-all shadow-md">
+                                            Beri Ulasan Terapis
+                                        </button>
+                                    </template>
+                                    <template x-if="item.is_reviewed">
+                                        <div class="w-full py-3 px-4 bg-teal-50 text-teal-800 text-[11px] font-bold rounded-2xl border border-teal-100 uppercase tracking-widest text-center flex items-center justify-center gap-2">
+                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-teal-600"></i>
+                                            Ulasan Sudah Dikirim
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -545,6 +601,77 @@
                 </div>
             </div>
         </div>
+
+        <!-- Review Modal -->
+        <div x-show="reviewOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-6 pb-36" x-cloak>
+
+            <!-- Overlay Glassy -->
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100" @click="reviewOpen = false"></div>
+
+            <!-- Modal Box -->
+            <div class="relative bg-white rounded-[2.5rem] w-full max-w-sm shadow-2xl overflow-hidden flex flex-col max-h-full"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+                <!-- Header -->
+                <div class="px-8 pt-8 pb-4 flex justify-between items-center bg-white">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-[0.2em]">Beri Ulasan</h3>
+                    <button @click="reviewOpen = false"
+                        class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-full text-slate-400 hover:text-rose-500 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="px-8 pb-8 space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar">
+                    <!-- Therapist Info -->
+                    <div class="flex items-center gap-4 bg-teal-50/50 border border-teal-100/30 rounded-2xl p-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-100 shadow-sm">
+                            <img :src="reviewBooking ? reviewBooking.terapis_foto : ''" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800" x-text="reviewBooking ? reviewBooking.terapis : ''"></h4>
+                            <p class="text-[10px] font-bold text-teal-600 uppercase tracking-wider" x-text="reviewBooking ? reviewBooking.layanan : ''"></p>
+                        </div>
+                    </div>
+
+                    <!-- Stars rating selection -->
+                    <div class="space-y-3 text-center">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bagaimana Pelayanan Terapis?</p>
+                        <div class="flex items-center justify-center gap-2">
+                            <template x-for="star in [1, 2, 3, 4, 5]">
+                                <button type="button" @click="reviewRating = star" class="focus:outline-none transition-transform active:scale-125">
+                                    <svg class="w-8 h-8 transition-colors" 
+                                         :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-transparent'"
+                                         viewBox="0 0 20 20" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Review Textarea -->
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Komentar / Masukan</label>
+                        <textarea x-model="reviewDeskripsi" placeholder="Tulis masukan atau kesan Anda selama terapi..."
+                                  class="w-full border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-700 h-28 outline-none focus:border-teal-500 resize-none shadow-sm placeholder:text-slate-300 placeholder:font-normal leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Footer Action -->
+                <div class="px-8 py-6 bg-slate-50 border-t border-slate-100 shrink-0">
+                    <button @click="submitReview()"
+                        class="w-full py-4 bg-teal-800 text-white shadow-xl shadow-teal-900/20 active:scale-95 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3">
+                        <span>Kirim Ulasan</span>
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Success Toast -->
         <div x-show="showToast"
             class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-teal-900 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-teal-800"

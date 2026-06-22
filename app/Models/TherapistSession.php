@@ -61,28 +61,26 @@ class TherapistSession extends Model
     // }
 
     public function getRemainingCapacityAttribute()
-    {
-        $used = $this->bookings()
-            ->whereIn('status', ['pending', 'approved', 'completed'])
-            ->withCount(['bookingPatients as unique_patient_count' => function ($query) {
-                $query->select(DB::raw('COUNT(DISTINCT pasien_id)'));
-            }])
-            ->get()
-            ->sum('unique_patient_count');
-
-        return $this->kuota - $used;
-    }
+{
+    // Sum using the already eager-loaded bookings collection
+    $used = $this->bookings
+        ->whereIn('status', ['pending', 'approved', 'completed'])
+        ->sum(function ($booking) {
+            return $booking->bookingPatients->unique('pasien_id')->count();
+        });
+    return $this->kuota - $used;
+}
 
     public function getUsedCapacityAttribute()
     {
-        return $this->bookings()
+        return $this->bookings
             ->whereIn('status', [
                 'pending',
                 'approved',
                 'completed',
             ])
-            ->withCount('bookingPatients')
-            ->get()
-            ->sum('booking_patients_count');
+            ->sum(function ($booking) {
+                return $booking->bookingPatients->unique('pasien_id')->count();
+            });
     }
 }

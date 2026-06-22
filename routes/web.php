@@ -108,7 +108,7 @@ Route::middleware(['auth', 'role:admin_global'])->group(function () {
     Route::put('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'update'])->name('admin-global.karyawan.update');
     Route::delete('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/{id_karyawan}', [KaryawanController::class, 'destroy'])->name('admin-global.karyawan.destroy');
     Route::post('/cabang/admin-global/menu/{id_kolaborasi}/karyawan/map-batch', [KaryawanController::class, 'mapToCabang'])->name('admin-global.karyawan.map');
-    Route::get('/bukti-transfer/{filename}', [BookingController::class, 'viewBuktiTransfer'])->name('bukti-transfer.view');
+    
 });
 
 // ROLE : Admin Kolaborasi / Admin Cabang
@@ -148,6 +148,8 @@ Route::middleware(['auth', 'role:admin_kolaborasi'])->group(function () {
     // Fitur : Patient management
     Route::get('/admin-cabang/patient/list', [AdminKolaborasiController::class, 'PatientList'])->name('admin-cabang.patient.list');
     Route::get('/admin-cabang/patient/{id}', [AdminKolaborasiController::class, 'PatientDetail'])->name('admin-cabang.patient.detail');
+
+    Route::get('/bukti-transfer/{filename}', [BookingController::class, 'viewBuktiTransfer'])->name('bukti-transfer.view');
 });
 
 // ROlE : Terapis // Therapist
@@ -193,6 +195,7 @@ Route::middleware(['auth', 'role:patient'])->group(function () {
     Route::get('/booking/patient/my-booking/{booking}/available-sessions', [BookingController::class, 'getAvailableSessions'])->name('patient.booking.available-sessions');
     Route::post('/booking/patient/my-booking/{booking}/reschedule', [BookingController::class, 'reschedule'])->name('patient.booking.reschedule');
     Route::post('/booking/patient/my-booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('patient.booking.cancel');
+    Route::post('/booking/patient/my-booking/{booking}/review', [BookingController::class, 'storeReview'])->name('patient.booking.review');
 
     // Fitur : Profile
     Route::view('/patient/profile', 'pages.profile.patient')->name('patient.profile');

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('nilai_review', 3, 2)->nullable();
             $table->text('deskripsi_review')->nullable();
 
-            $table->text('logo')->nullable();
+            $table->longText('logo')->nullable();
             $table->string('logo_mime', 100)->nullable();
 
             $table->integer('created_by')->nullable();

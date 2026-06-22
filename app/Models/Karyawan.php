@@ -90,4 +90,12 @@ class Karyawan extends Model
             'layanan_id'
         );
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(
+            TherapistReview::class,
+            'terapis_id'
+        );
+    }
 }
