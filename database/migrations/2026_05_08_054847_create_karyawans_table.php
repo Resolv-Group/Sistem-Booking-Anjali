@@ -44,7 +44,7 @@ return new class extends Migration
             $table->foreignId('kolaborasi_id')->constrained('kolaborasi')->nullOnDelete();
             $table->enum('status_karyawan', ['Aktif', 'Tidak Aktif', 'Resign', 'PHK'])->default('Aktif');
 
-            $table->text('foto')->nullable();
+            $table->longText('foto')->nullable();
             $table->string('foto_mime', 100)->nullable();
 
             $table->integer('created_by')->nullable();

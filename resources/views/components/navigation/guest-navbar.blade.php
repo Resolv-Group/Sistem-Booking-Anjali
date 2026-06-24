@@ -29,7 +29,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Layanan</span>
             </a>
 
-            <a href="{{ route('view.auth.login') }}"
+            <a href="{{ route('login') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
                 {{ $active === 'booking' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -50,7 +50,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Tentang Kami</span>
             </a>
 
-            <a href="{{ route('view.auth.login') }}"
+            <a href="{{ route('login') }}"
                 class="flex flex-col items-center gap-1 py-2 transition-all active:scale-90
                 {{ $active === 'profile' ? 'text-teal-600' : 'text-slate-400' }}">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"

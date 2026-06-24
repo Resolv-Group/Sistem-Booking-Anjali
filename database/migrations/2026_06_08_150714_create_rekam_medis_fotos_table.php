@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rekam_medis_fotos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->onDelete('cascade');
-            $table->text('foto')->nullable();
+            $table->longText('foto')->nullable();
             $table->string('foto_mime')->nullable();
             $table->timestamps();
         });

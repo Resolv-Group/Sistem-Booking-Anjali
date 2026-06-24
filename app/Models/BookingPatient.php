@@ -46,13 +46,13 @@ class BookingPatient extends Model
         );
     }
 
-    public function status_pasien()
-    {
-        return $this->belongsTo(
-            Pasien::class,
-            'status_pasien'
-        );
-    }
+    // public function status_pasien()
+    // {
+    //     return $this->belongsTo(
+    //         Pasien::class,
+    //         'status_pasien'
+    //     );
+    // }
 
     public function rekamMedis()
     {

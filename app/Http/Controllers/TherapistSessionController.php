@@ -7,6 +7,7 @@ use App\Models\RekamMedis;
 use App\Models\TherapistSession;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TherapistSessionController extends Controller
 {
@@ -172,83 +173,90 @@ class TherapistSessionController extends Controller
     {
         $bp = BookingPatient::findOrFail($id);
 
-        // Rekam medis stays per-row (one per layanan) — no change here
-        $rekamMedis = $bp->rekamMedis;
-        if (!$rekamMedis) {
-            $rekamMedis = new RekamMedis(['booking_pasien_id' => $bp->id]);
-        }
-
-        $inputData = $request->except(['_token', 'ringkasan_sesi', 'action_type', 'status_pasien_action', 'status_pasien_radio', 'deleted_fotos', 'foto', 'golongan_darah', 'tinggi_badan', 'berat_badan']);
-        $rekamMedis->fill($inputData);
-        $rekamMedis->save();
-
-        // Save physical stats to patient
-        $pasien = $bp->pasien;
-        if ($pasien) {
-            $patientUpdates = [];
-            if ($request->filled('golongan_darah')) {
-                $patientUpdates['golongan_darah'] = $request->input('golongan_darah');
-            }
-            if ($request->filled('tinggi_badan')) {
-                $patientUpdates['tinggi_badan'] = $request->input('tinggi_badan');
-            }
-            if ($request->filled('berat_badan')) {
-                $patientUpdates['berat_badan'] = $request->input('berat_badan');
-            }
-            if (!empty($patientUpdates)) {
-                $pasien->update($patientUpdates);
-            }
-        }
-
-        // Handle photo deletions
-        if ($request->has('deleted_fotos')) {
-            \App\Models\RekamMedisFotos::whereIn('id', $request->input('deleted_fotos'))->delete();
-        }
-
-        if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                if ($file->isValid()) {
-                    $base64Data = base64_encode(file_get_contents($file->getRealPath()));
-                    $mimeType = $file->getClientMimeType();
-
-                    $rekamMedis->fotos()->create([
-                        'foto' => $base64Data,
-                        'foto_mime' => $mimeType,
-                    ]);
+        try {
+            DB::transaction(function () use ($request, $bp) {
+                // Rekam medis stays per-row (one per layanan) — no change here
+                $rekamMedis = $bp->rekamMedis;
+                if (!$rekamMedis) {
+                    $rekamMedis = new RekamMedis(['booking_pasien_id' => $bp->id]);
                 }
-            }
+
+                $inputData = $request->except(['_token', 'ringkasan_sesi', 'action_type', 'status_pasien_action', 'status_pasien_radio', 'deleted_fotos', 'foto', 'golongan_darah', 'tinggi_badan', 'berat_badan']);
+                $rekamMedis->fill($inputData);
+                $rekamMedis->save();
+
+                // Save physical stats to patient
+                $pasien = $bp->pasien;
+                if ($pasien) {
+                    $patientUpdates = [];
+                    if ($request->filled('golongan_darah')) {
+                        $patientUpdates['golongan_darah'] = $request->input('golongan_darah');
+                    }
+                    if ($request->filled('tinggi_badan')) {
+                        $patientUpdates['tinggi_badan'] = $request->input('tinggi_badan');
+                    }
+                    if ($request->filled('berat_badan')) {
+                        $patientUpdates['berat_badan'] = $request->input('berat_badan');
+                    }
+                    if (!empty($patientUpdates)) {
+                        $pasien->update($patientUpdates);
+                    }
+                }
+
+                // Handle photo deletions
+                if ($request->has('deleted_fotos')) {
+                    \App\Models\RekamMedisFotos::whereIn('id', $request->input('deleted_fotos'))->delete();
+                }
+
+                if ($request->hasFile('foto')) {
+                    foreach ($request->file('foto') as $file) {
+                        if ($file->isValid()) {
+                            $base64Data = base64_encode(file_get_contents($file->getRealPath()));
+                            $mimeType = $file->getClientMimeType();
+
+                            $rekamMedis->fotos()->create([
+                                'foto' => $base64Data,
+                                'foto_mime' => $mimeType,
+                            ]);
+                        }
+                    }
+                }
+
+                $isComplete = $request->input('action_type') === 'complete' || $request->input('status_pasien_action') === 'complete';
+
+                $updatePayload = [
+                    'ringkasan_sesi' => $request->input('ringkasan_sesi'),
+                ];
+
+                if ($isComplete) {
+                    $updatePayload['status_pasien'] = 'selesai';
+                    $updatePayload['finished_at'] = now();
+                } else {
+                    $updatePayload['status_pasien'] = 'sedang_berjalan';
+                }
+
+                // Update all rows for this patient in this booking
+                BookingPatient::where('booking_id', $bp->booking_id)->where('pasien_id', $bp->pasien_id)->update($updatePayload);
+
+                // Check if all patients in the booking have finished
+                $booking = $bp->booking;
+                if ($booking) {
+                    $allFinished = $booking->bookingPatients()->where('status_pasien', '!=', 'selesai')->count() === 0;
+
+                    if ($allFinished) {
+                        $booking->update([
+                            'status' => 'completed',
+                            'completed_by' => auth()->id(),
+                            'completed_at' => now(),
+                        ]);
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menyimpan rekam medis: ' . $e->getMessage())->withInput();
         }
 
         $isComplete = $request->input('action_type') === 'complete' || $request->input('status_pasien_action') === 'complete';
-
-        $updatePayload = [
-            'ringkasan_sesi' => $request->input('ringkasan_sesi'),
-        ];
-
-        if ($isComplete) {
-            $updatePayload['status_pasien'] = 'selesai';
-            $updatePayload['finished_at'] = now();
-        } else {
-            $updatePayload['status_pasien'] = 'sedang_berjalan';
-        }
-
-        // Update all rows for this patient in this booking
-        BookingPatient::where('booking_id', $bp->booking_id)->where('pasien_id', $bp->pasien_id)->update($updatePayload);
-
-        // Check if all patients in the booking have finished
-        $booking = $bp->booking;
-        if ($booking) {
-            $allFinished = $booking->bookingPatients()->where('status_pasien', '!=', 'selesai')->count() === 0;
-
-            if ($allFinished) {
-                $booking->update([
-                    'status' => 'completed',
-                    'completed_by' => auth()->id(),
-                    'completed_at' => now(),
-                ]);
-            }
-        }
-
         $message = $isComplete ? "Sesi rekam medis untuk {$bp->pasien->nama_pasien} berhasil diselesaikan!" : 'Draft catatan berhasil disimpan.';
 
         return redirect()->route('therapist.jadwal')->with('success', $message);

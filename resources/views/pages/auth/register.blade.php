@@ -57,7 +57,7 @@
                                 class="font-bold text-red-500">*</span></label>
                         <input type="text" name="name" placeholder="Masukkan nama lengkap Anda"
                             value="{{ old('name') }}" maxlength="50" minlength="2"
-                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
+                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4
                             {{ $errors->has('name') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
                     </div>
 
@@ -67,7 +67,7 @@
                                 class="font-medium text-gray-500">(Opsional)</span></label>
                         <input type="email" name="email" placeholder="nama@email.com" value="{{ old('email') }}"
                             maxlength="50" minlength="5"
-                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
+                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4
                             {{ $errors->has('email') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
                     </div>
 
@@ -86,7 +86,7 @@
                         <label class="mb-1.5 block text-sm font-semibold text-gray-700 ml-1">Tanggal Lahir <span
                                 class="font-bold text-red-500">*</span></label>
                         <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}"
-                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
+                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4
                             {{ $errors->has('tanggal_lahir') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
                     </div>
 
@@ -103,7 +103,7 @@
                                 class="font-medium text-gray-500">(Opsional)</span></label>
                         <input type="text" name="referral_code" placeholder="Masukkan kode referral teman Anda"
                             value="{{ old('referral_code') }}" maxlength="50"
-                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4 
+                            class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4
                             {{ $errors->has('referral_code') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
                     </div>
 
@@ -159,7 +159,7 @@
                 <div class="mt-8 text-center">
                     <p class="text-gray-500">
                         Sudah punya akun?
-                        <a href="{{ route('view.auth.login') }}"
+                        <a href="{{ route('login') }}"
                             class="font-bold text-primary hover:underline transition-all">
                             Masuk Disini
                         </a>

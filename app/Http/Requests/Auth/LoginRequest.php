@@ -58,6 +58,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $karyawan = Auth::user()->karyawan;
+
+        if ($karyawan && $karyawan->status_karyawan !== 'Aktif') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'phone' => 'Akun Anda tidak aktif. Hubungi administrator.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
