@@ -129,7 +129,7 @@
             <div class="px-6 pt-20 space-y-8">
                 @php
                     // 1. Ambil 3 data terapis dari database
-                    $spesialis = App\Models\karyawan::where('peran', 'Terapis')->limit(3)->get();
+                    $spesialis = App\Models\Karyawan::where('peran', 'Terapis')->limit(3)->get();
 
                     // 2. Kumpulan teks bio acak agar tampilan bervariasi dan tetap terlihat profesional
                     $random_bios = [
