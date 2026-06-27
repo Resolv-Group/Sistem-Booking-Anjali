@@ -149,7 +149,7 @@ Route::middleware(['auth', 'role:admin_kolaborasi'])->group(function () {
     Route::get('/admin-cabang/patient/list', [AdminKolaborasiController::class, 'PatientList'])->name('admin-cabang.patient.list');
     Route::get('/admin-cabang/patient/{id}', [AdminKolaborasiController::class, 'PatientDetail'])->name('admin-cabang.patient.detail');
 
-    Route::get('/bukti-transfer/{filename}', [BookingController::class, 'viewBuktiTransfer'])->name('bukti-transfer.view');
+    Route::get('/bukti-transfer/{booking}', [BookingController::class, 'viewBuktiTransfer'])->name('bukti-transfer.view');
 });
 
 // ROlE : Terapis // Therapist

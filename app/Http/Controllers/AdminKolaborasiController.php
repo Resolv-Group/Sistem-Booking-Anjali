@@ -133,7 +133,7 @@ class AdminKolaborasiController extends Controller
                     'layanan' => $layananNames ?: 'Layanan',
                     'terapis' => $booking->session->therapist->nama_karyawan ?? 'Unknown',
                     'waktu' => Carbon::parse($booking->session->tanggal_sesi)->translatedFormat('d F Y') . ' • ' . substr($booking->session->waktu_mulai, 0, 5),
-                    'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['filename' => basename($booking->bukti_transfer_booking_path)]) : null,
+                    'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['booking' => $booking->id]) : null,
                 ];
             });
 

@@ -133,7 +133,7 @@ class BookingController extends Controller
             'terapis' => $therapist->nama_karyawan ?? 'Unknown',
             'kolaborasi' => $kolaborasi->nama_kolaborasi ?? 'Unknown',
             'waktu' => $formattedWaktu,
-            'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['filename' => basename($booking->bukti_transfer_booking_path)]) : null,
+            'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['booking' => $booking->id]) : null,
             'alasan_status' => $booking->alasan_status,
             'batalkan_type' => $booking->batalkan_type,
             'terapis_foto' => $terapisFoto,
@@ -258,7 +258,7 @@ class BookingController extends Controller
                 'showPeserta' => false,
                 'terapis' => $booking->session->therapist->nama_karyawan ?? 'Unknown',
                 'waktu' => Carbon::parse($booking->session->tanggal_sesi)->translatedFormat('d F Y') . ' • ' . substr($booking->session->waktu_mulai, 0, 5),
-                'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['filename' => basename($booking->bukti_transfer_booking_path)]) : null,
+                'bukti_transfer_url' => $booking->bukti_transfer_booking_path ? route('bukti-transfer.view', ['booking' => $booking->id]) : null,
                 'alasan_status' => $booking->alasan_status,
                 'batalkan_type' => $booking->batalkan_type,
             ];
@@ -577,10 +577,10 @@ class BookingController extends Controller
         $mime = null;
         if ($request->hasFile('payment_proof')) {
             $file = $request->file('payment_proof');
-            $path = $file->store('bukti_transfer', 'public');
+            $path = base64_encode(file_get_contents($file->getRealPath()));
             $mime = $file->getClientMimeType();
         }
-
+        
         try {
             DB::transaction(function () use ($request, $primaryUser, $primaryPasien, $patientsData, $path, $mime) {
                 $booking = Booking::create([
@@ -856,22 +856,27 @@ class BookingController extends Controller
         ]);
     }
 
-    public function viewBuktiTransfer($filename)
+    public function viewBuktiTransfer(Booking $booking)
     {
         $user = auth()->user();
         if (!$user) {
             abort(403, 'Akses ditolak. Silakan login terlebih dahulu.');
         }
 
-        $filename = basename($filename);
-        $filePath = storage_path('app/public/bukti_transfer/' . $filename);
-
-        if (!file_exists($filePath)) {
+        if (!$booking->bukti_transfer_booking_path) {
             abort(404, 'File bukti transfer tidak ditemukan.');
         }
 
-        $file = file_get_contents($filePath);
-        $type = mime_content_type($filePath);
+        // Try reading as file path first (backward compatibility)
+        $filePath = storage_path('app/public/' . $booking->bukti_transfer_booking_path);
+        if (file_exists($filePath)) {
+            $file = file_get_contents($filePath);
+            $type = mime_content_type($filePath);
+        } else {
+            // Assume it's a base64 encoded string stored in DB
+            $file = base64_decode($booking->bukti_transfer_booking_path);
+            $type = $booking->bukti_transfer_booking_mime ?? 'image/jpeg';
+        }
 
         return response($file, 200)->header("Content-Type", $type);
     }
