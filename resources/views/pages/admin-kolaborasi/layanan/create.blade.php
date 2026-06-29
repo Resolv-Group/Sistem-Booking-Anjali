@@ -7,9 +7,9 @@
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen pb-32" x-data="{
         namaLayanan: '',
         deskripsi: '',
-        harga: 0,
-        diskon: 0,
-        homeCare: 0,
+        harga: {{ old('base_harga', 0) }},
+        diskon: {{ old('diskon_persentase', 0) }},
+        homeCare: {{ old('homecare_harga', 0) }},
         statusAktif: true,
     
         get totalHarga() {
@@ -19,6 +19,23 @@
     
         formatRupiah(num) {
             return new Intl.NumberFormat('id-ID').format(num);
+        },
+
+        get formattedHarga() {
+            if (!this.harga || this.harga === 0) return '';
+            return new Intl.NumberFormat('id-ID').format(this.harga);
+        },
+        set formattedHarga(value) {
+            let clean = value.replace(/[^0-9]/g, '');
+            this.harga = parseInt(clean) || 0;
+        },
+        get formattedHomeCare() {
+            if (!this.homeCare || this.homeCare === 0) return '';
+            return new Intl.NumberFormat('id-ID').format(this.homeCare);
+        },
+        set formattedHomeCare(value) {
+            let clean = value.replace(/[^0-9]/g, '');
+            this.homeCare = parseInt(clean) || 0;
         }
     }">
 
@@ -110,8 +127,9 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Harga Layanan</label>
                             <div class="relative flex items-center">
                                 <span class="absolute left-4 text-[10px] font-black text-slate-400">Rp.</span>
-                                <input type="number" name="base_harga" x-model="harga" value="{{ old('base_harga', 0) }}" required
+                                <input type="text" x-model="formattedHarga" required
                                     class="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-black text-slate-800 focus:ring-2 focus:ring-teal-500/20">
+                                <input type="hidden" name="base_harga" :value="harga">
                             </div>
                         </div>
                         <div class="space-y-2">
@@ -128,8 +146,9 @@
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Harga Home Care (Opsional)</label>
                         <div class="relative flex items-center">
                             <span class="absolute left-4 text-[11px] font-bold text-slate-355">Rp</span>
-                            <input type="number" name="homecare_harga" x-model="homeCare" value="{{ old('homecare_harga', 0) }}"
+                            <input type="text" x-model="formattedHomeCare"
                                 class="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-800 focus:ring-2 focus:ring-teal-500/20">
+                            <input type="hidden" name="homecare_harga" :value="homeCare">
                         </div>
                     </div>
 

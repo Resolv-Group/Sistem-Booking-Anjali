@@ -48,6 +48,53 @@
 
         <div class="px-6 pt-6 space-y-6">
 
+            @if(isset($groupNav))
+                {{-- Group Patient Navigation --}}
+                <div class="bg-white rounded-[2rem] p-5 border border-slate-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-50 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse"></span>
+                            <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Anggota Grup ({{ $groupNav['current_index'] + 1 }} / {{ $groupNav['total'] }})</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        @if($groupNav['prev_id'])
+                            <a href="{{ route('admin-cabang.patient.detail', ['id' => $groupNav['prev_id'], 'group' => $groupNav['query']]) }}"
+                                class="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-50 text-slate-600 rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-200 active:scale-95 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Seb
+                            </a>
+                        @else
+                            <button disabled class="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-100 opacity-50 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Seb
+                            </button>
+                        @endif
+
+                        @if($groupNav['next_id'])
+                            <a href="{{ route('admin-cabang.patient.detail', ['id' => $groupNav['next_id'], 'group' => $groupNav['query']]) }}"
+                                class="flex-1 flex items-center justify-center gap-2 py-3.5 bg-teal-50 text-teal-700 rounded-xl text-xs font-bold uppercase tracking-widest border border-teal-200 active:scale-95 transition-all">
+                                Sel
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        @else
+                            <button disabled class="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-50 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest border border-slate-100 opacity-50 cursor-not-allowed">
+                                Sel
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- PROFILE SUMMARY CARD --}}
             <div
                 class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm flex flex-col items-center text-center space-y-4">

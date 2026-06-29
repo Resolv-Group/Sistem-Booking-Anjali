@@ -104,7 +104,18 @@
                 </div>
 
                 {{-- Biaya Homecare Card --}}
-                <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100/60 shadow-sm space-y-4">
+                <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100/60 shadow-sm space-y-4"
+                     x-data="{ 
+                         rawValue: '{{ old('homecare_harga', $kolaborasi->homecare_harga ? intval($kolaborasi->homecare_harga) : 0) }}',
+                         get formattedValue() {
+                             if (!this.rawValue || this.rawValue === '0') return '';
+                             return new Intl.NumberFormat('id-ID').format(this.rawValue);
+                         },
+                         setFormattedValue(val) {
+                             let clean = val.replace(/[^0-9]/g, '');
+                             this.rawValue = clean;
+                         }
+                     }">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -118,15 +129,17 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label for="homecare_harga" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <label for="homecare_harga_display" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             Tarif Homecare (Rp) <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute left-5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rp</span>
-                            <input type="number" id="homecare_harga" name="homecare_harga"
-                                   value="{{ old('homecare_harga', $kolaborasi->homecare_harga ? intval($kolaborasi->homecare_harga) : 0) }}"
-                                   required min="0" step="1000"
+                            <input type="text" id="homecare_harga_display"
+                                   :value="formattedValue"
+                                   @input="setFormattedValue($event.target.value)"
+                                   placeholder="0" required
                                    class="w-full pl-12 pr-5 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-100 focus:border-blue-300 transition-all outline-none">
+                            <input type="hidden" name="homecare_harga" :value="rawValue">
                         </div>
                     </div>
                 </div>

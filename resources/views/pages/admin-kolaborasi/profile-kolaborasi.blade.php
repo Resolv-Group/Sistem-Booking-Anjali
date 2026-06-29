@@ -142,15 +142,27 @@
             </div>
 
             {{-- PRICING CARD --}}
-            <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm space-y-4">
+            <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm space-y-4"
+                 x-data="{
+                     rawValue: '{{ old('homecare_harga', (int)$kolaborasi->homecare_harga) }}',
+                     get formattedValue() {
+                         if (!this.rawValue || this.rawValue === '0') return '';
+                         return new Intl.NumberFormat('id-ID').format(this.rawValue);
+                     },
+                     setFormattedValue(val) {
+                         let clean = val.replace(/[^0-9]/g, '');
+                         this.rawValue = clean;
+                     }
+                 }">
                 <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em] border-b border-slate-50 pb-2">Biaya Layanan</h3>
 
                 <div class="space-y-3">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Homecare Surcharge</label>
                     <div class="relative flex items-center">
                         <span class="absolute left-3.5 text-[10px] font-black text-slate-400">Rp</span>
-                        <input type="number" name="homecare_harga" value="{{ old('homecare_harga', (int)$kolaborasi->homecare_harga) }}" required
+                        <input type="text" :value="formattedValue" @input="setFormattedValue($event.target.value)" required
                             class="w-full pl-9 pr-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-800 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-inner">
+                        <input type="hidden" name="homecare_harga" :value="rawValue">
                     </div>
                     <p class="text-[9px] text-slate-400 font-medium ml-1">Biaya tambahan untuk layanan homecare di cabang ini.</p>
                 </div>
