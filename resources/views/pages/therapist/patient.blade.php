@@ -15,10 +15,20 @@
         $uniqueServices = collect($allServices)->unique()->sort()->values();
     @endphp
 
+    @php
+        $therapistData = $terapis->map(function($t) {
+            return [
+                'nama' => $t->nama_karyawan,
+                'kota' => $t->kolaborasi ? $t->kolaborasi->kota_kolaborasi : '',
+                'layanans' => $t->layanans->pluck('nama')->toArray(),
+            ];
+        });
+    @endphp
     <script>
         window.allServices = @js($allServices);
         window.uniqueServices = @js($uniqueServices);
         window.uniqueCities = @js($uniqueCities);
+        window.allTherapistData = @js($therapistData);
     </script>
 
     <style>
@@ -71,6 +81,9 @@
             return this.selectedServices[0] + ' +' + (this.selectedServices.length - 1) + ' lainnya';
         },
     
+        // Data terapis untuk menghitung visibleCount
+        allTherapists: window.allTherapistData || [],
+
         // Logika Filter Utama
         shouldShow(nama, city, services) {
             const matchSearch = nama.toLowerCase().includes(this.searchQuery.toLowerCase());
@@ -78,6 +91,12 @@
             const matchCategory = this.selectedServices.length === 0 || this.selectedServices.some(s => services.includes(s));
     
             return matchSearch && matchLokasi && matchCategory;
+        },
+
+        get visibleCount() {
+            return this.allTherapists.filter(t =>
+                this.shouldShow(t.nama, t.kota, t.layanans)
+            ).length;
         }
     }">
     {{-- 1. TOPBAR --}}
@@ -403,6 +422,52 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            {{-- Empty State: shown when no therapists match the current filters --}}
+            <div x-show="visibleCount === 0" x-cloak x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                class="flex flex-col items-center justify-center py-16 px-6">
+
+                {{-- Illustration --}}
+                <div class="relative w-32 h-32 mb-6">
+                    {{-- Background circle --}}
+                    <div class="absolute inset-0 bg-gradient-to-br from-teal-50 to-slate-50 rounded-full"></div>
+                    {{-- Icon --}}
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="1.2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    {{-- Decorative dots --}}
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-teal-200 rounded-full opacity-60"></div>
+                    <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-slate-200 rounded-full opacity-40"></div>
+                </div>
+
+                {{-- Message --}}
+                <h3 class="text-lg font-bold text-slate-700 mb-2 text-center">
+                    Terapis Tidak Ditemukan
+                </h3>
+                <p class="text-sm text-slate-400 text-center max-w-[260px] leading-relaxed mb-6"
+                    x-text="
+                    searchQuery.trim()
+                        ? 'Tidak ada terapis yang cocok dengan pencarian \'' + searchQuery.trim() + '\'. Coba kata kunci lain.'
+                        : 'Tidak ada terapis yang tersedia untuk filter yang dipilih. Coba ubah filter Anda.'
+                ">
+                </p>
+
+                {{-- Reset Button --}}
+                <button type="button"
+                    @click="searchQuery = ''; selectedServices = []; lokasiTerpilih = 'Semua Lokasi'"
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-teal-700 shadow-sm hover:bg-teal-50 hover:border-teal-200 active:scale-95 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reset Filter
+                </button>
             </div>
 
             {{-- 5. PREMIUM VALUE PROP --}}

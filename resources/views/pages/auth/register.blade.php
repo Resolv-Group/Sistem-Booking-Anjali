@@ -85,9 +85,18 @@
                     <div>
                         <label class="mb-1.5 block text-sm font-semibold text-gray-700 ml-1">Tanggal Lahir <span
                                 class="font-bold text-red-500">*</span></label>
-                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}"
+                        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" max="{{ date('Y-m-d') }}"
                             class="h-14 w-full rounded-2xl border bg-white/50 px-5 text-base font-medium transition-all focus:outline-none focus:ring-4
                             {{ $errors->has('tanggal_lahir') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
+                        @error('tanggal_lahir')
+                            <p class="mt-2 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
                     {{-- Jenis Kelamin --}}
@@ -113,10 +122,11 @@
                             Kata Sandi <span class="font-bold text-red-500">*</span>
                         </label>
 
-                        <div class="relative group">
-                            <x-ui.input id="password" name="password" type="password"
+                        <div class="relative">
+                            <input id="password" name="password" type="password"
                                 x-bind:type="show ? 'text' : 'password'" placeholder="••••••••••••"
-                                class="h-14 w-full rounded-2xl border-gray-200 bg-white/50 pl-5 pr-12 text-lg transition-all focus:ring-primary/20" />
+                                class="h-14 w-full rounded-2xl border bg-white/50 pl-5 pr-12 text-lg transition-all focus:outline-none focus:ring-4
+                                {{ $errors->has('password') ? 'border-red-500 text-red-900 focus:ring-red-500/20' : 'border-gray-200 text-gray-700 focus:border-primary focus:ring-primary/10' }}" />
                             <button @click="show = !show" type="button"
                                 class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
                                 {{-- Eye Icon --}}
@@ -134,17 +144,17 @@
                                         d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
                                 </svg>
                             </button>
-
-                            @error('password')
-                                <p class="mt-2 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                    </svg>
-                                    {{ $message }}
-                                </p>
-                            @enderror
                         </div>
+
+                        @error('password')
+                            <p class="mt-2 flex items-center gap-1 text-sm font-semibold text-red-500 ml-1">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                {{ $message }}
+                            </p>
+                        @enderror
 
                         {{-- Submit Button --}}
                         <div class="pt-4">

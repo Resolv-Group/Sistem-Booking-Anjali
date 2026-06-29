@@ -36,6 +36,10 @@
     },
     loadMore() {
         this.limit += 5;
+    },
+    goToDetail(item) {
+        const ids = (item.allPeserta || [{ id: item.patient_id }]).map(p => p.id).join(',');
+        window.location.href = '/admin-cabang/patient/' + item.patient_id + '?group=' + ids;
     }
 }">
 
@@ -217,7 +221,7 @@
                             </p>
                             <div class="grid grid-cols-1 gap-1.5">
                                 <template x-for="p in item.peserta">
-                                    <div @click="window.location.href = '/admin-cabang/patient/' + p.id"
+                                    <div @click="window.location.href = '/admin-cabang/patient/' + p.id + '?group=' + item.allPeserta.map(ap => ap.id).join(',')"
                                          class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all active:scale-[0.98]">
                                         <div class="w-1 h-1 rounded-full bg-orange-400"></div>
                                         <span class="text-[11px] font-semibold text-slate-600" x-text="p.nama"></span>
@@ -267,7 +271,7 @@
                         {{-- Action Buttons --}}
                         <div class="flex gap-2">
                             <template x-if="item.status === 'selesai' || item.status === 'disetujui'">
-                                <button @click="window.location.href = '/admin-cabang/patient/' + item.patient_id"
+                                <button @click="goToDetail(item)"
                                         class="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-slate-200 active:scale-95 transition-all">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     Detail

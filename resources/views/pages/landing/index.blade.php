@@ -61,9 +61,8 @@
             {{-- 4. THERAPY MENU SECTION --}}
             <div class="px-6 pt-24 space-y-6">
                 <div class="text-center">
-                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Therapy Menu</h3>
-                    <p class="text-sm text-slate-400 font-semibold uppercase tracking-[0.1em] mt-1">Designed with scientific
-                        excellence</p>
+                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Menu Terapi</h3>
+                    <p class="text-sm text-slate-400 font-semibold uppercase tracking-[0.1em] mt-1">Dirancang dengan keterampilan para terapis</p>
                 </div>
 
                 <div class="space-y-4">
@@ -353,9 +352,8 @@
             {{-- 8. FOOTER --}}
             <div class="px-10 py-16 text-center space-y-8 bg-white border-t border-slate-50">
                 <div class="space-y-2">
-                    <h3 class="text-sm font-black text-teal-800 uppercase tracking-[0.3em]">Anjali Therapy Center</h3>
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">Built for healthcare,
-                        driven by you.</p>
+                    <h3 class="text-sm font-black text-teal-800 uppercase tracking-[0.3em]">Anjali Sadina Mulyo </h3>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">Memberikan kualitas terbaik untuk kesehatan anda</p>
                 </div>
                 {{-- 
                 <div class="flex justify-center gap-6">

@@ -55,23 +55,111 @@
             limit: 3, 
             loading: false, 
             finished: false,
+            searchQuery: '',
+            lokasiTerpilih: 'Semua Lokasi',
+            layananTerpilih: 'Semua Layanan',
             items: [
-                { nama: 'Yulian', id: 'SH-88218', status: 'paid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '13 Mei, 10:30 AM' },
-                { nama: 'Jenni', id: 'SH-90210', status: 'unpaid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '13 Mei, 1:00 PM' },
-                { nama: 'CANTIKA', id: 'SH-98212', status: 'paid', tipe: 'Group', extra: 2, peserta: ['Anisa Putri', 'Bagus Setiawan'], showPeserta: false, terapis: 'Dr. Aris', waktu: '13 Mei, 02:30 AM' },
-                { nama: 'Budi', id: 'SH-99001', status: 'paid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '14 Mei, 09:00 AM' },
-                { nama: 'Siska', id: 'SH-99002', status: 'unpaid', tipe: 'Group', extra: 3, peserta: ['Dedi Kurniawan', 'Eka Saputra', 'Fani Lestari'], showPeserta: false, terapis: 'Dr. Aris', waktu: '14 Mei, 11:30 AM' }
+                { nama: 'Yulian', id: 'SH-88218', status: 'paid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '13 Mei, 10:30 AM', lokasi: 'Surabaya', layanan: 'Akupunktur' },
+                { nama: 'Jenni', id: 'SH-90210', status: 'unpaid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '13 Mei, 1:00 PM', lokasi: 'Sidoarjo', layanan: 'Fisioterapi' },
+                { nama: 'CANTIKA', id: 'SH-98212', status: 'paid', tipe: 'Group', extra: 2, peserta: ['Anisa Putri', 'Bagus Setiawan'], showPeserta: false, terapis: 'Dr. Aris', waktu: '13 Mei, 02:30 AM', lokasi: 'Surabaya', layanan: 'Refleksi' },
+                { nama: 'Budi', id: 'SH-99001', status: 'paid', tipe: 'Personal', extra: 0, peserta: [], showPeserta: false, terapis: 'Dr. Elena', waktu: '14 Mei, 09:00 AM', lokasi: 'Malang', layanan: 'Akupunktur' },
+                { nama: 'Siska', id: 'SH-99002', status: 'unpaid', tipe: 'Group', extra: 3, peserta: ['Dedi Kurniawan', 'Eka Saputra', 'Fani Lestari'], showPeserta: false, terapis: 'Dr. Aris', waktu: '14 Mei, 11:30 AM', lokasi: 'Sidoarjo', layanan: 'Fisioterapi' }
             ],
+            get filteredItems() {
+                const query = this.searchQuery.toLowerCase().trim();
+                const location = this.lokasiTerpilih;
+                const service = this.layananTerpilih;
+
+                return this.items.filter(item => {
+                    const matchesSearch = !query ||
+                        item.nama.toLowerCase().includes(query) ||
+                        item.id.toLowerCase().includes(query) ||
+                        item.terapis.toLowerCase().includes(query);
+
+                    const matchesLocation = location === 'Semua Lokasi' || item.lokasi === location;
+                    const matchesService = service === 'Semua Layanan' || item.layanan === service;
+
+                    return matchesSearch && matchesLocation && matchesService;
+                });
+            },
+            get finished() {
+                return this.limit >= this.filteredItems.length;
+            },
             loadMore() {
                 this.loading = true;
                 setTimeout(() => {
                     this.loading = false;
-                    this.finished = true;
-                }, 1000);
+                    this.limit += 3;
+                }, 500);
             }
         }" class="space-y-6">
-            
-            <template x-for="(item, index) in items.slice(0, limit)" :key="index">
+
+            {{-- SEARCH & FILTERS --}}
+            <div class="space-y-4">
+                {{-- Search Input --}}
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" x-model="searchQuery" placeholder="Cari nama pasien, ID, atau terapis..."
+                        class="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-base font-medium focus:border-teal-500 outline-none shadow-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    {{-- Lokasi Filter --}}
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" type="button"
+                            class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-700">
+                            <span x-text="lokasiTerpilih"></span>
+                            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-cloak
+                            class="absolute mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-2 space-y-1">
+                            <template x-for="loc in ['Semua Lokasi', 'Surabaya', 'Sidoarjo', 'Malang']">
+                                <button @click="lokasiTerpilih = loc; open = false" type="button"
+                                    class="w-full text-left px-4 py-3 text-sm font-semibold rounded-xl hover:bg-teal-50 hover:text-teal-700"
+                                    :class="lokasiTerpilih === loc ? 'bg-teal-50 text-teal-700' : 'text-slate-650'"
+                                    x-text="loc"></button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Layanan Filter --}}
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" type="button"
+                            class="w-full flex items-center justify-between px-5 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm text-sm font-semibold text-slate-700">
+                            <span x-text="layananTerpilih"></span>
+                            <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-cloak
+                            class="absolute mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-2 space-y-1">
+                            <template x-for="lay in ['Semua Layanan', 'Akupunktur', 'Fisioterapi', 'Refleksi']">
+                                <button @click="layananTerpilih = lay; open = false" type="button"
+                                    class="w-full text-left px-4 py-3 text-sm font-semibold rounded-xl hover:bg-teal-50 hover:text-teal-700"
+                                    :class="layananTerpilih === lay ? 'bg-teal-50 text-teal-700' : 'text-slate-650'"
+                                    x-text="lay"></button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 4. SECTION HEADER --}}
+            <div class="flex justify-between items-end px-1 pt-4">
+                <h3 class="text-lg font-semibold text-slate-800 tracking-tight">Antrian Saat Ini</h3>
+                <a href="{{ route('therapist.booking.history') }}" class="text-xs font-semibold text-teal-600 flex items-center gap-1 hover:underline">
+                    Lihat Histori
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M13 7l5 5-5 5M6 7l5 5-5 5"/></svg>
+                </a>
+            </div>
+
+            <template x-for="(item, index) in filteredItems.slice(0, limit)" :key="index">
                 <div class="bg-white rounded-[2rem] border border-slate-200 p-7 shadow-sm space-y-6 relative overflow-hidden group">
                     
                     {{-- Session Type Badge --}}
@@ -182,8 +270,35 @@
                 </div>
             </template>
 
+            {{-- EMPTY STATE UI --}}
+            <div x-show="filteredItems.length === 0" x-cloak x-transition
+                class="flex flex-col items-center justify-center py-12 px-6 text-center space-y-6 bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+                <div class="relative">
+                    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center">
+                        <span class="text-lg">🔍</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-bold text-slate-800">Janji Temu Tidak Ditemukan</h3>
+                    <p class="text-sm text-slate-500 max-w-[240px] mx-auto">
+                        Maaf, kami tidak menemukan janji temu yang sesuai dengan kriteria pencarian Anda.
+                    </p>
+                </div>
+
+                <button @click="searchQuery = ''; lokasiTerpilih = 'Semua Lokasi'; layananTerpilih = 'Semua Layanan'" 
+                    class="px-6 py-3 bg-teal-50 text-teal-700 text-sm font-bold rounded-2xl hover:bg-teal-100 transition-all active:scale-95">
+                    Atur Ulang Semua Filter
+                </button>
+            </div>
+
             {{-- Load More Section --}}
-            <div class="pt-4 pb-12">
+            <div class="pt-4 pb-12" x-show="filteredItems.length > 0">
                 <button 
                     x-show="!finished"
                     @click="loadMore()"

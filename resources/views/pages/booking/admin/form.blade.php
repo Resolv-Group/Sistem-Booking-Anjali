@@ -642,7 +642,7 @@
                             </div>
                             <div class="space-y-1">
                                 <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tanggal Lahir</label>
-                                <input type="date" x-model="slot.dob"
+                                <input type="date" x-model="slot.dob" max="{{ date('Y-m-d') }}"
                                     class="w-full px-4 py-3 bg-[#EDF1F3] border-none rounded-xl text-sm font-medium outline-none">
                             </div>
                         </div>

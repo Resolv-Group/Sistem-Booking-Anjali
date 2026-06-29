@@ -658,11 +658,17 @@ class BookingController extends Controller
                     }
                 }
             });
+
+            // Hide or unset the heavy base64 string so it doesn't get carried into the redirect headers
+            unset($path);
+
         } catch (\Exception $e) {
+            unset($path);
             return redirect()->back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('patient.booking.form-selesai')->with('success', 'Booking berhasil diajukan! Menunggu verifikasi.');
+        // Ensure absolutely NO heavy variables are appended here
+        return redirect()->route('patient.booking.form-selesai')->with('success', 'Booking berhasil diajukan!');
     }
 
     public function adminBookingStore(Request $request)

@@ -1421,7 +1421,7 @@
                         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             Tanggal Lahir <span class="text-rose-400">*</span>
                         </label>
-                        <input type="date" x-model="newPatientForm.dob"
+                        <input type="date" x-model="newPatientForm.dob" max="{{ date('Y-m-d') }}"
                             class="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-100 focus:border-teal-300 transition-all">
                         <p class="text-[10px] text-slate-400 font-medium px-0.5">Digunakan untuk verifikasi akun pasien</p>
                     </div>

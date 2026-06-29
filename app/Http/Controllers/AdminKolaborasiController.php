@@ -229,7 +229,37 @@ class AdminKolaborasiController extends Controller
             ? 'data:' . ($patient->foto_mime ?? 'image/jpeg') . ';base64,' . $patient->foto
             : asset('images/logo_anjali.jpg');
 
-        return view('pages.admin-kolaborasi.patient-detail', compact('patient', 'bookings', 'medicalRecords', 'fotoUrl'));
+        // Group navigation: parse ?group=1,2,3 query param
+        $groupNav = null;
+        $groupParam = request()->query('group');
+        if ($groupParam) {
+            $groupIds = collect(explode(',', $groupParam))
+                ->map(fn($v) => (int) trim($v))
+                ->filter()
+                ->values();
+
+            if ($groupIds->count() > 1) {
+                $currentIndex = $groupIds->search((int) $id);
+                $groupPatients = Pasien::whereIn('id', $groupIds)
+                    ->get()
+                    ->keyBy('id');
+
+                $groupNav = [
+                    'ids' => $groupIds->all(),
+                    'patients' => $groupIds->map(fn($gid) => [
+                        'id' => $gid,
+                        'nama' => $groupPatients[$gid]->nama_pasien ?? 'Pasien',
+                    ])->all(),
+                    'current_index' => $currentIndex !== false ? $currentIndex : 0,
+                    'total' => $groupIds->count(),
+                    'prev_id' => $currentIndex > 0 ? $groupIds[$currentIndex - 1] : null,
+                    'next_id' => $currentIndex < $groupIds->count() - 1 ? $groupIds[$currentIndex + 1] : null,
+                    'query' => $groupParam,
+                ];
+            }
+        }
+
+        return view('pages.admin-kolaborasi.patient-detail', compact('patient', 'bookings', 'medicalRecords', 'fotoUrl', 'groupNav'));
     }
 
     public function layananIndex()
@@ -374,6 +404,10 @@ class AdminKolaborasiController extends Controller
                 'tipe' => $uniquePatientCount > 1 ? 'Group' : 'Personal',
                 'extra' => max(0, $uniquePatientCount - 1),
                 'peserta' => $extraPatients->map(fn($bp) => [
+                    'id' => $bp->pasien_id,
+                    'nama' => $bp->pasien->nama_pasien ?? 'Pasien',
+                ])->values()->all(),
+                'allPeserta' => $uniquePatients->map(fn($bp) => [
                     'id' => $bp->pasien_id,
                     'nama' => $bp->pasien->nama_pasien ?? 'Pasien',
                 ])->values()->all(),
