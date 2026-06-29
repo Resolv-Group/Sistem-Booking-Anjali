@@ -18,112 +18,233 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminGlobalTL = '1980-01-01';
-        $adminKolaborasiTL = '1980-01-01';
-        $terapis1TL = '1991-01-01';
-        $terapis2TL = '1992-02-02';
-        $pasien1TL = '1991-01-01';
-        $pasien2TL = '1992-02-02';
+        $usersData = [
+            // Admin Global
+            [
+                'name' => 'Admin Global',
+                'phone' => '081234567001',
+                'dob' => '1980-01-01',
+                'role' => UserRole::ADMIN_GLOBAL,
+                'gender' => 'L',
+                'type' => 'karyawan',
+                'peran' => 'Admin Global',
+                'kolaborasi_id' => 1,
+            ],
+            // Admin Kolaborasi
+            [
+                'name' => 'Admin Kolaborasi',
+                'phone' => '081234567002',
+                'dob' => '1980-01-01',
+                'role' => UserRole::ADMIN_KOLABORASI,
+                'gender' => 'P',
+                'type' => 'karyawan',
+                'peran' => 'Admin Kolaborasi',
+                'kolaborasi_id' => 1,
+            ],
+            // Terapis 1
+            [
+                'name' => 'Andi Wijaya',
+                'phone' => '081234567003',
+                'dob' => '1991-01-01',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'L',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 1,
+                'layanans' => [1, 2, 3, 4, 8, 9],
+            ],
+            // Terapis 2
+            [
+                'name' => 'Rina Oktaviani',
+                'phone' => '081234567004',
+                'dob' => '1992-02-02',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'P',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 1,
+                'layanans' => [1, 2, 3, 4, 8, 9],
+            ],
+            // Pasien 1
+            [
+                'name' => 'David',
+                'phone' => '081234567005',
+                'dob' => '1991-01-01',
+                'role' => UserRole::PATIENT,
+                'gender' => 'L',
+                'type' => 'pasien',
+            ],
+            // Pasien 2
+            [
+                'name' => 'Shirley',
+                'phone' => '081234567006',
+                'dob' => '1992-02-02',
+                'role' => UserRole::PATIENT,
+                'gender' => 'P',
+                'type' => 'pasien',
+            ],
+            // Pasien 3
+            [
+                'name' => 'Maya',
+                'phone' => '081234567007',
+                'dob' => '1993-03-03',
+                'role' => UserRole::PATIENT,
+                'gender' => 'P',
+                'type' => 'pasien',
+            ],
+            // Pasien 4
+            [
+                'name' => 'Bambang',
+                'phone' => '081234567008',
+                'dob' => '1994-04-04',
+                'role' => UserRole::PATIENT,
+                'gender' => 'L',
+                'type' => 'pasien',
+            ],
+            // Pasien 5
+            [
+                'name' => 'Kevin',
+                'phone' => '081234567009',
+                'dob' => '1995-05-05',
+                'role' => UserRole::PATIENT,
+                'gender' => 'L',
+                'type' => 'pasien',
+            ],
+            // Pasien 6
+            [
+                'name' => 'Cindy',
+                'phone' => '081234567010',
+                'dob' => '1996-06-06',
+                'role' => UserRole::PATIENT,
+                'gender' => 'P',
+                'type' => 'pasien',
+            ],
+            // Pasien 7
+            [
+                'name' => 'Siska',
+                'phone' => '081234567011',
+                'dob' => '1997-07-07',
+                'role' => UserRole::PATIENT,
+                'gender' => 'P',
+                'type' => 'pasien',
+            ],
+            // Pasien 8
+            [
+                'name' => 'Andi Prasetyo',
+                'phone' => '081234567012',
+                'dob' => '1998-08-08',
+                'role' => UserRole::PATIENT,
+                'gender' => 'L',
+                'type' => 'pasien',
+            ],
+            // Terapis 3
+            [
+                'name' => 'Yoga Prasetyo',
+                'phone' => '081234567013',
+                'dob' => '1993-03-03',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'L',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 1,
+                'layanans' => [1, 2, 3, 4, 8, 9],
+            ],
+            // Terapis 4
+            [
+                'name' => 'Fajar Hidayat',
+                'phone' => '081234567014',
+                'dob' => '1994-04-04',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'L',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 2,
+                'layanans' => [3, 4, 5, 6, 7],
+            ],
+            // Terapis 5
+            [
+                'name' => 'Putri Lestari',
+                'phone' => '081234567015',
+                'dob' => '1995-05-05',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'P',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 2,
+                'layanans' => [3, 4, 5, 6, 7],
+            ],
+            // Terapis 6
+            [
+                'name' => 'Arif Nugroho',
+                'phone' => '081234567016',
+                'dob' => '1996-06-06',
+                'role' => UserRole::THERAPIST,
+                'gender' => 'L',
+                'type' => 'karyawan',
+                'peran' => 'Terapis',
+                'kolaborasi_id' => 2,
+                'layanans' => [3, 4, 5, 6, 7],
+            ],
+        ];
 
-        // 1 Admin Global
-        $user1 = User::create([
-            'name' => 'Admin Global',
-            'phone' => '08111111111',
-            'password' => Hash::make(Carbon::parse($adminGlobalTL)->format('d-m-Y')),
-            'role' => UserRole::ADMIN_GLOBAL,
-        ]);
-        Karyawan::create([
-            'user_id' => $user1->id,
-            'nama_karyawan' => 'Admin Global',
-            'no_telp' => '08111111111',
-            'peran' => 'Admin Global',
-            'tanggal_lahir' => $adminGlobalTL,
-            'jenis_kelamin' => 'L',
-            'kolaborasi_id' => 1,
-        ]);
+        foreach ($usersData as $data) {
+            $user = User::create([
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'password' => Hash::make(Carbon::parse($data['dob'])->format('d-m-Y')),
+                'role' => $data['role'],
+            ]);
 
-        // 1 Admin Kolaborasi
-        $user2 = User::create([
-            'name' => 'Admin Kolaborasi',
-            'phone' => '08222222222',
-            'password' => Hash::make(Carbon::parse($adminKolaborasiTL)->format('d-m-Y')),
-            'role' => UserRole::ADMIN_KOLABORASI,
-        ]);
-        Karyawan::create([
-            'user_id' => $user2->id,
-            'nama_karyawan' => 'Admin Kolaborasi',
-            'no_telp' => '08222222222',
-            'peran' => 'Admin Kolaborasi',
-            'tanggal_lahir' => $adminKolaborasiTL,
-            'jenis_kelamin' => 'P',
-            'kolaborasi_id' => 1,
-        ]);
+            if ($data['type'] === 'karyawan') {
+                $karyawan = Karyawan::create([
+                    'user_id' => $user->id,
+                    'nama_karyawan' => $data['name'],
+                    'no_telp' => $data['phone'],
+                    'peran' => $data['peran'],
+                    'tanggal_lahir' => $data['dob'],
+                    'jenis_kelamin' => $data['gender'],
+                    'kolaborasi_id' => $data['kolaborasi_id'],
+                ]);
+                if (isset($data['layanans'])) {
+                    $karyawan->layanans()->attach($data['layanans']);
+                }
 
-        // 2 Terapis
-        $user3 = User::create([
-            'name' => 'Terapis 1',
-            'phone' => '08333333331',
-            'password' => Hash::make(Carbon::parse($terapis1TL)->format('d-m-Y')),
-            'role' => UserRole::THERAPIST,
-        ]);
-        $terapis1 = Karyawan::create([
-            'user_id' => $user3->id,
-            'nama_karyawan' => 'Terapis 1',
-            'no_telp' => '08333333331',
-            'peran' => 'Terapis',
-            'tanggal_lahir' => $terapis1TL,
-            'jenis_kelamin' => 'L',
-            'kolaborasi_id' => 1,
-        ]);
-        $terapis1->layanans()->attach([1, 2, 3, 4]);
-
-
-        $user4 = User::create([
-            'name' => 'Terapis 2',
-            'phone' => '08333333332',
-            'password' => Hash::make(Carbon::parse($terapis2TL)->format('d-m-Y')),
-            'role' => UserRole::THERAPIST,
-        ]);
-        $terapis2 = Karyawan::create([
-            'user_id' => $user4->id,
-            'nama_karyawan' => 'Terapis 2',
-            'no_telp' => '08333333332',
-            'peran' => 'Terapis',
-            'tanggal_lahir' => $terapis2TL,
-            'jenis_kelamin' => 'P',
-            'kolaborasi_id' => 2,
-        ]);
-        $terapis2->layanans()->attach([5, 6, 7, 8, 9]);
-
-
-        // 2 Pasien
-        $user5 = User::create([
-            'name' => 'Pasien 1',
-            'phone' => '08444444441',
-            'password' => Hash::make(Carbon::parse($pasien1TL)->format('d-m-Y')),
-            'role' => UserRole::PATIENT,
-        ]);
-        Pasien::create([
-            'user_id' => $user5->id,
-            'nama_pasien' => 'Pasien 1',
-            'no_telp' => '08444444441',
-            'tanggal_lahir' => $pasien1TL,
-            'jenis_kelamin' => 'L',
-        ]);
-
-        $user6 = User::create([
-            'name' => 'Pasien 2',
-            'phone' => '08444444442',
-            'password' => Hash::make(Carbon::parse($pasien2TL)->format('d-m-Y')),
-            'role' => UserRole::PATIENT,
-        ]);
-        Pasien::create([
-            'user_id' => $user6->id,
-            'nama_pasien' => 'Pasien 2',
-            'no_telp' => '08444444442',
-            'tanggal_lahir' => $pasien2TL,
-            'jenis_kelamin' => 'P',
-        ]);
-
+                // If role is therapist, seed operating schedules for Mon-Sat
+                if ($data['role'] === UserRole::THERAPIST) {
+                    for ($hari = 1; $hari <= 6; $hari++) {
+                        TherapistSchedule::create([
+                            'terapis_id' => $karyawan->id,
+                            'hari' => (string)$hari,
+                            'waktu_mulai' => '08:00:00',
+                            'kuota' => 5,
+                            'status' => 'Aktif',
+                        ]);
+                        TherapistSchedule::create([
+                            'terapis_id' => $karyawan->id,
+                            'hari' => (string)$hari,
+                            'waktu_mulai' => '10:00:00',
+                            'kuota' => 5,
+                            'status' => 'Aktif',
+                        ]);
+                        TherapistSchedule::create([
+                            'terapis_id' => $karyawan->id,
+                            'hari' => (string)$hari,
+                            'waktu_mulai' => '13:00:00',
+                            'kuota' => 5,
+                            'status' => 'Aktif',
+                        ]);
+                    }
+                }
+            } else {
+                Pasien::create([
+                    'user_id' => $user->id,
+                    'nama_pasien' => $data['name'],
+                    'no_telp' => $data['phone'],
+                    'tanggal_lahir' => $data['dob'],
+                    'jenis_kelamin' => $data['gender'],
+                    'kode_referral' => Pasien::generateUniqueReferralCode(),
+                ]);
+            }
+        }
     }
 }
