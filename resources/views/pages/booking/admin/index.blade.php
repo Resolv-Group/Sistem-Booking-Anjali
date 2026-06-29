@@ -384,10 +384,10 @@
                                 {{-- Aksi khusus tab APPROVED --}}
                                 <template x-if="activeTab === 'approved'">
                                     <div class="flex gap-3">
-                                        <button
-                                            class="flex-1 py-3 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 active:scale-95 transition-all">
-                                            Lihat Detail
-                                        </button>
+                                        <a :href="item.bukti_transfer_url" target="_blank"
+                                            class="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-slate-800 transition-all active:scale-95 text-center">
+                                            Bukti Transfer
+                                        </a>
                                         <form :id="'form-cancel-' + item.id_raw"
                                             :action="'/admin-cabang/booking/' + item.id_raw + '/cancel-approval'"
                                             method="POST" class="flex-1">
