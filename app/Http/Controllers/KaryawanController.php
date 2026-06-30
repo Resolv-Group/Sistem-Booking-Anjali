@@ -66,7 +66,7 @@ class KaryawanController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'peran' => 'required|in:Terapis,Admin Kolaborasi,Admin Global',
             'tanggal_bergabung' => 'nullable|date',
-            'status_karyawan' => 'required|in:Aktif,Tidak Aktif,Resign,PHK',
+            'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'alamat' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -149,7 +149,7 @@ class KaryawanController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'peran' => 'required|in:Terapis,Admin Kolaborasi,Admin Global',
             'tanggal_bergabung' => 'nullable|date',
-            'status_karyawan' => 'required|in:Aktif,Tidak Aktif,Resign,PHK',
+            'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'kolaborasi_id' => 'required|exists:kolaborasi,id',
             'alamat' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',

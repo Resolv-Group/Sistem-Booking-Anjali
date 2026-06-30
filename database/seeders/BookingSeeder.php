@@ -34,7 +34,7 @@ class BookingSeeder extends Seeder
                 'booker_name' => 'David',
                 'therapist_name' => 'Andi Wijaya',
                 'status' => 'completed',
-                'date' => Carbon::today()->subDays(2)->toDateString(),
+                'date' => Carbon::today()->subDays(3)->toDateString(),
                 'time' => '08:00:00',
                 'patients' => [
                     [
@@ -69,7 +69,7 @@ class BookingSeeder extends Seeder
                 'booker_name' => 'Cindy',
                 'therapist_name' => 'Fajar Hidayat',
                 'status' => 'completed',
-                'date' => Carbon::today()->subDays(2)->toDateString(),
+                'date' => Carbon::today()->subDays(3)->toDateString(),
                 'time' => '13:00:00',
                 'patients' => [
                     [

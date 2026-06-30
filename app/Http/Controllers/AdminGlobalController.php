@@ -123,8 +123,8 @@ class AdminGlobalController extends Controller
             'email' => 'nullable|email|max:100|unique:karyawans,email',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
-            'peran' => 'required|in:Admin Kolaborasi,Admin Global',
-            'kolaborasi_id' => 'nullable|required_if:peran,Admin Kolaborasi|exists:kolaborasi,id',
+            'peran' => 'required|in:Admin Kolaborasi',
+            'kolaborasi_id' => 'required|exists:kolaborasi,id',
             'alamat' => 'nullable|string',
         ]);
 
@@ -173,8 +173,8 @@ class AdminGlobalController extends Controller
             'nama_karyawan' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20|unique:karyawans,no_telp,' . $karyawan->id . '|unique:users,phone,' . $user->id,
             'email' => 'nullable|email|max:100|unique:karyawans,email,' . $karyawan->id,
-            'peran' => 'required|in:Admin Kolaborasi,Admin Global',
-            'kolaborasi_id' => 'nullable|required_if:peran,Admin Kolaborasi|exists:kolaborasi,id',
+            'peran' => 'required|in:Admin Kolaborasi',
+            'kolaborasi_id' => 'required|exists:kolaborasi,id',
             'alamat' => 'nullable|string',
         ]);
 

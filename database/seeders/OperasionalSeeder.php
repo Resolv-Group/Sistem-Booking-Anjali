@@ -28,6 +28,8 @@ class OperasionalSeeder extends Seeder
                     'hari'               => $hari,
                     'waktu_buka'         => $isSunday ? null : '08:00:00',
                     'waktu_tutup'        => $isSunday ? null : '17:00:00',
+                    'waktu_istirahat_mulai' => $isSunday ? null : '12:00:00',
+                    'waktu_istirahat_selesai' => $isSunday ? null : '13:00:00',
                     'status_operasional' => $isSunday ? 'Tutup' : 'Buka',
                     'created_by'         => 1,
                     'updated_by'         => 1,

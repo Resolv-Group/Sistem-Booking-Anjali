@@ -49,18 +49,22 @@
         peran: 'Admin Kolaborasi'
     },
 
-    get editPeranLabel() {
-        return this.editForm.peran === 'Admin Global'
-            ? 'Admin Global (Pusat)'
-            : 'Admin Kolaborasi (Cabang)';
-    },
-
     get editBranchName() {
         const branch = this.branches.find(b => b.id == this.editForm.kolaborasi_id);
         return branch ? branch.nama_kolaborasi : '-- Pilih Cabang --';
     },
 
     get filteredEditBranches() {
+        const q = this.searchBranch.toLowerCase();
+        return this.branches.filter(b => b.nama_kolaborasi.toLowerCase().includes(q));
+    },
+
+    get addBranchName() {
+        const branch = this.branches.find(b => b.id == this.addForm.kolaborasi_id);
+        return branch ? branch.nama_kolaborasi : '-- Pilih Cabang --';
+    },
+
+    get filteredAddBranches() {
         const q = this.searchBranch.toLowerCase();
         return this.branches.filter(b => b.nama_kolaborasi.toLowerCase().includes(q));
     },
@@ -298,15 +302,15 @@
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
         {{-- Overlay --}}
-        <div class="absolute inset-0 bg-black/45 backdrop-blur-sm" @click="showAddModal = false"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showAddModal = false"></div>
 
         {{-- Modal Content --}}
-        <div class="relative bg-white rounded-[2rem] p-6 max-w-sm w-full shadow-2xl max-h-[85vh] overflow-y-auto space-y-4 custom-scrollbar"
+        <div class="relative bg-white/80 border border-white/50 backdrop-blur-2xl rounded-[2.5rem] p-7 max-w-sm w-full shadow-2xl max-h-[85vh] overflow-y-auto space-y-4 custom-scrollbar"
             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90"
             x-transition:enter-end="opacity-100 scale-100">
 
             <div class="text-center space-y-1">
-                <h3 class="text-lg font-black text-slate-800">Tambah Admin</h3>
+                <h3 class="text-lg font-black text-slate-800 uppercase tracking-wider">Tambah Admin</h3>
                 <p class="text-xs text-slate-400">Daftarkan akun administrator sistem baru.</p>
             </div>
 
@@ -317,7 +321,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="addForm.nama_karyawan" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: Budi Santoso">
                 </div>
 
@@ -325,7 +329,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="addForm.no_telp" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: 08123456789">
                 </div>
 
@@ -333,7 +337,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Opsional)</label>
                     <input type="email" name="email" x-model="addForm.email"
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: budi@gmail.com">
                 </div>
 
@@ -341,46 +345,98 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Lahir (Password default) <span class="text-rose-500">*</span></label>
                     <input type="date" name="tanggal_lahir" x-model="addForm.tanggal_lahir" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm">
                 </div>
 
                 {{-- Jenis Kelamin --}}
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Jenis Kelamin <span class="text-rose-500">*</span></label>
-                    <select name="jenis_kelamin" x-model="addForm.jenis_kelamin" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
-                    </select>
+                    <div class="relative" @click.outside="openDropdown = null">
+                        <button type="button" @click.stop="openDropdown = openDropdown === 'addGender' ? null : 'addGender'"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 transition-all outline-none shadow-sm"
+                            :class="openDropdown === 'addGender' ? 'ring-2 ring-teal-400 bg-white' : ''">
+                            <span x-text="addForm.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'"></span>
+                            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                :class="openDropdown === 'addGender' ? 'rotate-180' : ''" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="openDropdown === 'addGender'" x-cloak
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 -translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5">
+                            <button type="button" @click="addForm.jenis_kelamin = 'L'; openDropdown = null"
+                                class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                :class="addForm.jenis_kelamin === 'L' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'">
+                                Laki-laki
+                            </button>
+                            <button type="button" @click="addForm.jenis_kelamin = 'P'; openDropdown = null"
+                                class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                :class="addForm.jenis_kelamin === 'P' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'">
+                                Perempuan
+                            </button>
+                        </div>
+                        <input type="hidden" name="jenis_kelamin" :value="addForm.jenis_kelamin">
+                    </div>
                 </div>
 
-                {{-- Peran --}}
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin <span class="text-rose-500">*</span></label>
-                    <select name="peran" x-model="addForm.peran" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
-                        <option value="Admin Kolaborasi">Admin Kolaborasi (Cabang)</option>
-                        <option value="Admin Global">Admin Global (Pusat)</option>
-                    </select>
-                </div>
+                <input type="hidden" name="peran" value="Admin Kolaborasi">
 
                 {{-- Kolaborasi ID (Cabang) --}}
-                <div class="space-y-1" x-show="addForm.peran === 'Admin Kolaborasi'">
+                <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang <span class="text-rose-500">*</span></label>
-                    <select name="kolaborasi_id" x-model="addForm.kolaborasi_id" :required="addForm.peran === 'Admin Kolaborasi'"
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none">
-                        <option value="">-- Pilih Cabang --</option>
-                        @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}">{{ $branch->nama_kolaborasi }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative" @click.outside="openDropdown = null">
+                        <button type="button" @click.stop="openDropdown = openDropdown === 'addBranch' ? null : 'addBranch'"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 transition-all outline-none shadow-sm"
+                            :class="openDropdown === 'addBranch' ? 'ring-2 ring-teal-400 bg-white' : ''">
+                            <span x-text="addBranchName"></span>
+                            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                :class="openDropdown === 'addBranch' ? 'rotate-180' : ''" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="openDropdown === 'addBranch'" x-cloak
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 -translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1.5">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" x-model="searchBranch" placeholder="Cari cabang..."
+                                    class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 outline-none">
+                            </div>
+                            <div class="max-h-40 overflow-y-auto space-y-0.5 custom-scrollbar">
+                                <template x-for="branch in filteredAddBranches" :key="branch.id">
+                                    <button type="button"
+                                        @click="addForm.kolaborasi_id = branch.id; openDropdown = null; searchBranch = ''"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                        :class="addForm.kolaborasi_id == branch.id ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'">
+                                        <span x-text="branch.nama_kolaborasi"></span>
+                                    </button>
+                                </template>
+                                <div x-show="filteredAddBranches.length === 0"
+                                    class="px-4 py-3 text-xs font-bold text-slate-400 text-center">
+                                    Cabang tidak ditemukan
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="kolaborasi_id" :value="addForm.kolaborasi_id">
                 </div>
 
                 {{-- Alamat --}}
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat (Opsional)</label>
                     <textarea name="alamat" x-model="addForm.alamat" rows="2"
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none resize-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none resize-none shadow-sm"
                         placeholder="Contoh: Jl. Mawar No. 10"></textarea>
                 </div>
 
@@ -390,7 +446,7 @@
                         Tambah Admin
                     </button>
                     <button type="button" @click="showAddModal = false"
-                        class="w-full py-3 bg-slate-100 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
+                        class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
                         Batal
                     </button>
                 </div>
@@ -405,15 +461,15 @@
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
         {{-- Overlay --}}
-        <div class="absolute inset-0 bg-black/45 backdrop-blur-sm" @click="showEditModal = false"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showEditModal = false"></div>
 
         {{-- Modal Content --}}
-        <div class="relative bg-white rounded-[2rem] p-6 max-w-sm w-full shadow-2xl max-h-[85vh] overflow-y-auto space-y-4 scrollbar-none"
+        <div class="relative bg-white/80 border border-white/50 backdrop-blur-2xl rounded-[2.5rem] p-7 max-w-sm w-full shadow-2xl max-h-[85vh] overflow-y-auto space-y-4 custom-scrollbar"
             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90"
             x-transition:enter-end="opacity-100 scale-100">
 
             <div class="text-center space-y-1">
-                <h3 class="text-lg font-black text-slate-800">Edit Data Admin</h3>
+                <h3 class="text-lg font-black text-slate-800 uppercase tracking-wider">Edit Data Admin</h3>
                 <p class="text-xs text-slate-400">Ganti informasi untuk admin ini.</p>
             </div>
 
@@ -425,7 +481,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Karyawan <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="editForm.nama_karyawan" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: Budi Santoso">
                 </div>
 
@@ -433,7 +489,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor Telepon <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="editForm.no_telp" required
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: 08123456789">
                 </div>
 
@@ -441,51 +497,18 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email (Opsional)</label>
                     <input type="email" name="email" x-model="editForm.email"
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Contoh: budi@gmail.com">
                 </div>
 
-                {{-- Peran --}}
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peran Admin <span class="text-rose-500">*</span></label>
-                    <div class="relative" @click.outside="openDropdown = null">
-                        <button type="button" @click.stop="openDropdown = openDropdown === 'editPeran' ? null : 'editPeran'"
-                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition-all"
-                            :class="openDropdown === 'editPeran' ? 'ring-2 ring-teal-400 bg-white' : ''">
-                            <span x-text="editPeranLabel"></span>
-                            <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                                :class="openDropdown === 'editPeran' ? 'rotate-180' : ''" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                <path d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div x-show="openDropdown === 'editPeran'" x-cloak
-                            x-transition:enter="transition ease-out duration-150"
-                            x-transition:enter-start="opacity-0 -translate-y-1"
-                            x-transition:enter-end="opacity-100 translate-y-0"
-                            x-transition:leave="transition ease-in duration-100"
-                            class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5">
-                            <button type="button" @click="editForm.peran = 'Admin Kolaborasi'; openDropdown = null"
-                                class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
-                                :class="editForm.peran === 'Admin Kolaborasi' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'">
-                                Admin Kolaborasi (Cabang)
-                            </button>
-                            <button type="button" @click="editForm.peran = 'Admin Global'; editForm.kolaborasi_id = ''; openDropdown = null"
-                                class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
-                                :class="editForm.peran === 'Admin Global' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'">
-                                Admin Global (Pusat)
-                            </button>
-                        </div>
-                        <input type="hidden" name="peran" :value="editForm.peran">
-                    </div>
-                </div>
+                <input type="hidden" name="peran" value="Admin Kolaborasi">
 
                 {{-- Kolaborasi ID (Cabang) --}}
-                <div class="space-y-1" x-show="editForm.peran === 'Admin Kolaborasi'">
+                <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Pilih Cabang <span class="text-rose-500">*</span></label>
                     <div class="relative" @click.outside="openDropdown = null">
                         <button type="button" @click.stop="openDropdown = openDropdown === 'editBranch' ? null : 'editBranch'"
-                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition-all"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 transition-all outline-none shadow-sm"
                             :class="openDropdown === 'editBranch' ? 'ring-2 ring-teal-400 bg-white' : ''">
                             <span x-text="editBranchName"></span>
                             <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
@@ -525,14 +548,13 @@
                         </div>
                     </div>
                 </div>
-                <input type="hidden" name="kolaborasi_id"
-                    :value="editForm.peran === 'Admin Kolaborasi' ? editForm.kolaborasi_id : ''">
+                <input type="hidden" name="kolaborasi_id" :value="editForm.kolaborasi_id">
 
                 {{-- Alamat --}}
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat (Opsional)</label>
                     <textarea name="alamat" x-model="editForm.alamat" rows="2"
-                        class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-teal-500/20 focus:bg-white transition-all outline-none resize-none"
+                        class="w-full px-4 py-3 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all outline-none resize-none shadow-sm"
                         placeholder="Contoh: Jl. Mawar No. 10"></textarea>
                 </div>
 
@@ -542,7 +564,7 @@
                         Simpan Perubahan
                     </button>
                     <button type="button" @click="showEditModal = false"
-                        class="w-full py-3 bg-slate-100 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
+                        class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
                         Batal
                     </button>
                 </div>
@@ -557,10 +579,10 @@
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 
         {{-- Overlay --}}
-        <div class="absolute inset-0 bg-black/45 backdrop-blur-sm" @click="showResetModal = false"></div>
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" @click="showResetModal = false"></div>
 
         {{-- Modal Content --}}
-        <div class="relative bg-white rounded-[2rem] p-6 max-w-sm w-full shadow-2xl space-y-4"
+        <div class="relative bg-white/80 border border-white/50 backdrop-blur-2xl rounded-[2.5rem] p-7 max-w-sm w-full shadow-2xl space-y-4"
             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-90"
             x-transition:enter-end="opacity-100 scale-100">
 
@@ -570,7 +592,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
-                <h3 class="text-base font-black text-slate-800">Verifikasi Reset Password</h3>
+                <h3 class="text-base font-black text-slate-800 uppercase tracking-wider">Verifikasi Reset Password</h3>
                 <p class="text-xs text-slate-400">Ketik ulang nama, telepon, dan peran untuk admin <strong class="text-slate-700" x-text="resetTargetName"></strong>.</p>
             </div>
 
@@ -581,7 +603,7 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Nama <span class="text-rose-500">*</span></label>
                     <input type="text" name="nama_karyawan" x-model="resetForm.nama_karyawan" required
-                        class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-2.5 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-amber-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Ketik nama lengkap...">
                 </div>
 
@@ -589,19 +611,11 @@
                 <div class="space-y-1">
                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi No. Telp <span class="text-rose-500">*</span></label>
                     <input type="text" name="no_telp" x-model="resetForm.no_telp" required
-                        class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none"
+                        class="w-full px-4 py-2.5 bg-white/50 border border-slate-200/60 rounded-xl text-xs font-semibold text-slate-700 focus:ring-4 focus:ring-amber-500/10 focus:bg-white transition-all outline-none shadow-sm"
                         placeholder="Ketik nomor telepon...">
                 </div>
 
-                {{-- Verify Peran --}}
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Verifikasi Peran <span class="text-rose-500">*</span></label>
-                    <select name="peran" x-model="resetForm.peran" required
-                        class="w-full px-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all outline-none">
-                        <option value="Admin Kolaborasi">Admin Kolaborasi</option>
-                        <option value="Admin Global">Admin Global</option>
-                    </select>
-                </div>
+                <input type="hidden" name="peran" value="Admin Kolaborasi">
 
                 <div class="space-y-2 pt-2">
                     <button type="submit"
@@ -609,7 +623,7 @@
                         Konfirmasi Reset Password
                     </button>
                     <button type="button" @click="showResetModal = false"
-                        class="w-full py-2.5 bg-slate-100 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
+                        class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all">
                         Batal
                     </button>
                 </div>
