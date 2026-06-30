@@ -29,21 +29,52 @@
             if (!currentTime) return false;
             return day.slots.some((s, i) => i !== slotIndex && s.start === currentTime);
         },
+        isOutOfOperational(day, time) {
+            if (!time) return false;
+            if (day.status_operasional === 'Tutup') return true;
+            if (!day.open_time || !day.close_time) return false;
+            return time < day.open_time || time >= day.close_time;
+        },
+        isDuringBreak(day, time) {
+            if (!time) return false;
+            if (!day.break_start || !day.break_end) return false;
+            return time >= day.break_start && time < day.break_end;
+        },
         validateForm() {
             let valid = true;
+            let errorMsg = '';
+            
             this.days.forEach((day, dIdx) => {
                 if (!day.active) return;
+                
+                // 1. Check duplicate times
                 const times = day.slots.map(s => s.start).filter(Boolean);
                 const uniqueTimes = new Set(times);
                 if (times.length !== uniqueTimes.size) {
                     valid = false;
+                    errorMsg = 'Terdapat jam mulai yang sama dalam satu hari. Silakan perbaiki sebelum menyimpan.';
                 }
+                
+                // 2. Check operational/break times
+                day.slots.forEach(slot => {
+                    if (slot.start) {
+                        if (this.isOutOfOperational(day, slot.start)) {
+                            valid = false;
+                            errorMsg = 'Terdapat sesi yang berada di luar jam operasional klinik. Silakan perbaiki sebelum menyimpan.';
+                        }
+                        if (this.isDuringBreak(day, slot.start)) {
+                            valid = false;
+                            errorMsg = 'Terdapat sesi yang berada pada jam istirahat klinik. Silakan perbaiki sebelum menyimpan.';
+                        }
+                    }
+                });
             });
+            
             if (!valid) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Waktu Duplikat',
-                    text: 'Terdapat jam mulai yang sama dalam satu hari. Silakan perbaiki sebelum menyimpan.',
+                    title: 'Jadwal Tidak Valid',
+                    text: errorMsg,
                     confirmButtonColor: '#0d9488'
                 });
             }
@@ -191,13 +222,19 @@
                                                         <input type="time" x-model="slot.start" :disabled="!day.active"
                                                             :required="day.active" @change="sortSlots(index)"
                                                             :name="`days[${index}][${day.name}][slots][${sIdx}][start]`"
-                                                            :class="hasDuplicateTime(index, sIdx) ?
+                                                            :class="hasDuplicateTime(index, sIdx) || isOutOfOperational(day, slot.start) || isDuringBreak(day, slot.start) ?
                                                                 'ring-2 ring-rose-400 border-rose-400' : ''"
                                                             class="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all">
                                                     </div>
                                                     <p x-show="hasDuplicateTime(index, sIdx)"
                                                         class="text-[10px] font-bold text-rose-500 mt-1 ml-1 animate-pulse">
                                                         ⚠ Waktu duplikat!</p>
+                                                    <p x-show="isOutOfOperational(day, slot.start)"
+                                                        class="text-[10px] font-bold text-rose-500 mt-1 ml-1 animate-pulse">
+                                                        ⚠ Di luar jam operasional!</p>
+                                                    <p x-show="isDuringBreak(day, slot.start)"
+                                                        class="text-[10px] font-bold text-rose-500 mt-1 ml-1 animate-pulse">
+                                                        ⚠ Sedang jam istirahat!</p>
                                                 </div>
 
                                                 {{-- Input Kuota Pasien --}}

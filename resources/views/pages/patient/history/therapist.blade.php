@@ -121,7 +121,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="px-2 py-1 text-[8px] font-black uppercase rounded shadow-sm"
                                     :class="r.status === 'selesai' ? 'bg-emerald-50 text-emerald-600' :
-                                        'bg-orange-50 text-orange-600'"
+                                            (r.status === 'dibatalkan' ? 'bg-rose-50 text-rose-600' : 'bg-orange-50 text-orange-600')"
                                     x-text="r.status"></span>
                                 <svg class="w-4 h-4 text-slate-300 transition-transform duration-300"
                                     :class="activeId === r.id_raw ? 'rotate-180 text-teal-500' : ''" fill="none"
@@ -161,7 +161,7 @@
                                 </div>
 
                                 {{-- Edit Button (Jika Sesi Masih Aktif/Baru) --}}
-                                <div class="pt-2">
+                                <div class="pt-2" x-show="r.status !== 'dibatalkan'">
                                     <a :href="'/jadwal/therapist/session/' + r.id_raw + '/catatan'"
                                         class="w-full py-3 bg-white border border-slate-200 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"

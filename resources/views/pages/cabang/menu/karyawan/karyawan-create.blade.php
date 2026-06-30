@@ -5,11 +5,12 @@
 @section('content')
 
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{
-        namaKaryawan: '',
-        roleKaryawan: 'Terapis',
-        statusKaryawan: 'Aktif',
-        jenisKelamin: 'L',
-        photoPreview: null
+        namaKaryawan: '{{ old('nama_karyawan', '') }}',
+        roleKaryawan: '{{ old('peran', 'Terapis') }}',
+        statusKaryawan: '{{ old('status_karyawan', 'Aktif') }}',
+        jenisKelamin: '{{ old('jenis_kelamin', 'L') }}',
+        photoPreview: null,
+        openDropdown: null
     }">
 
         {{-- 1. TOPBAR --}}
@@ -142,11 +143,39 @@
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis
                                 Kelamin</label>
-                            <select name="jenis_kelamin" x-model="jenisKelamin" required
-                                class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
+                            <div class="relative" @click.outside="openDropdown = null">
+                                <button type="button" @click.stop="openDropdown = openDropdown === 'gender' ? null : 'gender'"
+                                    class="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-all outline-none"
+                                    :class="openDropdown === 'gender' ? 'ring-2 ring-teal-400 bg-white shadow-md' : ''">
+                                    <span x-text="jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan'"></span>
+                                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                        :class="openDropdown === 'gender' ? 'rotate-180' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                        <path d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div x-show="openDropdown === 'gender'" x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                    class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5"
+                                    x-cloak>
+                                    <button type="button" @click="jenisKelamin = 'L'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                        :class="jenisKelamin === 'L' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        Laki-laki
+                                    </button>
+                                    <button type="button" @click="jenisKelamin = 'P'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                        :class="jenisKelamin === 'P' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        Perempuan
+                                    </button>
+                                </div>
+                                <input type="hidden" name="jenis_kelamin" :value="jenisKelamin">
+                            </div>
                         </div>
                     </div>
 
@@ -167,12 +196,35 @@
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Peran
                             Kerja</label>
-                        <select name="peran" x-model="roleKaryawan" required
-                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
-                            <option value="Terapis">Terapis</option>
-                            <option value="Admin Kolaborasi">Admin Kolaborasi</option>
-                            <option value="Admin Global">Admin Global</option>
-                        </select>
+                        <div class="relative" @click.outside="openDropdown = null">
+                            <button type="button" @click.stop="openDropdown = openDropdown === 'peran' ? null : 'peran'"
+                                class="w-full flex items-center justify-between px-5 py-4 bg-slate-50 rounded-2xl text-sm font-bold text-slate-700 transition-all outline-none"
+                                :class="openDropdown === 'peran' ? 'ring-2 ring-teal-400 bg-white shadow-md' : ''">
+                                <span x-text="roleKaryawan"></span>
+                                <svg class="w-5 h-5 text-slate-400 transition-transform duration-200"
+                                    :class="openDropdown === 'peran' ? 'rotate-180' : ''" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="openDropdown === 'peran'" x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5"
+                                x-cloak>
+                                @foreach (['Terapis', 'Admin Kolaborasi', 'Admin Global'] as $role)
+                                    <button type="button" @click="roleKaryawan = '{{ $role }}'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                                        :class="roleKaryawan === '{{ $role }}' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        {{ $role }}
+                                    </button>
+                                @endforeach
+                            </div>
+                            <input type="hidden" name="peran" :value="roleKaryawan">
+                        </div>
                     </div>
 
                     {{-- Tanggal Bergabung --}}
@@ -188,13 +240,45 @@
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Status
                             Karyawan</label>
-                        <select name="status_karyawan" x-model="statusKaryawan" required
-                            class="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-teal-500/10 focus:bg-white transition-all">
-                            <option value="Aktif">Aktif</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
-                            <option value="Resign">Resign</option>
-                            <option value="PHK">PHK</option>
-                        </select>
+                        <div class="relative" @click.outside="openDropdown = null">
+                            <button type="button"
+                                @click.stop="openDropdown = openDropdown === 'status' ? null : 'status'"
+                                class="w-full flex items-center justify-between px-5 py-4 bg-slate-50 rounded-2xl text-sm font-bold text-slate-700 transition-all outline-none"
+                                :class="openDropdown === 'status' ? 'ring-2 ring-teal-400 bg-white shadow-md' : ''">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full"
+                                        :class="{
+                                            'bg-emerald-500': statusKaryawan === 'Aktif',
+                                            'bg-slate-400': statusKaryawan === 'Tidak Aktif'
+                                        }">
+                                    </div>
+                                    <span x-text="statusKaryawan"></span>
+                                </div>
+                                <svg class="w-5 h-5 text-slate-400 transition-transform duration-200"
+                                    :class="openDropdown === 'status' ? 'rotate-180' : ''" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="openDropdown === 'status'" x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5"
+                                x-cloak>
+                                @foreach (['Aktif', 'Tidak Aktif'] as $status)
+                                    <button type="button" @click="statusKaryawan = '{{ $status }}'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-colors flex items-center gap-2"
+                                        :class="statusKaryawan === '{{ $status }}' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        <div class="w-2 h-2 rounded-full {{ $status === 'Aktif' ? 'bg-emerald-500' : 'bg-slate-400' }}"></div>
+                                        <span>{{ $status }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                            <input type="hidden" name="status_karyawan" :value="statusKaryawan">
+                        </div>
                     </div>
                 </div>
 

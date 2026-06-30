@@ -312,9 +312,7 @@
                                     <div class="w-2 h-2 rounded-full"
                                         :class="{
                                             'bg-emerald-500': statusKaryawan === 'Aktif',
-                                            'bg-slate-400': statusKaryawan === 'Tidak Aktif',
-                                            'bg-amber-500': statusKaryawan === 'Resign',
-                                            'bg-rose-500': statusKaryawan === 'PHK'
+                                            'bg-slate-400': statusKaryawan === 'Tidak Aktif'
                                         }">
                                     </div>
                                     <span x-text="statusKaryawan"></span>
@@ -331,7 +329,7 @@
                                 x-transition:leave="transition ease-in duration-100"
                                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
                                 class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5">
-                                @foreach ([['value' => 'Aktif', 'dot' => 'bg-emerald-500', 'label' => 'Aktif', 'desc' => 'Karyawan aktif bekerja'], ['value' => 'Tidak Aktif', 'dot' => 'bg-slate-400', 'label' => 'Tidak Aktif', 'desc' => 'Sementara tidak aktif'], ['value' => 'Resign', 'dot' => 'bg-amber-500', 'label' => 'Resign', 'desc' => 'Mengundurkan diri'], ['value' => 'PHK', 'dot' => 'bg-rose-500', 'label' => 'PHK', 'desc' => 'Pemutusan hubungan kerja']] as $s)
+                                @foreach ([['value' => 'Aktif', 'dot' => 'bg-emerald-500', 'label' => 'Aktif', 'desc' => 'Karyawan aktif bekerja'], ['value' => 'Tidak Aktif', 'dot' => 'bg-slate-400', 'label' => 'Tidak Aktif', 'desc' => 'Sementara tidak aktif']] as $s)
                                     <button type="button"
                                         @click="statusKaryawan = '{{ $s['value'] }}'; openDropdown = null"
                                         class="w-full text-left px-4 py-3 rounded-xl transition-colors flex items-center gap-3"

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TherapistSchedule;
 use App\Models\TherapistSession;
+use App\Models\Operasional;
 use App\Services\SessionGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,10 @@ class TherapistScheduleController extends Controller
         // Ambil data karyawan terkait terapis
         $karyawan = $user->karyawan;
         $karyawanId = $karyawan ? $karyawan->id : $user->id;
+        $kolaborasiId = $karyawan ? $karyawan->kolaborasi_id : 1;
+
+        // Ambil jadwal operasional klinik cabang terkait
+        $clinicOps = Operasional::where('kolaborasi_id', $kolaborasiId)->get()->keyBy('hari');
 
         // Ambil jadwal yang sudah ada di DB (coba Karyawan ID, fallback ke User ID)
         $existingSchedules = TherapistSchedule::where('terapis_id', $karyawanId)
@@ -29,8 +34,6 @@ class TherapistScheduleController extends Controller
                 ->orderBy('waktu_mulai', 'asc')
                 ->get();
         }
-
-        // dd($existingSchedules);
 
         $groupedSchedules = $existingSchedules->groupBy('hari');
         $dayNames = [
@@ -48,6 +51,20 @@ class TherapistScheduleController extends Controller
         foreach (range(1, 7) as $dayNum) {
             $dayName = $dayNames[$dayNum];
             $schedulesForDay = $groupedSchedules->get($dayNum);
+            $op = $clinicOps->get($dayNum);
+
+            // Format jam operasional
+            $clinicHours = 'Tutup';
+            if ($op && strtolower($op->status_operasional) === 'buka') {
+                $open = $op->waktu_buka ? date('H:i', strtotime($op->waktu_buka)) : '08:00';
+                $close = $op->waktu_tutup ? date('H:i', strtotime($op->waktu_tutup)) : '17:00';
+                $clinicHours = "$open - $close";
+                if ($op->waktu_istirahat_mulai && $op->waktu_istirahat_selesai) {
+                    $breakStart = date('H:i', strtotime($op->waktu_istirahat_mulai));
+                    $breakEnd = date('H:i', strtotime($op->waktu_istirahat_selesai));
+                    $clinicHours .= " (Istirahat: $breakStart - $breakEnd)";
+                }
+            }
 
             if ($schedulesForDay && $schedulesForDay->isNotEmpty()) {
                 // Suatu hari aktif jika salah satu sesinya berstatus 'Aktif'
@@ -75,7 +92,12 @@ class TherapistScheduleController extends Controller
                 $formattedDays[] = [
                     'name' => $dayName,
                     'active' => $isActive,
-                    'clinic_hours' => $this->getClinicHours($dayNum),
+                    'clinic_hours' => $clinicHours,
+                    'status_operasional' => $op ? $op->status_operasional : 'Tutup',
+                    'open_time' => $op && $op->waktu_buka ? date('H:i', strtotime($op->waktu_buka)) : null,
+                    'close_time' => $op && $op->waktu_tutup ? date('H:i', strtotime($op->waktu_tutup)) : null,
+                    'break_start' => $op && $op->waktu_istirahat_mulai ? date('H:i', strtotime($op->waktu_istirahat_mulai)) : null,
+                    'break_end' => $op && $op->waktu_istirahat_selesai ? date('H:i', strtotime($op->waktu_istirahat_selesai)) : null,
                     'slots' => $slots,
                 ];
             } else {
@@ -83,7 +105,12 @@ class TherapistScheduleController extends Controller
                 $formattedDays[] = [
                     'name' => $dayName,
                     'active' => false,
-                    'clinic_hours' => $this->getClinicHours($dayNum),
+                    'clinic_hours' => $clinicHours,
+                    'status_operasional' => $op ? $op->status_operasional : 'Tutup',
+                    'open_time' => $op && $op->waktu_buka ? date('H:i', strtotime($op->waktu_buka)) : null,
+                    'close_time' => $op && $op->waktu_tutup ? date('H:i', strtotime($op->waktu_tutup)) : null,
+                    'break_start' => $op && $op->waktu_istirahat_mulai ? date('H:i', strtotime($op->waktu_istirahat_mulai)) : null,
+                    'break_end' => $op && $op->waktu_istirahat_selesai ? date('H:i', strtotime($op->waktu_istirahat_selesai)) : null,
                     'slots' => [
                         ['id' => 'temp_' . uniqid(), 'start' => '', 'kuota' => 0],
                     ],
@@ -94,23 +121,12 @@ class TherapistScheduleController extends Controller
         return view('pages.jadwal.atur-jam-kerja', ['daysData' => $formattedDays]);
     }
 
-    private function getClinicHours($day)
-    {
-        if ($day === 6) {
-            return '08:00 - 17:00';
-        }
-        if ($day === 7) {
-            return 'Tutup';
-        }
-
-        return '08:00 - 20:00';
-    }
-
     public function store(Request $request)
     {
         $user = Auth::user();
         $karyawan = $user->karyawan;
         $karyawanId = $karyawan ? $karyawan->id : $user->id;
+        $kolaborasiId = $karyawan ? $karyawan->kolaborasi_id : 1;
 
         $dayNames = [
             1 => 'Senin',
@@ -123,17 +139,50 @@ class TherapistScheduleController extends Controller
         ];
 
         $daysInput = $request->input('days', []);
+        $clinicOps = Operasional::where('kolaborasi_id', $kolaborasiId)->get()->keyBy('hari');
 
-        // Validate kuota >= 1 for active days/slots
+        // Validate kuota >= 1 and time scopes for active days/slots
         foreach ($daysInput as $item) {
             foreach ($item as $dayName => $dayData) {
                 $isActive = isset($dayData['active']) && $dayData['active'] === '1';
+                
+                // Find matching day index
+                $dayNum = array_search($dayName, $dayNames);
+                $op = $dayNum ? $clinicOps->get($dayNum) : null;
+
                 if ($isActive && isset($dayData['slots'])) {
                     foreach ($dayData['slots'] as $slot) {
                         if (!empty($slot['start'])) {
                             $kuota = isset($slot['kuota']) ? (int)$slot['kuota'] : 0;
                             if ($kuota < 1) {
                                 return back()->withInput()->with('error', 'Kuota pasien untuk setiap sesi aktif minimal harus 1.');
+                            }
+
+                            // Validate clinic operational hours
+                            if ($op) {
+                                if (strtolower($op->status_operasional) === 'tutup') {
+                                    return back()->withInput()->with('error', "Klinik tutup pada hari {$dayName}.");
+                                }
+
+                                $timeOnly = date('H:i', strtotime($slot['start']));
+
+                                $open = $op->waktu_buka ? date('H:i', strtotime($op->waktu_buka)) : null;
+                                $close = $op->waktu_tutup ? date('H:i', strtotime($op->waktu_tutup)) : null;
+
+                                if ($open && $close) {
+                                    if ($timeOnly < $open || $timeOnly >= $close) {
+                                        return back()->withInput()->with('error', "Sesi jam {$timeOnly} pada hari {$dayName} berada di luar jam operasional klinik ({$open} - {$close}).");
+                                    }
+                                }
+
+                                $breakStart = $op->waktu_istirahat_mulai ? date('H:i', strtotime($op->waktu_istirahat_mulai)) : null;
+                                $breakEnd = $op->waktu_istirahat_selesai ? date('H:i', strtotime($op->waktu_istirahat_selesai)) : null;
+
+                                if ($breakStart && $breakEnd) {
+                                    if ($timeOnly >= $breakStart && $timeOnly < $breakEnd) {
+                                        return back()->withInput()->with('error', "Sesi jam {$timeOnly} pada hari {$dayName} berada pada jam istirahat klinik ({$breakStart} - {$breakEnd}).");
+                                    }
+                                }
                             }
                         }
                     }

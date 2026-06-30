@@ -21,6 +21,7 @@
         patientType: '{{ old('patient_type', 'terdaftar') }}',
         selectedTherapistId: {{ old('terapis_id') ? old('terapis_id') : 3 }},
         searchTherapist: '',
+        showAllTherapists: false,
     
         therapists: window.allTherapists,
         patients: window.patients,
@@ -105,8 +106,19 @@
     
         // Filter daftar terapis berdasarkan input search
         get filteredTherapists() {
-            if (!this.searchTherapist) return this.therapists;
-            return this.therapists.filter(t => t.name.toLowerCase().includes(this.searchTherapist.toLowerCase()));
+            let list = this.therapists;
+            if (this.searchTherapist) {
+                list = this.therapists.filter(t => t.name.toLowerCase().includes(this.searchTherapist.toLowerCase()));
+            }
+            return this.showAllTherapists ? list : list.slice(0, 4);
+        },
+
+        get filteredTherapistsCount() {
+            let list = this.therapists;
+            if (this.searchTherapist) {
+                list = this.therapists.filter(t => t.name.toLowerCase().includes(this.searchTherapist.toLowerCase()));
+            }
+            return list.length;
         },
     
         // Ambil sesi dari terapis terpilih
@@ -394,6 +406,19 @@
                                 </div>
                             </button>
                         </template>
+
+                        {{-- Toggle Show More/Less --}}
+                        <div x-show="filteredTherapistsCount > 4" class="pt-1">
+                            <button type="button" @click="showAllTherapists = !showAllTherapists"
+                                class="w-full py-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2">
+                                <span x-text="showAllTherapists ? 'Sembunyikan Terapis' : 'Lihat Semua Terapis (' + filteredTherapistsCount + ')'"></span>
+                                <svg class="w-4 h-4 text-slate-400 transition-transform duration-300"
+                                    :class="showAllTherapists ? 'rotate-180' : ''" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" stroke-width="2.5">
+                                    <path d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
