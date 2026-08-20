@@ -23,6 +23,9 @@
         window.bookingServices = @json($services);
         window.bookingSessions = @json($sessions);
         window.bookingPatients = @json($patients);
+        window.userReferralCode = @json($userReferralCode ?? '');
+        window.patientPoints = @json($patientPoints ?? 0);
+        window.referralRewards = @json($referralRewards ?? []);
     </script>
     
 
@@ -37,6 +40,10 @@
         selectedTime: '{{ old('time', '') }}',
         selectedSessionId: '{{ old('terapis_sesi_id', '') }}',
         biayaHomecare: 0,
+        myReferralCode: window.userReferralCode,
+        myPoints: window.patientPoints,
+        rewardsConfig: window.referralRewards,
+        selectedReward: null,
     
         init() {
             let dates = this.availableDates;
@@ -133,7 +140,12 @@
     
         openNewPatientModal(index, prefillName) {
             this.newPatientTargetIndex = index;
-            this.newPatientForm = { name: prefillName || '', phone: '', dob: '' };
+            this.newPatientForm = { 
+                name: prefillName || '', 
+                phone: '', 
+                dob: '', 
+                referral_code: this.myReferralCode || '' 
+            };
             this.showNewPatientModal = true;
             document.body.style.overflow = 'hidden';
         },
@@ -161,6 +173,7 @@
             this.patientSlots[idx].name = this.newPatientForm.name;
             this.patientSlots[idx].phone = this.newPatientForm.phone;
             this.patientSlots[idx].dob = this.newPatientForm.dob;
+            this.patientSlots[idx].referral_code = this.newPatientForm.referral_code || '';
             this.patientSlots[idx].public_id = 'Pasien Baru';
             this.patientSlots[idx].type = 'baru';
             this.patientSlots[idx].search = '';
@@ -221,6 +234,27 @@
             });
             return total;
         },
+
+        get referralDiscountAmount() {
+            if (!this.selectedReward || !this.rewardsConfig[this.selectedReward]) return 0;
+            let reward = this.rewardsConfig[this.selectedReward];
+            if (this.myPoints < reward.points) return 0;
+
+            // Calculate primary patient's services cost after base service discount
+            let primaryCost = 0;
+            let primarySlot = this.patientSlots[0];
+            if (primarySlot && primarySlot.services) {
+                primarySlot.services.forEach(id => {
+                    let s = this.services.find(sv => sv.id === id);
+                    if (s) {
+                        let discounted = s.price * (1 - (s.discount / 100));
+                        primaryCost += discounted;
+                    }
+                });
+            }
+
+            return primaryCost * (reward.discount_percent / 100);
+        },
     
         get diskon() {
             // Keep for display percentage — derive from first service found across slots
@@ -252,7 +286,8 @@
         get grandTotal() {
             let anyServices = this.patientSlots.some(slot => slot.services && slot.services.length > 0);
             if (!anyServices) return 0;
-            return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
+            let total = (this.totalConsultationCost - this.discountAmount - this.referralDiscountAmount) + this.biayaHomecare + 5000;
+            return Math.max(0, total);
         },
     
         get slots() {
@@ -1118,6 +1153,102 @@
                             biaya ke rekening berikut untuk mengonfirmasi jadwal Anda.</p>
                     </div>
 
+                    {{-- Hidden input for selected reward --}}
+                    <input type="hidden" name="selected_reward" :value="selectedReward">
+
+                    {{-- REWARD REDEMPTION CARD --}}
+                    <div class="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 border border-amber-100">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Tukarkan Poin Referral</h4>
+                                    <p class="text-[11px] font-semibold text-slate-400">Poin Anda saat ini: <span class="text-teal-700 font-black" x-text="myPoints + ' Poin'"></span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            {{-- Option: No reward --}}
+                            <label class="flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+                                :class="!selectedReward ? 'border-teal-500 bg-teal-50/50 ring-1 ring-teal-500' : 'border-slate-200 hover:border-slate-300 bg-white'">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="_reward_radio" :checked="!selectedReward" @change="selectedReward = null" class="w-4 h-4 text-teal-600 focus:ring-teal-500">
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-700">Tidak Menggunakan Poin</p>
+                                        <p class="text-[10px] font-medium text-slate-400">Bayar biaya normal tanpa penukaran poin</p>
+                                    </div>
+                                </div>
+                            </label>
+
+                            {{-- Option: Half Session --}}
+                            <template x-if="rewardsConfig['half_session']">
+                                <label class="flex items-center justify-between p-3.5 rounded-2xl border transition-all"
+                                    :class="{
+                                        'border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 cursor-pointer': selectedReward === 'half_session',
+                                        'border-slate-200 hover:border-slate-300 bg-white cursor-pointer': selectedReward !== 'half_session' && myPoints >= rewardsConfig['half_session'].points,
+                                        'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed': myPoints < rewardsConfig['half_session'].points
+                                    }">
+                                    <div class="flex items-center gap-3">
+                                        <input type="radio" name="_reward_radio" :value="'half_session'" :checked="selectedReward === 'half_session'"
+                                            :disabled="myPoints < rewardsConfig['half_session'].points"
+                                            @change="if(myPoints >= rewardsConfig['half_session'].points) selectedReward = 'half_session'"
+                                            class="w-4 h-4 text-teal-600 focus:ring-teal-500">
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-xs font-bold text-slate-800" x-text="rewardsConfig['half_session'].label"></p>
+                                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-black rounded-md uppercase">
+                                                    Hemat 50%
+                                                </span>
+                                            </div>
+                                            <p class="text-[10px] font-medium"
+                                                :class="myPoints >= rewardsConfig['half_session'].points ? 'text-teal-700 font-bold' : 'text-slate-400'"
+                                                x-text="myPoints >= rewardsConfig['half_session'].points ? 'Tukar ' + rewardsConfig['half_session'].points + ' Poin' : 'Kurang ' + (rewardsConfig['half_session'].points - myPoints) + ' Poin lagi'"></p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right" x-show="selectedReward === 'half_session'">
+                                        <span class="text-xs font-black text-teal-700">-50% Layanan</span>
+                                    </div>
+                                </label>
+                            </template>
+
+                            {{-- Option: Full Session --}}
+                            <template x-if="rewardsConfig['full_session']">
+                                <label class="flex items-center justify-between p-3.5 rounded-2xl border transition-all"
+                                    :class="{
+                                        'border-teal-500 bg-teal-50/50 ring-1 ring-teal-500 cursor-pointer': selectedReward === 'full_session',
+                                        'border-slate-200 hover:border-slate-300 bg-white cursor-pointer': selectedReward !== 'full_session' && myPoints >= rewardsConfig['full_session'].points,
+                                        'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed': myPoints < rewardsConfig['full_session'].points
+                                    }">
+                                    <div class="flex items-center gap-3">
+                                        <input type="radio" name="_reward_radio" :value="'full_session'" :checked="selectedReward === 'full_session'"
+                                            :disabled="myPoints < rewardsConfig['full_session'].points"
+                                            @change="if(myPoints >= rewardsConfig['full_session'].points) selectedReward = 'full_session'"
+                                            class="w-4 h-4 text-teal-600 focus:ring-teal-500">
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-xs font-bold text-slate-800" x-text="rewardsConfig['full_session'].label"></p>
+                                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] font-black rounded-md uppercase">
+                                                    Gratis 100%
+                                                </span>
+                                            </div>
+                                            <p class="text-[10px] font-medium"
+                                                :class="myPoints >= rewardsConfig['full_session'].points ? 'text-teal-700 font-bold' : 'text-slate-400'"
+                                                x-text="myPoints >= rewardsConfig['full_session'].points ? 'Tukar ' + rewardsConfig['full_session'].points + ' Poin' : 'Kurang ' + (rewardsConfig['full_session'].points - myPoints) + ' Poin lagi'"></p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right" x-show="selectedReward === 'full_session'">
+                                        <span class="text-xs font-black text-emerald-700">GRATIS 1 SESI</span>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
                     <div class="bg-[#2D7A78] rounded-[2rem] p-8 text-white shadow-xl shadow-teal-900/10 space-y-6">
                         <div class="flex items-center gap-3 border-b border-white/10 pb-4">
                             <svg class="w-5 h-5 text-teal-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -1160,11 +1291,18 @@
                                 <span x-text="biayaHomecare ? formatRupiah(biayaHomecare) : 'Rp 0'"></span>
                             </div>
 
-                            {{-- Diskon --}}
+                            {{-- Diskon Layanan --}}
                             <div x-show="discountAmount > 0"
                                 class="flex justify-between items-center text-sm font-medium text-rose-300">
                                 <span>Diskon Layanan</span>
                                 <span x-text="'-' + formatRupiah(discountAmount)"></span>
+                            </div>
+
+                            {{-- Diskon Referral Poin --}}
+                            <div x-show="referralDiscountAmount > 0"
+                                class="flex justify-between items-center text-sm font-bold text-emerald-300">
+                                <span>Diskon Reward Referral (<span x-text="rewardsConfig[selectedReward]?.label"></span>)</span>
+                                <span x-text="'-' + formatRupiah(referralDiscountAmount)"></span>
                             </div>
 
                             {{-- Admin --}}
@@ -1424,6 +1562,22 @@
                         <input type="date" x-model="newPatientForm.dob" max="{{ date('Y-m-d') }}"
                             class="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-100 focus:border-teal-300 transition-all">
                         <p class="text-[10px] text-slate-400 font-medium px-0.5">Digunakan untuk verifikasi akun pasien</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                Kode Referral <span class="text-slate-300 font-medium lowercase">(opsional)</span>
+                            </label>
+                            <span x-show="myReferralCode && newPatientForm.referral_code === myReferralCode" class="text-[9px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md">
+                                Auto-fill (Kode Anda)
+                            </span>
+                        </div>
+                        <input type="text" x-model="newPatientForm.referral_code" placeholder="Contoh: ANJALI-XXXXX"
+                            class="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold uppercase tracking-wider outline-none focus:ring-2 focus:ring-teal-100 focus:border-teal-300 transition-all">
+                        <p class="text-[10px] text-slate-400 font-medium px-0.5" x-show="myReferralCode">
+                            *Otomatis menggunakan kode referral Anda agar poin masuk ke akun Anda saat pasien menyelesaikan sesi.
+                        </p>
                     </div>
 
                 </div>

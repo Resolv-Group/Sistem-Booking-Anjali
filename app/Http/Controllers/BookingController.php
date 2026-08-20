@@ -504,7 +504,21 @@ class BookingController extends Controller
 
         $patients = Pasien::select('id', 'nama_pasien', 'pasien_public_id', 'tanggal_lahir', 'no_telp')->orderBy('nama_pasien')->get();
 
-        return view('pages.booking.patient.form', compact('therapist', 'services', 'sessions', 'patients'));
+        $currentUser = auth()->user();
+        $currentPasien = $currentUser ? $currentUser->pasien : null;
+        $userReferralCode = $currentPasien ? ($currentPasien->kode_referral ?? '') : '';
+        $patientPoints = $currentPasien ? (int) ($currentPasien->poin_referral ?? 0) : 0;
+        $referralRewards = config('referral.rewards', []);
+
+        return view('pages.booking.patient.form', compact(
+            'therapist',
+            'services',
+            'sessions',
+            'patients',
+            'userReferralCode',
+            'patientPoints',
+            'referralRewards'
+        ));
     }
 
     public function quickRegisterPatient(Request $request)
@@ -581,15 +595,60 @@ class BookingController extends Controller
             $mime = $file->getClientMimeType();
         }
         
+        // Handle referral reward redemption if selected
+        $selectedRewardKey = $request->input('selected_reward');
+        $rewardConfig = config("referral.rewards.{$selectedRewardKey}");
+        $pointsToUse = 0;
+        $discountReferral = 0;
+
+        if ($rewardConfig && $primaryPasien) {
+            $requiredPoints = (int) ($rewardConfig['points'] ?? 0);
+            if (($primaryPasien->poin_referral ?? 0) < $requiredPoints) {
+                return redirect()->back()->with('error', "Poin referral tidak mencukupi untuk reward {$rewardConfig['label']}. Dibutuhkan {$requiredPoints} poin.");
+            }
+            $pointsToUse = $requiredPoints;
+
+            // Calculate primary patient's first service discount
+            if (!empty($patientsData[0]['services'])) {
+                $primaryServiceIds = $patientsData[0]['services'];
+                $primaryServices = \App\Models\Layanan::whereIn('id', $primaryServiceIds)->get();
+                $primaryServiceCost = 0;
+                foreach ($primaryServices as $sv) {
+                    $diskonLayanan = (float) $sv->diskon_persentase;
+                    $hargaSetelahDiskonLayanan = (int) $sv->base_harga * (1 - ($diskonLayanan / 100));
+                    $primaryServiceCost += $hargaSetelahDiskonLayanan;
+                }
+
+                $discountPercent = (float) ($rewardConfig['discount_percent'] ?? 0);
+                $discountReferral = ($primaryServiceCost * ($discountPercent / 100));
+            }
+        }
+
         try {
-            DB::transaction(function () use ($request, $primaryUser, $primaryPasien, $patientsData, $path, $mime) {
+            DB::transaction(function () use ($request, $primaryUser, $primaryPasien, $patientsData, $path, $mime, $selectedRewardKey, $pointsToUse, $discountReferral) {
                 $booking = Booking::create([
                     'booking_oleh_pasien_id' => $primaryPasien->id,
                     'terapis_sesi_id' => $request->terapis_sesi_id,
                     'status' => 'pending',
+                    'reward_referral_type' => $selectedRewardKey,
+                    'poin_referral_digunakan' => $pointsToUse,
+                    'diskon_referral' => $discountReferral,
                     'bukti_transfer_booking_path' => $path,
                     'bukti_transfer_booking_mime' => $mime,
                 ]);
+
+                // Deduct points & create redemption record
+                if ($pointsToUse > 0 && $primaryPasien) {
+                    $primaryPasien->decrement('poin_referral', $pointsToUse);
+
+                    \App\Models\ReferralRedemption::create([
+                        'pasien_id' => $primaryPasien->id,
+                        'booking_id' => $booking->id,
+                        'reward_type' => $selectedRewardKey,
+                        'points_used' => $pointsToUse,
+                        'discount_amount' => $discountReferral,
+                    ]);
+                }
 
                 foreach ($patientsData as $i => $slotData) {
                     $serviceIds = $slotData['services'] ?? [];
@@ -639,11 +698,24 @@ class BookingController extends Controller
                                 'email' => $email,
                                 'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
                                 'jenis_kelamin' => 'L',
+                                'kode_referral' => Pasien::generateUniqueReferralCode(),
                                 'created_by' => $primaryUser->id,
                                 'updated_by' => $primaryUser->id,
                             ]);
 
                             $pasienId = $newPasien->id;
+
+                            // Handle referral code for new patient
+                            $referralCode = trim($slotData['referral_code'] ?? '');
+                            if ($referralCode) {
+                                $referer = Pasien::where('kode_referral', $referralCode)->first();
+                                if ($referer && $referer->id !== $newPasien->id) {
+                                    \App\Models\Referral::create([
+                                        'referer_id' => $referer->id,
+                                        'referee_id' => $newPasien->id,
+                                    ]);
+                                }
+                            }
                         }
                     }
 
@@ -750,9 +822,22 @@ class BookingController extends Controller
                             'no_telp' => $phone,
                             'email' => $email,
                             'tanggal_lahir' => !empty($slotData['dob']) ? $slotData['dob'] : null,
+                            'kode_referral' => Pasien::generateUniqueReferralCode(),
                         ]);
 
                         $pasienId = $newPasien->id;
+
+                        // Handle referral code for new patient created by admin
+                        $referralCode = trim($slotData['referral_code'] ?? '');
+                        if ($referralCode) {
+                            $referer = Pasien::where('kode_referral', $referralCode)->first();
+                            if ($referer && $referer->id !== $newPasien->id) {
+                                \App\Models\Referral::create([
+                                    'referer_id' => $referer->id,
+                                    'referee_id' => $newPasien->id,
+                                ]);
+                            }
+                        }
                     }
 
                     // Create one BookingPatient row per service per patient

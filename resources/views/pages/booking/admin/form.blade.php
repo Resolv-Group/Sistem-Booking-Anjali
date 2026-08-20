@@ -244,7 +244,7 @@
         },
     
         patientSlots: [
-            { type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '', services: [] }
+            { type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', referral_code: '', complaint: '', search: '', services: [] }
         ],
     
         addSlot() {
@@ -255,7 +255,7 @@
     
             let session = this.sessions.find(s => s.id == this.selectedSessionId);
             if (this.patientSlots.length < session.kuota_sisa && this.patientSlots.length < 5) {
-                this.patientSlots.push({ type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', complaint: '', search: '', services: [] });
+                this.patientSlots.push({ type: 'terdaftar', id: null, name: '', email: '', phone: '', dob: '', referral_code: '', complaint: '', search: '', services: [] });
             } else {
                 Swal.fire('Penuh', 'Kuota sesi tidak mencukupi atau batas maksimal tercapai', 'error');
             }
@@ -669,6 +669,13 @@
                                 <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tanggal Lahir</label>
                                 <input type="date" x-model="slot.dob" max="{{ date('Y-m-d') }}"
                                     class="w-full px-4 py-3 bg-[#EDF1F3] border-none rounded-xl text-sm font-medium outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">
+                                    Kode Referral <span class="text-slate-300 font-normal lowercase">(opsional)</span>
+                                </label>
+                                <input type="text" x-model="slot.referral_code" placeholder="Contoh: ANJALI-XXXXX"
+                                    class="w-full px-4 py-3 bg-[#EDF1F3] border-none rounded-xl text-sm font-semibold uppercase tracking-wider outline-none">
                             </div>
                         </div>
 
