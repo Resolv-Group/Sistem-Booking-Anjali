@@ -95,6 +95,11 @@ class Pasien extends Model
         return $this->hasOne(Referral::class, 'referee_id');
     }
 
+    public function redemptions()
+    {
+        return $this->hasMany(ReferralRedemption::class, 'pasien_id');
+    }
+
     public static function generateUniqueReferralCode(): string
     {
         do {

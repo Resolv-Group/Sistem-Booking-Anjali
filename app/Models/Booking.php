@@ -23,10 +23,18 @@ class Booking extends Model
         'completed_at',
         'cancelled_by',
         'cancelled_at',
+        'reward_referral_type',
+        'poin_referral_digunakan',
+        'diskon_referral',
         'alasan_status',
         'batalkan_type',
         'updated_by',
     ];
+
+    public function referralRedemption()
+    {
+        return $this->hasOne(ReferralRedemption::class, 'booking_id');
+    }
 
     protected $casts = [
         'approved_at' => 'datetime',

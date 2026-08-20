@@ -124,7 +124,7 @@
                 {{-- State 1: Code generated --}}
                 <div x-show="kodeReferral" x-cloak class="space-y-4">
                     <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">
-                        <span class="text-lg font-black tracking-widest text-teal-700 select-all ml-2" x-text="kodeReferral"></span>
+                        <span class="text-md font-black tracking-widest text-teal-700 select-all ml-2" x-text="kodeReferral"></span>
                         <button @click="copyCode()" 
                             class="px-4 py-2.5 bg-teal-50 text-teal-700 hover:bg-teal-100 active:scale-95 transition-all text-xs font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5">
                             <span x-show="!copied">Salin</span>
@@ -156,6 +156,79 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                     </button>
+                </div>
+            </div>
+
+            {{-- 3.5 REWARD CATALOG / STATUS PENUKARAN --}}
+            @php
+                $rewards = config('referral.rewards', []);
+                $patientPoints = $pasien->poin_referral ?? 0;
+            @endphp
+            <div class="bg-white p-6 rounded-[2.2rem] border border-slate-100 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-50 pb-3">
+                    <div>
+                        <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest">Katalog Reward Referral</h3>
+                        <p class="text-[10px] font-semibold text-slate-400">Tukarkan poin Anda langsung saat booking</p>
+                    </div>
+                    <span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-black uppercase tracking-wider rounded-xl">
+                        {{ $patientPoints }} Poin Tersedia
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 pt-1">
+                    @foreach($rewards as $key => $reward)
+                        @php
+                            $required = $reward['points'];
+                            $canRedeem = $patientPoints >= $required;
+                            $progress = min(100, ($patientPoints / $required) * 100);
+                        @endphp
+                        <div class="p-4 rounded-2xl border transition-all {{ $canRedeem ? 'border-teal-200 bg-gradient-to-r from-teal-50/50 to-emerald-50/30' : 'border-slate-100 bg-slate-50/50' }}">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base">{{ $key === 'full_session' ? '🌟' : '🎁' }}</span>
+                                        <h4 class="text-xs font-bold text-slate-800">{{ $reward['label'] }}</h4>
+                                    </div>
+                                    <p class="text-[10px] font-medium text-slate-500">
+                                        Dibutuhkan <strong class="text-teal-700 font-bold">{{ $required }} Poin</strong> untuk klaim reward ini.
+                                    </p>
+                                </div>
+                                <div>
+                                    @if($canRedeem)
+                                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase rounded-lg">
+                                            Siap Ditukar
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 bg-slate-200/70 text-slate-500 text-[9px] font-bold uppercase rounded-lg text-nowrap">
+                                            Kurang {{ $required - $patientPoints }} Poin
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Progress mini-bar --}}
+                            <div class="mt-3 space-y-1">
+                                <div class="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r {{ $canRedeem ? 'from-emerald-500 to-teal-500' : 'from-slate-400 to-teal-400' }} rounded-full"
+                                         style="width: {{ $progress }}%"></div>
+                                </div>
+                                <div class="flex justify-between items-center text-[9px] text-slate-400 font-medium">
+                                    <span>Progress Poin</span>
+                                    <span>{{ $patientPoints }} / {{ $required }} Poin</span>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="pt-2">
+                    <a href="{{ route('patient.booking.index') }}" 
+                        class="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-200 text-teal-700 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                        <span>Pesan Terapi & Gunakan Reward</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
                 </div>
             </div>
 
