@@ -1,5 +1,3 @@
-Here is the complete, copy-paste-ready `README.md` file:
-
 ```markdown
 # Anjali — Integrated Therapy Clinic Management System
 
