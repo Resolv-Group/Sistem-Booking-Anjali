@@ -1,58 +1,268 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Here is the complete, copy-paste-ready `README.md` file:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+```markdown
+# Anjali — Integrated Therapy Clinic Management System
 
-## About Laravel
+A mobile-first therapy clinic management system that streamlines patient booking, therapist scheduling, medical records, and multi-branch clinic operations.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Overview
 
-## Learning Laravel
+**Anjali** is a mobile-first clinic management system designed for therapy clinics managing multiple therapists, patients, and branches (*Kolaborasi*). 
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The system covers the complete operational workflow—from patient registration and appointment booking to therapist medical records and branch administration. Unlike traditional duration-based scheduling, Anjali utilizes a **capacity-based session system**, enabling therapists to define available patient quotas per session rather than rigid appointment timeframes.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Key Features
 
-## Agentic Development
+### Patient
+* Phone number registration & Date of Birth login
+* Multi-patient booking under a single transaction
+* Multi-service selection per patient
+* Payment proof upload
+* Reschedule and cancellation workflows
+* Booking history and medical record summary access
+* Referral point system
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Therapist
+* Weekly working schedule management
+* Automatic recurring session generation
+* Daily appointment schedule overview
+* In-session medical record creation (EMR)
+* Complete patient treatment history tracking
 
-```bash
-composer require laravel/boost --dev
+### Branch Admin (Admin Kolaborasi)
+* Operational overview dashboard
+* Booking approvals and rejections
+* Patient, therapist, and service directory management
+* Employee assignments and branch operational hours configuration
 
-php artisan boost:install
+### Global Admin
+* Multi-branch creation and configuration
+* Branch administrator provisioning
+* High-level global clinic analytics
+
+---
+
+## System Roles
+
+| Role | Responsibility |
+| :--- | :--- |
+| **Admin Global** | Manages branches and provisions branch administrators |
+| **Admin Kolaborasi** | Oversees day-to-day branch clinic operations |
+| **Therapist** | Manages working availability, sessions, and medical records |
+| **Patient** | Books appointments and tracks personal treatment history |
+
+---
+
+## Workflows
+
+### 1. Main Operational Workflow
+```text
+Admin Global ──► Create Branch ──► Assign Admin ──► Branch Setup
+                                                          │
+Patient History ◄── Medical Record ◄── Therapy Session ◄── Booking & Payment
+
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Booking Journey
 
-## Contributing
+```text
+[Patient]                                [Admin]                    [Therapist]
+Login                                       │                            │
+  │                                         │                            │
+Choose Therapist & Session                  │                            │
+  │                                         │                            │
+Add Patient(s) & Service(s)                 │                            │
+  │                                         │                            │
+Upload Payment Proof                        │                            │
+  │                                         │                            │
+Submit Booking ──────────────────────► Review Booking                    │
+                                            │                            │
+                                   [Approve / Reject]                    │
+                                            │                            │
+                                            └────────────────────► Today's Schedule
+                                                                         │
+                                                                   Start Session
+                                                                         │
+                                                                   Record EMR
+                                                                         │
+                                                                   Complete
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Capacity-Based Scheduling
 
-## Security Vulnerabilities
+Instead of fixed appointment lengths, Anjali allocates therapist slots using session capacity limits.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Dynamic Capacity Tracking
 
-## License
+* **Session Base Capacity:** 10 Patients
+* **Approved Bookings:** 7 Patients
+* **Live Remaining Capacity:** 3 Patients
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Session generation is automated based on weekly availability rules. When operational hours change, future unbooked sessions adapt while preserving historical session logs.
+
+---
+
+## Medical Records (EMR) & Data Access
+
+Therapists record clinical data during active therapy sessions. Once the session is marked completed, records become strictly read-only.
+
+| Data Field | Patient | Therapist | Admin |
+| --- | --- | --- | --- |
+| **Therapy Goals** | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Recommendations** | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Clinical Record Summary** | Partial | :white_check_mark: | :white_check_mark: |
+| **Internal Therapist Notes** | :x: | :white_check_mark: | :x: |
+
+---
+
+## Database Architecture
+
+```text
+users
+├── pasiens
+├── karyawans
+│     ├── therapist_schedules
+│     └── terapis_sesi
+kolaborasi
+├── layanan
+├── terapis_layanan
+└── cabang
+booking
+├── booking_pasien
+├── rekam_medis
+└── booking_reschedule_histories
+
+```
+
+| Table | Purpose |
+| --- | --- |
+| `users` | Core authentication & user identities |
+| `pasiens` | Patient profiles and contact information |
+| `karyawans` | Employee and therapist profiles |
+| `kolaborasi` | Branch clinic entity mapping |
+| `layanan` | Service catalog and pricing |
+| `therapist_schedules` | Base recurring weekly therapist rules |
+| `terapis_sesi` | Generated daily operational sessions |
+| `booking` | Parent transaction records |
+| `booking_pasien` | Itemized patients and chosen services per booking |
+| `rekam_medis` | Clinical observations, metrics, and therapy outcomes |
+| `booking_reschedule_histories` | Audit logs for schedule changes |
+
+---
+
+## Tech Stack
+
+* **Backend:** Laravel 12, PHP 8.2+, PostgreSQL
+* **Frontend:** Blade, Tailwind CSS, Alpine.js, Vite
+* **Architecture:** MVC, Eloquent ORM, Database Transactions, Capacity-Driven Scheduling
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+* PHP >= 8.2
+* Composer
+* Node.js & NPM
+* PostgreSQL
+
+### Installation
+
+1. **Clone the repository:**
+```bash
+git clone [https://github.com/yourusername/anjali.git](https://github.com/yourusername/anjali.git)
+cd anjali
+
+```
+
+
+2. **Install dependencies:**
+```bash
+composer install
+npm install
+
+```
+
+
+3. **Set up environment variables:**
+```bash
+cp .env.example .env
+php artisan key:generate
+
+```
+
+
+4. **Configure PostgreSQL database in `.env`:**
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=anjali_db
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+
+```
+
+
+5. **Run migrations and seeders:**
+```bash
+php artisan migrate --seed
+
+```
+
+
+6. **Start development servers:**
+```bash
+npm run dev
+
+```
+
+
+*In a separate terminal:*
+```bash
+php artisan serve
+
+```
+
+
+
+---
+
+## Demo Accounts
+
+> Login credential format: **Phone Number** and **Date of Birth**.
+
+| Role | Demo Phone Number |
+| --- | --- |
+| **Admin Global** | `081234567001` |
+| **Admin Kolaborasi** | `081234561001` |
+| **Therapist** | `081234562001` |
+| **Patient** | `081234570001` |
+
+---
+
+## Roadmap
+
+* [ ] Loyalty points redemption catalog
+* [ ] Digital prescription PDF attachments
+* [ ] WhatsApp/Email automated booking notifications
+* [ ] Therapist performance analytics and commission metrics
+* [ ] Patient feedback and review scoring system
+
+```
+
+```
