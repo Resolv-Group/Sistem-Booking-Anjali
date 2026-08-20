@@ -14,6 +14,7 @@
     <script>
         window.allTherapists = @json($therapists);
         window.patients = @json($patients);
+        window.referralRewards = @json($referralRewards ?? []);
     </script>
 
     <x-layouts.mobile-app class="bg-[#F8FAFB] min-h-screen" x-data="{
@@ -25,6 +26,8 @@
     
         therapists: window.allTherapists,
         patients: window.patients,
+        rewardsConfig: window.referralRewards,
+        selectedReward: null,
         searchPatientInput: '',
         complaint: '{{ old('complaint', '') }}',
         slots: {{ old('slots', 1) }},
@@ -60,8 +63,35 @@
             });
             return total;
         },
-    
-    
+
+        get primaryPatientPoints() {
+            let firstSlot = this.patientSlots[0];
+            if (firstSlot && firstSlot.id) {
+                let p = this.patients.find(pt => pt.id === firstSlot.id);
+                return p ? (p.poin_referral || 0) : 0;
+            }
+            return 0;
+        },
+
+        get referralDiscountAmount() {
+            if (!this.selectedReward || !this.rewardsConfig[this.selectedReward]) return 0;
+            let reward = this.rewardsConfig[this.selectedReward];
+            if (this.primaryPatientPoints < reward.points) return 0;
+
+            let primaryCost = 0;
+            let primarySlot = this.patientSlots[0];
+            if (primarySlot && primarySlot.services) {
+                primarySlot.services.forEach(id => {
+                    let s = this.services.find(sv => sv.id === id);
+                    if (s) {
+                        let discounted = s.price * (1 - (s.discount / 100));
+                        primaryCost += discounted;
+                    }
+                });
+            }
+
+            return primaryCost * (reward.discount_percent / 100);
+        },
     
         get isHomecare() {
             let allIds = new Set();
@@ -82,7 +112,8 @@
         get grandTotal() {
             let anyServices = this.patientSlots.some(slot => slot.services && slot.services.length > 0);
             if (!anyServices) return 0;
-            return (this.totalConsultationCost - this.discountAmount) + this.biayaHomecare + 5000;
+            let total = (this.totalConsultationCost - this.discountAmount - this.referralDiscountAmount) + this.biayaHomecare + 5000;
+            return Math.max(0, total);
         },
     
         get allSelectedServices() {
@@ -626,32 +657,54 @@
 
                         {{-- Content: Pasien Terdaftar --}}
                         <div x-show="slot.type === 'terdaftar'" class="space-y-4">
-                            <div class="relative">
+                            {{-- Search input --}}
+                            <div x-show="!slot.id" class="relative">
                                 <input type="text" x-model="slot.search" placeholder="Cari nama atau ID pasien..."
                                     class="w-full pl-4 pr-4 py-3.5 bg-[#EDF1F3] border-none rounded-xl text-sm outline-none">
 
                                 {{-- Dropdown Search Results --}}
-                                <div x-show="slot.search.length > 1"
-                                    class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl max-h-40 overflow-y-auto">
+                                <div x-show="slot.search && slot.search.length > 1"
+                                    class="absolute z-50 w-full mt-2 bg-white border border-slate-100 rounded-xl shadow-xl max-h-48 overflow-y-auto">
                                     <template x-for="p in getFilteredPatients(slot.search)" :key="p.id">
-                                        <button @click="selectExistingPatient(index, p)"
-                                            class="w-full text-left p-3 hover:bg-teal-50 border-b border-slate-50 last:border-0">
-                                            <p class="text-sm font-bold text-slate-700" x-text="p.nama_pasien"></p>
-                                            <p class="text-[10px] text-slate-400" x-text="p.pasien_public_id"></p>
+                                        <button type="button" @click="selectExistingPatient(index, p)"
+                                            class="w-full text-left p-3 hover:bg-teal-50 border-b border-slate-50 last:border-0 flex items-center justify-between transition-colors">
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-700" x-text="p.nama_pasien"></p>
+                                                <p class="text-[10px] text-slate-400 font-medium" x-text="p.pasien_public_id"></p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-black rounded-lg"
+                                                    x-text="(p.poin_referral || 0) + ' Poin'"></span>
+                                            </div>
                                         </button>
                                     </template>
+                                    <div x-show="getFilteredPatients(slot.search).length === 0" class="p-3 text-center text-xs text-slate-400 font-medium">
+                                        Pasien tidak ditemukan
+                                    </div>
                                 </div>
                             </div>
 
-                            {{-- Selected Patient Info --}}
+                            {{-- Selected Patient Info Card --}}
                             <div x-show="slot.id"
-                                class="p-4 bg-teal-50 border border-teal-100 rounded-2xl flex items-center gap-4">
-                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold text-xs"
-                                    x-text="slot.name.substring(0,2).toUpperCase()"></div>
-                                <div>
-                                    <p class="text-sm font-bold text-[#0D4C4A]" x-text="slot.name"></p>
-                                    <p class="text-[10px] text-teal-600 font-medium" x-text="slot.dob"></p>
+                                class="p-4 bg-teal-50/70 border border-teal-100 rounded-2xl flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-teal-600 font-bold text-xs shrink-0"
+                                        x-text="slot.name ? slot.name.substring(0,2).toUpperCase() : '?'"></div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-bold text-[#0D4C4A]" x-text="slot.name"></p>
+                                            <template x-if="patients.find(pt => pt.id === slot.id)">
+                                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-black rounded-md"
+                                                    x-text="(patients.find(pt => pt.id === slot.id)?.poin_referral || 0) + ' Poin'"></span>
+                                            </template>
+                                        </div>
+                                        <p class="text-[10px] text-teal-600 font-medium" x-text="slot.dob ? 'Tgl Lahir: ' + slot.dob : (slot.phone || '')"></p>
+                                    </div>
                                 </div>
+                                <button type="button" @click="slot.id = null; slot.name = ''; slot.search = '';"
+                                    class="text-[10px] font-bold text-rose-500 hover:text-rose-700 bg-white px-2.5 py-1 rounded-lg border border-rose-100 shadow-sm uppercase tracking-wider shrink-0 transition-all">
+                                    Ganti
+                                </button>
                             </div>
                         </div>
 
@@ -851,11 +904,18 @@
                             <span class="text-slate-800 font-bold" x-text="formatRupiah(totalConsultationCost)"></span>
                         </div>
 
-                        {{-- Diskon --}}
+                        {{-- Diskon Layanan --}}
                         <div x-show="discountAmount > 0"
                             class="flex justify-between items-center text-sm font-semibold text-rose-600">
                             <span>Diskon Layanan</span>
                             <span x-text="'-' + formatRupiah(discountAmount)"></span>
+                        </div>
+
+                        {{-- Diskon Referral Poin --}}
+                        <div x-show="referralDiscountAmount > 0"
+                            class="flex justify-between items-center text-sm font-bold text-emerald-600">
+                            <span>Diskon Reward Referral (<span x-text="rewardsConfig[selectedReward]?.label"></span>)</span>
+                            <span x-text="'-' + formatRupiah(referralDiscountAmount)"></span>
                         </div>
 
                         {{-- Biaya Homecare --}}
@@ -868,6 +928,69 @@
                         <div class="flex justify-between items-center text-sm font-medium text-slate-600">
                             <span>Biaya Admin</span>
                             <span class="text-slate-800 font-bold">Rp5.000</span>
+                        </div>
+
+                        {{-- Section Tukar Poin di Admin --}}
+                        <div x-show="primaryPatientPoints >= 20" class="pt-3 border-t border-slate-100 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black text-slate-700 uppercase tracking-wider">Tukarkan Poin Pasien</span>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg"
+                                    x-text="primaryPatientPoints + ' Poin Tersedia'"></span>
+                            </div>
+
+                            <input type="hidden" name="selected_reward" :value="selectedReward">
+
+                            <div class="space-y-2">
+                                <label class="flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer"
+                                    :class="!selectedReward ? 'border-teal-500 bg-teal-50/50' : 'border-slate-200 bg-white'">
+                                    <div class="flex items-center gap-2.5">
+                                        <input type="radio" name="_admin_reward" :checked="!selectedReward" @change="selectedReward = null" class="w-4 h-4 text-teal-600">
+                                        <span class="text-xs font-semibold text-slate-700">Tidak Menggunakan Poin</span>
+                                    </div>
+                                </label>
+
+                                <template x-if="rewardsConfig['half_session']">
+                                    <label class="flex items-center justify-between p-3 rounded-xl border transition-all"
+                                        :class="{
+                                            'border-teal-500 bg-teal-50/50 cursor-pointer': selectedReward === 'half_session',
+                                            'border-slate-200 bg-white cursor-pointer': selectedReward !== 'half_session' && primaryPatientPoints >= rewardsConfig['half_session'].points,
+                                            'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed': primaryPatientPoints < rewardsConfig['half_session'].points
+                                        }">
+                                        <div class="flex items-center gap-2.5">
+                                            <input type="radio" name="_admin_reward" :value="'half_session'" :checked="selectedReward === 'half_session'"
+                                                :disabled="primaryPatientPoints < rewardsConfig['half_session'].points"
+                                                @change="if(primaryPatientPoints >= rewardsConfig['half_session'].points) selectedReward = 'half_session'"
+                                                class="w-4 h-4 text-teal-600">
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-800" x-text="rewardsConfig['half_session'].label"></p>
+                                                <p class="text-[10px] text-teal-600 font-semibold" x-text="'Tukar ' + rewardsConfig['half_session'].points + ' Poin'"></p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-black text-teal-700" x-show="selectedReward === 'half_session'">-50% Sesi</span>
+                                    </label>
+                                </template>
+
+                                <template x-if="rewardsConfig['full_session']">
+                                    <label class="flex items-center justify-between p-3 rounded-xl border transition-all"
+                                        :class="{
+                                            'border-teal-500 bg-teal-50/50 cursor-pointer': selectedReward === 'full_session',
+                                            'border-slate-200 bg-white cursor-pointer': selectedReward !== 'full_session' && primaryPatientPoints >= rewardsConfig['full_session'].points,
+                                            'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed': primaryPatientPoints < rewardsConfig['full_session'].points
+                                        }">
+                                        <div class="flex items-center gap-2.5">
+                                            <input type="radio" name="_admin_reward" :value="'full_session'" :checked="selectedReward === 'full_session'"
+                                                :disabled="primaryPatientPoints < rewardsConfig['full_session'].points"
+                                                @change="if(primaryPatientPoints >= rewardsConfig['full_session'].points) selectedReward = 'full_session'"
+                                                class="w-4 h-4 text-teal-600">
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-800" x-text="rewardsConfig['full_session'].label"></p>
+                                                <p class="text-[10px] text-teal-600 font-semibold" x-text="'Tukar ' + rewardsConfig['full_session'].points + ' Poin'"></p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs font-black text-emerald-700" x-show="selectedReward === 'full_session'">GRATIS 100%</span>
+                                    </label>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- Grand Total --}}
@@ -916,5 +1039,53 @@
         <x-navigation.admin-cabang-navbar active="booking" />
 
     </x-layouts.mobile-app>
+
+    @if (session('error') || $errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let errorMsg = "{{ session('error') ?? '' }}";
+                @if ($errors->any())
+                    let validationErrors = @json($errors->all());
+                    if (errorMsg) {
+                        errorMsg += '<br><br>' + validationErrors.join('<br>');
+                    } else {
+                        errorMsg = validationErrors.join('<br>');
+                    }
+                @endif
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    html: errorMsg,
+                    confirmButtonColor: '#0f766e',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-xl border border-rose-100 bg-white/95 backdrop-blur-md',
+                        title: 'text-sm font-black text-slate-800',
+                        htmlContainer: 'text-xs font-medium text-slate-500',
+                        confirmButton: 'rounded-xl text-xs font-bold px-5 py-2.5 shadow-md'
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#0f766e',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-xl border border-emerald-100 bg-white/95 backdrop-blur-md',
+                        title: 'text-sm font-black text-slate-800',
+                        htmlContainer: 'text-xs font-medium text-slate-500',
+                        confirmButton: 'rounded-xl text-xs font-bold px-5 py-2.5 shadow-md'
+                    }
+                });
+            });
+        </script>
+    @endif
 
 @endsection

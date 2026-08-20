@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Models\BookingRescheduleHistory;
 use App\Models\TherapistReview;
@@ -452,11 +453,13 @@ class BookingController extends Controller
                 ];
             });
 
-        $patients = Pasien::select('id', 'nama_pasien', 'pasien_public_id', 'tanggal_lahir', 'email', 'no_telp')
-            ->limit(10) // Ambil beberapa saja, sisanya via search (opsional)
+        $patients = Pasien::select('id', 'nama_pasien', 'pasien_public_id', 'tanggal_lahir', 'email', 'no_telp', 'poin_referral', 'kode_referral')
+            ->orderBy('nama_pasien')
             ->get();
 
-        return view('pages.booking.admin.form', compact('therapists', 'patients'));
+        $referralRewards = config('referral.rewards', []);
+
+        return view('pages.booking.admin.form', compact('therapists', 'patients', 'referralRewards'));
     }
 
     public function create(Request $request)
@@ -553,7 +556,14 @@ class BookingController extends Controller
                     'tanggal_lahir' => $pasien->tanggal_lahir,
                 ]);
             });
+        } catch (\Illuminate\Database\QueryException|\PDOException $e) {
+            Log::error('Database error in BookingController::quickRegisterPatient: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all(),
+            ]);
+            return response()->json(['error' => 'Gagal mendaftarkan pasien karena masalah sistem database.'], 500);
         } catch (\Exception $e) {
+            Log::warning('Quick registration error in BookingController::quickRegisterPatient: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal mendaftarkan pasien: ' . $e->getMessage()], 422);
         }
     }
@@ -731,11 +741,17 @@ class BookingController extends Controller
                 }
             });
 
-            // Hide or unset the heavy base64 string so it doesn't get carried into the redirect headers
+        } catch (\Illuminate\Database\QueryException|\PDOException $e) {
             unset($path);
-
+            Log::error('Database error in BookingController::store: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $primaryUser->id ?? null,
+                'request_data' => $request->except(['payment_proof']),
+            ]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan pada sistem database saat memproses booking. Silakan coba beberapa saat lagi.');
         } catch (\Exception $e) {
             unset($path);
+            Log::warning('Booking submission error in BookingController::store: ' . $e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());
         }
 
@@ -758,7 +774,7 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Data pasien tidak valid.');
         }
 
-        // Capacity check
+        // Check capacity
         $session = TherapistSession::findOrFail($request->terapis_sesi_id);
         $session->load('bookings.bookingPatients');
         $slotsRequired = (int) $request->slots;
@@ -766,17 +782,63 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Kapasitas kuota sesi terapis tidak mencukupi untuk jumlah pasien yang dipilih (Kuota sisa: ' . $session->remaining_capacity . ').');
         }
 
+        // Handle referral reward if selected by admin
+        $selectedRewardKey = $request->input('selected_reward');
+        $rewardConfig = config("referral.rewards.{$selectedRewardKey}");
+        $pointsToUse = 0;
+        $discountReferral = 0;
+        $primaryPasienModel = null;
+
+        if ($rewardConfig && !empty($patientsData[0]['id'])) {
+            $primaryPasienModel = Pasien::find($patientsData[0]['id']);
+            if ($primaryPasienModel) {
+                $requiredPoints = (int) ($rewardConfig['points'] ?? 0);
+                if (($primaryPasienModel->poin_referral ?? 0) < $requiredPoints) {
+                    return redirect()->back()->with('error', "Poin referral pasien tidak mencukupi untuk reward {$rewardConfig['label']}.");
+                }
+                $pointsToUse = $requiredPoints;
+
+                if (!empty($patientsData[0]['services'])) {
+                    $primaryServiceIds = $patientsData[0]['services'];
+                    $primaryServices = \App\Models\Layanan::whereIn('id', $primaryServiceIds)->get();
+                    $primaryServiceCost = 0;
+                    foreach ($primaryServices as $sv) {
+                        $diskonLayanan = (float) $sv->diskon_persentase;
+                        $hargaSetelahDiskonLayanan = (int) $sv->base_harga * (1 - ($diskonLayanan / 100));
+                        $primaryServiceCost += $hargaSetelahDiskonLayanan;
+                    }
+                    $discountPercent = (float) ($rewardConfig['discount_percent'] ?? 0);
+                    $discountReferral = ($primaryServiceCost * ($discountPercent / 100));
+                }
+            }
+        }
+
         try {
-            DB::transaction(function () use ($request, $patientsData) {
+            DB::transaction(function () use ($request, $patientsData, $selectedRewardKey, $pointsToUse, $discountReferral, $primaryPasienModel) {
                 // Create the booking (no payment proof for admin — direct confirm or pending)
                 $booking = Booking::create([
-                    'booking_oleh_pasien_id' => null, // admin booking, no primary patient
+                    'booking_oleh_pasien_id' => $primaryPasienModel ? $primaryPasienModel->id : null,
                     'terapis_sesi_id' => $request->terapis_sesi_id,
                     'status' => 'approved', // admin bookings skip payment verification
                     'booking_oleh_karyawan_id' => $request->admin_id,
+                    'reward_referral_type' => $selectedRewardKey,
+                    'poin_referral_digunakan' => $pointsToUse,
+                    'diskon_referral' => $discountReferral,
                     'approved_at' => now(),
                     'approved_by' => $request->admin_id,
                 ]);
+
+                if ($pointsToUse > 0 && $primaryPasienModel) {
+                    $primaryPasienModel->decrement('poin_referral', $pointsToUse);
+
+                    \App\Models\ReferralRedemption::create([
+                        'pasien_id' => $primaryPasienModel->id,
+                        'booking_id' => $booking->id,
+                        'reward_type' => $selectedRewardKey,
+                        'points_used' => $pointsToUse,
+                        'discount_amount' => $discountReferral,
+                    ]);
+                }
 
                 foreach ($patientsData as $i => $slotData) {
                     $serviceIds = $slotData['services'] ?? [];
@@ -852,7 +914,15 @@ class BookingController extends Controller
                     }
                 }
             });
+        } catch (\Illuminate\Database\QueryException|\PDOException $e) {
+            Log::error('Database error in BookingController::adminBookingStore: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'admin_id' => $request->admin_id ?? auth()->id(),
+                'request_data' => $request->all(),
+            ]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem database saat menyimpan booking. Silakan coba beberapa saat lagi.');
         } catch (\Exception $e) {
+            Log::warning('Booking submission error in BookingController::adminBookingStore: ' . $e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());
         }
 

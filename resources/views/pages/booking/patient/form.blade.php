@@ -1596,7 +1596,54 @@
 
         <x-navigation.patient-navbar active="booking" />
 
-
     </x-layouts.mobile-app>
+
+    @if (session('error') || $errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let errorMsg = "{{ session('error') ?? '' }}";
+                @if ($errors->any())
+                    let validationErrors = @json($errors->all());
+                    if (errorMsg) {
+                        errorMsg += '<br><br>' + validationErrors.join('<br>');
+                    } else {
+                        errorMsg = validationErrors.join('<br>');
+                    }
+                @endif
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    html: errorMsg,
+                    confirmButtonColor: '#0f766e',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-xl border border-rose-100 bg-white/95 backdrop-blur-md',
+                        title: 'text-sm font-black text-slate-800',
+                        htmlContainer: 'text-xs font-medium text-slate-500',
+                        confirmButton: 'rounded-xl text-xs font-bold px-5 py-2.5 shadow-md'
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#0f766e',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-xl border border-emerald-100 bg-white/95 backdrop-blur-md',
+                        title: 'text-sm font-black text-slate-800',
+                        htmlContainer: 'text-xs font-medium text-slate-500',
+                        confirmButton: 'rounded-xl text-xs font-bold px-5 py-2.5 shadow-md'
+                    }
+                });
+            });
+        </script>
+    @endif
 
 @endsection
