@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\ImageService;
 
 class KaryawanController extends Controller
 {
@@ -68,7 +69,7 @@ class KaryawanController extends Controller
             'tanggal_bergabung' => 'nullable|date',
             'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         DB::transaction(function () use ($request, $kolaborasi) {
@@ -91,8 +92,9 @@ class KaryawanController extends Controller
             $fotoPath = null;
             $fotoMime = null;
             if ($request->hasFile('foto')) {
-                $fotoPath = $request->file('foto')->store('karyawan-photos', 'public');
-                $fotoMime = $request->file('foto')->getClientMimeType();
+                $processed = ImageService::compressAndStore($request->file('foto'), 'karyawan-photos');
+                $fotoPath = $processed['path'];
+                $fotoMime = $processed['mime'];
             }
 
             Karyawan::create([
@@ -152,7 +154,7 @@ class KaryawanController extends Controller
             'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'kolaborasi_id' => 'required|exists:kolaborasi,id',
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         DB::transaction(function () use ($request, $karyawan) {
@@ -179,8 +181,9 @@ class KaryawanController extends Controller
                 if ($karyawan->foto_path) {
                     Storage::disk('public')->delete($karyawan->foto_path);
                 }
-                $fotoPath = $request->file('foto')->store('karyawan-photos', 'public');
-                $fotoMime = $request->file('foto')->getClientMimeType();
+                $processed = ImageService::compressAndStore($request->file('foto'), 'karyawan-photos');
+                $fotoPath = $processed['path'];
+                $fotoMime = $processed['mime'];
             }
 
             $karyawan->update([

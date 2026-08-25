@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use App\Models\BookingPatient;
+use App\Services\ImageService;
 
 class ProfileController extends Controller
 {
@@ -80,7 +81,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($admin_global->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($admin_global->id)],
         ]);
@@ -94,11 +95,11 @@ class ProfileController extends Controller
             'updated_by' => $admin_global->user_id,
         ]);
 
-        // 3. Handle File Foto untuk BYTEA Postgres
+        // 3. Handle File Foto — compress, sanitize, and convert to WebP
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $admin_globalUpdates['foto'] = base64_encode(file_get_contents($file->getRealPath()));
-            $admin_globalUpdates['foto_mime'] = $file->getClientMimeType();
+            $processed = ImageService::compressAndSanitize($request->file('foto'));
+            $admin_globalUpdates['foto'] = $processed['data'];
+            $admin_globalUpdates['foto_mime'] = $processed['mime'];
         } else {
             // Hapus key 'foto' dari array jika tidak ada file baru yang diunggah
             unset($admin_globalUpdates['foto']);
@@ -146,7 +147,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($admin_kolaborasi->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($admin_kolaborasi->id)],
         ]);
@@ -160,11 +161,11 @@ class ProfileController extends Controller
             'updated_by' => $admin_kolaborasi->user_id,
         ]);
 
-        // 3. Handle File Foto untuk BYTEA Postgres
+        // 3. Handle File Foto — compress, sanitize, and convert to WebP
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $admin_kolaborasiUpdates['foto'] = base64_encode(file_get_contents($file->getRealPath()));
-            $admin_kolaborasiUpdates['foto_mime'] = $file->getClientMimeType();
+            $processed = ImageService::compressAndSanitize($request->file('foto'));
+            $admin_kolaborasiUpdates['foto'] = $processed['data'];
+            $admin_kolaborasiUpdates['foto_mime'] = $processed['mime'];
         } else {
             // Hapus key 'foto' dari array jika tidak ada file baru yang diunggah
             unset($admin_kolaborasiUpdates['foto']);
@@ -212,7 +213,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($therapist->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($therapist->id)],
         ]);
@@ -226,11 +227,11 @@ class ProfileController extends Controller
             'updated_by' => $therapist->user_id,
         ]);
 
-        // 3. Handle File Foto untuk BYTEA Postgres
+        // 3. Handle File Foto — compress, sanitize, and convert to WebP
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $therapistUpdates['foto'] = base64_encode(file_get_contents($file->getRealPath()));
-            $therapistUpdates['foto_mime'] = $file->getClientMimeType();
+            $processed = ImageService::compressAndSanitize($request->file('foto'));
+            $therapistUpdates['foto'] = $processed['data'];
+            $therapistUpdates['foto_mime'] = $processed['mime'];
         } else {
             // Hapus key 'foto' dari array jika tidak ada file baru yang diunggah
             unset($therapistUpdates['foto']);
@@ -280,7 +281,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('pasiens', 'email')->ignore($pasien->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('pasiens', 'no_telp')->ignore($pasien->id)],
             'tinggi_badan' => 'nullable|integer|min:0',
@@ -297,11 +298,11 @@ class ProfileController extends Controller
             'updated_by' => $pasien->user_id,
         ]);
 
-        // 3. Handle File Foto untuk BYTEA Postgres
+        // 3. Handle File Foto — compress, sanitize, and convert to WebP
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $pasienUpdates['foto'] = base64_encode(file_get_contents($file->getRealPath()));
-            $pasienUpdates['foto_mime'] = $file->getClientMimeType();
+            $processed = ImageService::compressAndSanitize($request->file('foto'));
+            $pasienUpdates['foto'] = $processed['data'];
+            $pasienUpdates['foto_mime'] = $processed['mime'];
         } else {
             // Hapus key 'foto' dari array jika tidak ada file baru yang diunggah
             unset($pasienUpdates['foto']);

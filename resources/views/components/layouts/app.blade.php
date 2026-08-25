@@ -12,6 +12,10 @@
         @yield('title', 'Sistem Anjali')
     </title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo_anjali.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo_anjali.jpg') }}">
+
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'

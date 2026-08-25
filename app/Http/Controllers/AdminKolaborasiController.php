@@ -11,6 +11,7 @@ use App\Models\Layanan;
 use App\Models\Pasien;
 use App\Models\TherapistSchedule;
 use Carbon\Carbon;
+use App\Services\ImageService;
 
 class AdminKolaborasiController extends Controller
 {
@@ -477,15 +478,13 @@ class AdminKolaborasiController extends Controller
             'no_telp_kolaborasi' => 'nullable|string|max:50',
             'email_kolaborasi' => 'nullable|email|max:100',
             'homecare_harga' => 'required|numeric|min:0',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         if ($request->hasFile('logo')) {
-            $logoFile = $request->file('logo');
-            $logoBase64 = base64_encode(file_get_contents($logoFile->getRealPath()));
-            $logoMime = $logoFile->getClientMimeType();
-            $validated['logo'] = $logoBase64;
-            $validated['logo_mime'] = $logoMime;
+            $processed = ImageService::compressAndSanitize($request->file('logo'));
+            $validated['logo'] = $processed['data'];
+            $validated['logo_mime'] = $processed['mime'];
         }
 
         $validated['updated_by'] = $user->id;

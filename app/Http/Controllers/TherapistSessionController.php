@@ -8,6 +8,7 @@ use App\Models\TherapistSession;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\ImageService;
 
 class TherapistSessionController extends Controller
 {
@@ -211,12 +212,12 @@ class TherapistSessionController extends Controller
                 if ($request->hasFile('foto')) {
                     foreach ($request->file('foto') as $file) {
                         if ($file->isValid()) {
-                            $base64Data = base64_encode(file_get_contents($file->getRealPath()));
-                            $mimeType = $file->getClientMimeType();
+                            // Compress, sanitize, and convert to WebP
+                            $processed = ImageService::compressAndSanitize($file);
 
                             $rekamMedis->fotos()->create([
-                                'foto' => $base64Data,
-                                'foto_mime' => $mimeType,
+                                'foto' => $processed['data'],
+                                'foto_mime' => $processed['mime'],
                             ]);
                         }
                     }
