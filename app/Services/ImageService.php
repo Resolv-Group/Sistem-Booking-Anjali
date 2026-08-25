@@ -123,11 +123,21 @@ class ImageService
      * Create a GD image resource from a file path based on its MIME type.
      * Re-encoding through GD automatically strips all EXIF metadata
      * and neutralizes any embedded malicious content.
+     * EXIF orientation is read and applied BEFORE stripping.
      *
      * @throws \InvalidArgumentException  If the image cannot be created
      */
     protected static function createImageFromFile(string $path, string $mime): \GdImage
     {
+        // Read EXIF orientation BEFORE GD strips it (only JPEGs have EXIF)
+        $orientation = 1;
+        if ($mime === 'image/jpeg' && function_exists('exif_read_data')) {
+            $exif = @exif_read_data($path);
+            if ($exif && isset($exif['Orientation'])) {
+                $orientation = (int) $exif['Orientation'];
+            }
+        }
+
         $image = match ($mime) {
             'image/jpeg' => @imagecreatefromjpeg($path),
             'image/png'  => @imagecreatefrompng($path),
@@ -148,6 +158,43 @@ class ImageService
             imagesavealpha($image, true);
         }
 
+        // Apply EXIF orientation correction (fixes phone camera rotation)
+        $image = self::applyExifOrientation($image, $orientation);
+
+        return $image;
+    }
+
+    /**
+     * Apply EXIF orientation correction to a GD image.
+     * Phone cameras store photos in a fixed sensor orientation and use EXIF
+     * tags to indicate how the image should be displayed. Since GD strips EXIF
+     * during re-encoding, we must apply the rotation/flip beforehand.
+     *
+     * EXIF Orientation values:
+     * 1 = Normal, 2 = Flipped horizontal, 3 = Rotated 180°,
+     * 4 = Flipped vertical, 5 = Transposed, 6 = Rotated 90° CW,
+     * 7 = Transversed, 8 = Rotated 90° CCW
+     */
+    protected static function applyExifOrientation(\GdImage $image, int $orientation): \GdImage
+    {
+        return match ($orientation) {
+            2 => self::flipImage($image, IMG_FLIP_HORIZONTAL),
+            3 => imagerotate($image, 180, 0) ?: $image,
+            4 => self::flipImage($image, IMG_FLIP_VERTICAL),
+            5 => self::flipImage(imagerotate($image, 270, 0) ?: $image, IMG_FLIP_HORIZONTAL),
+            6 => imagerotate($image, 270, 0) ?: $image,
+            7 => self::flipImage(imagerotate($image, 90, 0) ?: $image, IMG_FLIP_HORIZONTAL),
+            8 => imagerotate($image, 90, 0) ?: $image,
+            default => $image, // Orientation 1 = normal, no change needed
+        };
+    }
+
+    /**
+     * Flip a GD image and return it. Wraps imageflip() to return the image.
+     */
+    protected static function flipImage(\GdImage $image, int $mode): \GdImage
+    {
+        imageflip($image, $mode);
         return $image;
     }
 
