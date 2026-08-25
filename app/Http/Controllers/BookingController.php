@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Models\BookingRescheduleHistory;
 use App\Models\TherapistReview;
+use App\Services\ImageService;
 
 class BookingController extends Controller
 {
@@ -596,13 +597,23 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Kapasitas kuota sesi terapis tidak mencukupi untuk jumlah pasien yang dipilih (Kuota sisa: ' . $session->remaining_capacity . ').');
         }
 
-        // Upload payment proof
+        // Upload payment proof (compress & sanitize images, pass through PDFs)
         $path = null;
         $mime = null;
         if ($request->hasFile('payment_proof')) {
             $file = $request->file('payment_proof');
-            $path = base64_encode(file_get_contents($file->getRealPath()));
-            $mime = $file->getClientMimeType();
+            $realMime = (new \finfo(FILEINFO_MIME_TYPE))->file($file->getRealPath());
+
+            if ($realMime === 'application/pdf') {
+                // PDF: store as-is without image processing
+                $path = base64_encode(file_get_contents($file->getRealPath()));
+                $mime = 'application/pdf';
+            } else {
+                // Image: compress, sanitize, and convert to WebP
+                $processed = ImageService::compressAndSanitize($file);
+                $path = $processed['data'];
+                $mime = $processed['mime'];
+            }
         }
         
         // Handle referral reward redemption if selected

@@ -11,6 +11,7 @@ use App\Models\Layanan;
 use App\Models\Pasien;
 use App\Models\TherapistSchedule;
 use Carbon\Carbon;
+use App\Services\ImageService;
 
 class AdminKolaborasiController extends Controller
 {
@@ -481,11 +482,9 @@ class AdminKolaborasiController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $logoFile = $request->file('logo');
-            $logoBase64 = base64_encode(file_get_contents($logoFile->getRealPath()));
-            $logoMime = $logoFile->getClientMimeType();
-            $validated['logo'] = $logoBase64;
-            $validated['logo_mime'] = $logoMime;
+            $processed = ImageService::compressAndSanitize($request->file('logo'));
+            $validated['logo'] = $processed['data'];
+            $validated['logo_mime'] = $processed['mime'];
         }
 
         $validated['updated_by'] = $user->id;
