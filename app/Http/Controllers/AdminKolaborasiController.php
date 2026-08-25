@@ -478,7 +478,7 @@ class AdminKolaborasiController extends Controller
             'no_telp_kolaborasi' => 'nullable|string|max:50',
             'email_kolaborasi' => 'nullable|email|max:100',
             'homecare_harga' => 'required|numeric|min:0',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         if ($request->hasFile('logo')) {

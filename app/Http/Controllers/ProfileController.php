@@ -81,7 +81,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($admin_global->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($admin_global->id)],
         ]);
@@ -147,7 +147,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($admin_kolaborasi->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($admin_kolaborasi->id)],
         ]);
@@ -213,7 +213,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($therapist->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('karyawans', 'no_telp')->ignore($therapist->id)],
         ]);
@@ -281,7 +281,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
             'email' => ['nullable', 'email', Rule::unique('pasiens', 'email')->ignore($pasien->id)],
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'password' => 'nullable|string|min:8|confirmed',
             'no_telp' => ['required', 'string', Rule::unique('pasiens', 'no_telp')->ignore($pasien->id)],
             'tinggi_badan' => 'nullable|integer|min:0',

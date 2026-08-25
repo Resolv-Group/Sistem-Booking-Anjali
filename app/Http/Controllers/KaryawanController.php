@@ -69,7 +69,7 @@ class KaryawanController extends Controller
             'tanggal_bergabung' => 'nullable|date',
             'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         DB::transaction(function () use ($request, $kolaborasi) {
@@ -154,7 +154,7 @@ class KaryawanController extends Controller
             'status_karyawan' => 'required|in:Aktif,Tidak Aktif',
             'kolaborasi_id' => 'required|exists:kolaborasi,id',
             'alamat' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
         ]);
 
         DB::transaction(function () use ($request, $karyawan) {

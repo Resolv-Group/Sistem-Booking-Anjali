@@ -575,7 +575,7 @@ class BookingController extends Controller
             'terapis_sesi_id' => 'required|exists:terapis_sesi,id',
             'slots' => 'required|integer|min:1|max:5',
             'patients_data' => 'required|string',
-            'payment_proof' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'payment_proof' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
         ]);
 
         $primaryUser = auth()->user();
