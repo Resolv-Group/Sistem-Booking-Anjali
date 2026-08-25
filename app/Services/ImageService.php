@@ -29,7 +29,7 @@ class ImageService
      *
      * @throws \InvalidArgumentException  If the file is not a valid image
      */
-    public static function compressAndSanitize(UploadedFile $file, int $maxWidth = 1200, int $quality = 75): array
+    public static function compressAndSanitize(UploadedFile $file, int $maxWidth = 800, int $quality = 60): array
     {
         // Validate real MIME type using finfo (not trusting client-provided MIME)
         $realMime = self::detectRealMime($file);
@@ -75,8 +75,8 @@ class ImageService
         UploadedFile $file,
         string $directory,
         string $disk = 'public',
-        int $maxWidth = 1200,
-        int $quality = 75
+        int $maxWidth = 800,
+        int $quality = 60
     ): array {
         // Validate real MIME type using finfo
         $realMime = self::detectRealMime($file);
