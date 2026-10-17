@@ -306,18 +306,15 @@
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-md" @click="showAddModal = false"></div>
 
         {{-- Modal Content --}}
-        <div class="relative bg-white/90 border border-white/80 backdrop-blur-2xl rounded-[2.5rem] p-6 sm:p-7 max-w-md w-full shadow-[0_25px_60px_-15px_rgba(15,118,110,0.25)] max-h-[90vh] overflow-hidden flex flex-col"
+        <div class="relative bg-white border border-slate-100 rounded-[2.5rem] p-6 sm:p-7 max-w-md w-full shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
             x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
 
-            {{-- Ambient Glows --}}
-            <div class="absolute -top-16 -right-16 w-44 h-44 bg-gradient-to-br from-teal-400/25 to-emerald-400/15 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-14 -left-14 w-40 h-40 bg-gradient-to-tr from-teal-500/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-
             {{-- Modal Header --}}
-            <div class="relative z-10 flex items-center justify-between pb-4 border-b border-slate-100/80 shrink-0">
+            <div class="relative z-10 flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-teal-600/25 ring-4 ring-teal-50 shrink-0">
+                    <div class="w-11 h-11 rounded-2xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center shadow-sm shrink-0"
+                        style="background-color: #f0fdfa; border-color: #ccfbf1; color: #0f766e;">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
@@ -328,7 +325,8 @@
                     </div>
                 </div>
                 <button type="button" @click="showAddModal = false"
-                    class="w-9 h-9 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 text-slate-400 hover:text-slate-600 flex items-center justify-center transition active:scale-95 shrink-0">
+                    class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center transition active:scale-95 shrink-0"
+                    style="background-color: #f1f5f9; color: #64748b;">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -343,7 +341,7 @@
                 {{-- Nama Lengkap --}}
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
                         Nama Karyawan <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
@@ -353,7 +351,7 @@
                             </svg>
                         </div>
                         <input type="text" name="nama_karyawan" x-model="addForm.nama_karyawan" required
-                            class="w-full pl-10 pr-4 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none shadow-sm"
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:border-teal-600 transition-all outline-none shadow-sm"
                             placeholder="Contoh: Budi Santoso">
                     </div>
                 </div>
@@ -363,7 +361,7 @@
                     {{-- No Telepon --}}
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
                             No. Telepon <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
@@ -373,7 +371,7 @@
                                 </svg>
                             </div>
                             <input type="text" name="no_telp" x-model="addForm.no_telp" required
-                                class="w-full pl-10 pr-4 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none shadow-sm"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:border-teal-600 transition-all outline-none shadow-sm"
                                 placeholder="08123456789">
                         </div>
                     </div>
@@ -391,7 +389,7 @@
                                 </svg>
                             </div>
                             <input type="email" name="email" x-model="addForm.email"
-                                class="w-full pl-10 pr-4 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none shadow-sm"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:border-teal-600 transition-all outline-none shadow-sm"
                                 placeholder="admin@anjali.id">
                         </div>
                     </div>
@@ -402,34 +400,36 @@
                     {{-- DOB --}}
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
                             Tgl Lahir <span class="text-rose-500">*</span>
                         </label>
                         <input type="date" name="tanggal_lahir" x-model="addForm.tanggal_lahir" required
-                            class="w-full px-3.5 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none shadow-sm">
-                        <div class="flex items-center gap-1 text-[8.5px] font-bold text-teal-700 bg-teal-50/80 border border-teal-100/70 px-2 py-0.5 rounded-lg">
-                            <svg class="w-2.5 h-2.5 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            class="w-full px-3.5 py-3 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 focus:border-teal-600 transition-all outline-none shadow-sm">
+                        <div class="mt-1 flex items-center gap-1.5 text-[9.5px] font-semibold text-slate-400 ml-1">
+                            <svg class="w-3 h-3 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                             </svg>
-                            <span>Pass default: DD-MM-YYYY</span>
+                            <span>Pass default: <span class="font-bold text-teal-700">DD-MM-YYYY</span></span>
                         </div>
                     </div>
 
                     {{-- Jenis Kelamin Segmented Toggle --}}
                     <div class="space-y-1.5">
                         <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
                             Jenis Kelamin <span class="text-rose-500">*</span>
                         </label>
-                        <div class="grid grid-cols-2 p-1 bg-slate-100/80 border border-slate-200/60 rounded-2xl gap-1">
+                        <div class="grid grid-cols-2 p-1 bg-slate-100 border border-slate-200 rounded-2xl gap-1">
                             <button type="button" @click="addForm.jenis_kelamin = 'L'"
-                                class="py-2.5 rounded-xl text-xs font-bold transition-all text-center"
-                                :class="addForm.jenis_kelamin === 'L' ? 'bg-white text-teal-700 shadow-sm ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700'">
+                                class="py-2.5 rounded-xl text-xs font-black transition-all text-center"
+                                :class="addForm.jenis_kelamin === 'L' ? 'bg-teal-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+                                :style="addForm.jenis_kelamin === 'L' ? 'background-color: #115e59; color: #ffffff;' : ''">
                                 Laki-laki
                             </button>
                             <button type="button" @click="addForm.jenis_kelamin = 'P'"
-                                class="py-2.5 rounded-xl text-xs font-bold transition-all text-center"
-                                :class="addForm.jenis_kelamin === 'P' ? 'bg-white text-teal-700 shadow-sm ring-1 ring-slate-200/60' : 'text-slate-500 hover:text-slate-700'">
+                                class="py-2.5 rounded-xl text-xs font-black transition-all text-center"
+                                :class="addForm.jenis_kelamin === 'P' ? 'bg-teal-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+                                :style="addForm.jenis_kelamin === 'P' ? 'background-color: #115e59; color: #ffffff;' : ''">
                                 Perempuan
                             </button>
                         </div>
@@ -440,13 +440,13 @@
                 {{-- Kolaborasi ID (Cabang) Dropdown --}}
                 <div class="space-y-1.5">
                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
                         Cabang Penugasan <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative" @click.outside="openDropdown = null">
                         <button type="button" @click.stop="openDropdown = openDropdown === 'addBranch' ? null : 'addBranch'"
-                            class="w-full flex items-center justify-between px-4 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 transition-all outline-none shadow-sm hover:border-teal-300"
-                            :class="openDropdown === 'addBranch' ? 'ring-4 ring-teal-500/10 border-teal-500 bg-white' : ''">
+                            class="w-full flex items-center justify-between px-4 py-3 bg-slate-50/70 hover:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 transition-all outline-none shadow-sm hover:border-teal-300"
+                            :class="openDropdown === 'addBranch' ? 'border-teal-600 bg-white' : ''">
                             <div class="flex items-center gap-2.5 truncate">
                                 <svg class="w-4 h-4 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -467,7 +467,7 @@
                             x-transition:leave="transition ease-in duration-100"
                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                             x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
-                            class="absolute z-50 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 p-2.5 space-y-2">
+                            class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-100 p-2.5 space-y-2">
                             <div class="relative">
                                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -505,21 +505,23 @@
                         Alamat (Opsional)
                     </label>
                     <textarea name="alamat" x-model="addForm.alamat" rows="2"
-                        class="w-full px-4 py-3 bg-white/70 border border-slate-200/80 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all outline-none resize-none shadow-sm"
+                        class="w-full px-4 py-3 bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:border-teal-600 transition-all outline-none resize-none shadow-sm"
                         placeholder="Contoh: Jl. Mawar No. 10"></textarea>
                 </div>
 
                 {{-- Action Buttons --}}
                 <div class="space-y-2.5 pt-2 pb-1">
                     <button type="submit"
-                        class="w-full py-4 bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-800 hover:from-teal-800 hover:to-emerald-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-teal-900/25 active:scale-95 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        class="w-full py-4 bg-teal-800 hover:bg-teal-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg shadow-teal-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        style="background-color: #115e59; color: #ffffff;">
+                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>Daftarkan Admin</span>
                     </button>
                     <button type="button" @click="showAddModal = false"
-                        class="w-full py-3 bg-slate-100/90 hover:bg-slate-200/80 text-slate-500 rounded-2xl text-xs font-bold uppercase tracking-wider active:scale-95 transition-all text-center">
+                        class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl text-xs font-bold uppercase tracking-wider active:scale-95 transition-all text-center"
+                        style="background-color: #f1f5f9; color: #475569;">
                         Batal
                     </button>
                 </div>
