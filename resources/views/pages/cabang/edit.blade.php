@@ -24,11 +24,9 @@
                         </h1>
                     </div>
                 </div>
-                {{-- Right Slot: Simple Decorative Brand Icon --}}
-                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
+                {{-- Right Slot: Brand Logo --}}
+                <div class="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center bg-white shrink-0">
+                    <img src="{{ asset('images/logo_anjali.jpg') }}" alt="Logo Anjali" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>
@@ -145,11 +143,15 @@
                 </div>
 
                 {{-- Action Button --}}
-                <div class="pt-4">
+                <div class="space-y-4 pt-4">
                     <button type="submit"
                             class="w-full py-5 bg-slate-900 text-white rounded-2xl text-base font-bold uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10 active:scale-95 transition-all">
                         Simpan Perubahan
                     </button>
+                    <a href="{{ route('admin-global.cabang', $kolaborasi->id) }}"
+                        class="block w-full py-4 bg-slate-200/50 text-slate-500 rounded-2xl text-sm font-black uppercase tracking-[0.2em] active:scale-95 transition-all text-center">
+                        Batal
+                    </a>
                 </div>
 
             </form>
