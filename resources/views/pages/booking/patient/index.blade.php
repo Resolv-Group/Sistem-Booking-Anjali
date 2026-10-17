@@ -317,22 +317,31 @@
                         $kotaKolaborasi = $t->kolaborasi ? $t->kolaborasi->kota_kolaborasi : '';
 
                         // 1. Force the timezone to match your location (Asia/Jakarta is WIB)
+                        // 1. Force the timezone to match your location (Asia/Jakarta is WIB)
                         $now = \Carbon\Carbon::now('Asia/Jakarta');
                         $todayStr = $now->toDateString(); // e.g., '2026-05-19'
                         $currentTimeStr = $now->toTimeString(); // e.g., '14:15:00'
 
-                        // 2. Filter sessions with explicit logic
+                        // 2. Check if open today with available slots
+                        $todaySession = $t->sessions
+                            ->filter(function ($session) use ($todayStr, $currentTimeStr) {
+                                $isToday = $session->tanggal_sesi === $todayStr;
+                                $isUpcoming = $session->waktu_mulai > $currentTimeStr;
+                                $isAvailable = $session->status === 'terbuka' && $session->remaining_capacity > 0;
+                                return $isToday && $isUpcoming && $isAvailable;
+                            })
+                            ->sortBy('waktu_mulai')
+                            ->first();
+
+                        $todaySlots = $todaySession ? $todaySession->remaining_capacity : 0;
+                        $isOpenToday = ($todaySession !== null && $todaySlots > 0);
+
+                        // 3. Find the next available session (upcoming today, or in the future)
                         $nextSession = $t->sessions
                             ->filter(function ($session) use ($todayStr, $currentTimeStr) {
-                                // A session is valid if:
-                                // Condition A: It's a future date
-        $isFutureDate = $session->tanggal_sesi > $todayStr;
-
-        // Condition B: It's today, but the start time hasn't passed yet
-        $isTodayButUpcoming =
-            $session->tanggal_sesi === $todayStr && $session->waktu_mulai > $currentTimeStr;
-
-        // Condition C: It's open and has slots
+                                $isFutureDate = $session->tanggal_sesi > $todayStr;
+                                $isTodayButUpcoming =
+                                    $session->tanggal_sesi === $todayStr && $session->waktu_mulai > $currentTimeStr;
                                 $isAvailable = $session->status === 'terbuka' && $session->remaining_capacity > 0;
 
                                 return ($isFutureDate || $isTodayButUpcoming) && $isAvailable;
@@ -342,37 +351,43 @@
                             })
                             ->first();
 
-                        // 3. Display Logic
-                        if ($nextSession) {
-                            $slots = $nextSession->remaining_capacity;
-                            $date = \Carbon\Carbon::parse($nextSession->tanggal_sesi);
+                        // 4. Helper for time period (Pagi / Siang / Sore / Malam)
+                        $getTimeType = function ($time) {
+                            $hour = (int) substr($time, 0, 2);
+                            if ($hour < 12) return 'Pagi';
+                            if ($hour < 16) return 'Siang';
+                            if ($hour < 18) return 'Sore';
+                            return 'Malam';
+                        };
 
-                            // Determine Pagi/Siang/Malam based on hour
-                            $hour = (int) substr($nextSession->waktu_mulai, 0, 2);
-                            if ($hour < 12) {
-                                $timeType = 'Pagi';
-                            } elseif ($hour < 16) {
-                                $timeType = 'Siang';
-                            } elseif ($hour < 18) {
-                                $timeType = 'Sore';
-                            } else {
-                                $timeType = 'Malam';
-                            }
+                        if ($nextSession) {
+                            $date = \Carbon\Carbon::parse($nextSession->tanggal_sesi);
+                            $timeType = $getTimeType($nextSession->waktu_mulai);
+                            $timeStr = substr($nextSession->waktu_mulai, 0, 5) . ' ' . $timeType;
 
                             if ($date->isToday()) {
-                                $dayLabel = 'Hari ini';
+                                $nextScheduleText = 'Hari ini, ' . $timeStr;
                             } elseif ($date->isTomorrow()) {
-                                $dayLabel = 'Besok';
+                                $nextScheduleText = 'Besok, ' . $timeStr;
                             } else {
-                                $dayLabel = $date->translatedFormat('D');
+                                $nextScheduleText = $date->translatedFormat('l, d M') . ' • ' . $timeStr;
                             }
-
-                            $nextTime = $dayLabel . ', ' . substr($nextSession->waktu_mulai, 0, 5) . ' ' . $timeType;
                         } else {
-                            $slots = 0;
-                            $nextTime = 'Penuh / Tutup';
+                            $anyFuture = $t->sessions
+                                ->filter(function ($session) use ($todayStr, $currentTimeStr) {
+                                    return $session->tanggal_sesi > $todayStr || ($session->tanggal_sesi === $todayStr && $session->waktu_mulai > $currentTimeStr);
+                                })
+                                ->sortBy(function ($session) {
+                                    return $session->tanggal_sesi . ' ' . $session->waktu_mulai;
+                                })
+                                ->first();
+
+                            if ($anyFuture) {
+                                $nextScheduleText = 'Penuh (' . \Carbon\Carbon::parse($anyFuture->tanggal_sesi)->translatedFormat('d M') . ')';
+                            } else {
+                                $nextScheduleText = 'Belum ada jadwal';
+                            }
                         }
-                        $isBookable = $nextSession && $slots > 0;
 
                         $rating = $t->nilai_review ?: '5.0';
                         $harga = $t->layanans->min('base_harga') ?: 150000;
@@ -396,8 +411,7 @@
 
                     <div x-show="checkFilter('{{ $namaKolaborasi }}', '{{ addslashes($t->nama_karyawan) }}', @js($layanans), '{{ $kotaKolaborasi }}', @js($availableSessions))"
                         x-transition
-                        class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative group transition-all duration-300"
-                        :class="!{{ $isBookable ? 'true' : 'false' }} ? 'opacity-75' : ''">
+                        class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative group transition-all duration-300">
 
                         <div class="flex flex-col items-center">
                             <div class="relative mb-6">
@@ -409,20 +423,20 @@
                                 <div
                                     class="w-32 h-32 rounded-[2.5rem] bg-slate-50 overflow-hidden border-2 border-white shadow-md">
                                     <img src="{{ $img }}"
-                                        class="w-full h-full object-cover {{ !$isBookable ? 'grayscale' : '' }}">
+                                        class="w-full h-full object-cover">
                                 </div>
 
                                 <div
                                     class="absolute -bottom-2 -right-1 bg-white px-3 py-1 rounded-full shadow-md border border-slate-50 flex items-center gap-1.5">
-                                    @if ($isBookable)
+                                    @if ($isOpenToday)
                                         <div
-                                            class="w-2 h-2 rounded-full {{ $slots <= 1 ? 'bg-orange-500' : 'bg-emerald-500' }}">
+                                            class="w-2 h-2 rounded-full {{ $todaySlots <= 1 ? 'bg-orange-500' : 'bg-emerald-500' }}">
                                         </div>
-                                        <span class="text-[11px] font-bold text-slate-700 uppercase">{{ $slots }}
+                                        <span class="text-[11px] font-bold text-slate-700 uppercase">{{ $todaySlots }}
                                             Slot Tersisa</span>
                                     @else
                                         <div class="w-2 h-2 rounded-full bg-rose-500"></div>
-                                        <span class="text-[11px] font-bold text-rose-600 uppercase">Penuh / Tutup</span>
+                                        <span class="text-[11px] font-bold text-rose-600 uppercase">Tutup Hari Ini</span>
                                     @endif
                                 </div>
                             </div>
@@ -516,31 +530,27 @@
                         </div>
 
                         <div
-                            class="mt-6 px-5 py-3 w-full bg-slate-50 rounded-2xl flex items-center justify-between border {{ $isBookable ? 'bg-slate-50 border-slate-100' : 'bg-rose-50 border-rose-100' }}">
+                            class="mt-6 px-5 py-3 w-full rounded-2xl flex items-center justify-between border {{ $isOpenToday ? 'bg-slate-50 border-slate-100' : 'bg-rose-50/60 border-rose-100' }}">
                             <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 {{ $isBookable ? 'text-teal-500' : 'text-rose-500' }}" fill="none"
+                                <svg class="w-4 h-4 {{ $isOpenToday ? 'text-teal-600' : 'text-rose-500' }}" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span
-                                    class="text-xs font-bold {{ $isBookable ? 'text-slate-500' : 'text-rose-500' }} uppercase">{{ $isBookable ? 'Jadwal Selanjutnya' : 'Status' }}</span>
+                                    class="text-xs font-bold {{ $isOpenToday ? 'text-slate-500' : 'text-rose-600' }} uppercase">
+                                    {{ $isOpenToday ? 'Jadwal Hari Ini' : 'Jadwal Berikutnya' }}
+                                </span>
                             </div>
                             <span
-                                class="text-xs font-bold {{ $isBookable ? 'text-slate-800' : 'text-rose-700' }} capitalize">{{ $nextTime }}</span>
+                                class="text-xs font-bold {{ $isOpenToday ? 'text-slate-800' : 'text-rose-700' }} capitalize">
+                                {{ $nextScheduleText }}
+                            </span>
                         </div>
 
-                        @if ($isBookable)
-                            <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
-                                class="mt-5 block text-center w-full py-4 bg-teal-700 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all">
-                                Buat Janji
-                            </a>
-                        @else
-                            <button type="button"
-                                class="mt-5 block text-center w-full py-4 bg-slate-500 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all"
-                                disabled>
-                                Jadwal Tidak Tersedia
-                            </button>
-                        @endif
+                        <a href="{{ route('patient.booking.form', ['therapist_id' => $t->id]) }}"
+                            class="mt-5 block text-center w-full py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-2xl text-sm font-bold uppercase tracking-widest active:translate-y-1 transition-all shadow-md shadow-teal-900/10">
+                            Buat Janji
+                        </a>
                     </div>
             @endforeach
             </div>

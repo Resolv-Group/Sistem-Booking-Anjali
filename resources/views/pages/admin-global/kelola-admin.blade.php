@@ -238,7 +238,7 @@
                             {{-- Reset Password --}}
                             <button @click="openResetModal({{ json_encode($admin) }})"
                                 class="py-2.5 bg-amber-50 hover:bg-amber-100/75 border border-amber-100 text-amber-700 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all text-center">
-                                Reset Pwd
+                                Reset Pass
                             </button>
 
                             {{-- Status toggle --}}

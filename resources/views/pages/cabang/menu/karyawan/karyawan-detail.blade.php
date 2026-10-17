@@ -34,7 +34,7 @@
             <div class="h-1 w-full bg-gradient-to-r from-teal-500 via-teal-700 to-emerald-500"></div>
             <div class="px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <a href="javascript:void(0)" onclick="window.history.back()"  class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
+                    <a href="{{ route('admin-global.karyawan', $kolaborasi->id) }}" class="p-2 -ml-2 text-slate-400 hover:text-teal-600 hover:bg-slate-50 rounded-xl active:scale-95 transition-all">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
@@ -165,40 +165,52 @@
                 <div class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
 
                     {{-- Tanggal Lahir & Gender --}}
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis
-                            Kelamin</label>
-                        <div class="relative" x-data @click.outside="openDropdown = null">
-                            <button type="button" @click.stop="openDropdown = openDropdown === 'gender' ? null : 'gender'"
-                                class="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-all"
-                                :class="openDropdown === 'gender' ? 'ring-2 ring-teal-400 bg-white' : ''">
-                                <span x-text="jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan'"></span>
-                                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
-                                    :class="openDropdown === 'gender' ? 'rotate-180' : ''" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                                    <path d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div x-show="openDropdown === 'gender'" x-transition:enter="transition ease-out duration-150"
-                                x-transition:enter-start="opacity-0 -translate-y-1"
-                                x-transition:enter-end="opacity-100 translate-y-0"
-                                x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
-                                x-transition:leave-end="opacity-0"
-                                class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5">
-                                <button type="button" @click="jenisKelamin = 'L'; openDropdown = null"
-                                    class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
-                                    :class="jenisKelamin === 'L' ? 'bg-teal-50 text-teal-700' :
-                                        'text-slate-600 hover:bg-slate-50'">
-                                    Laki-laki
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Tgl
+                                Lahir</label>
+                            <input type="date" name="tanggal_lahir"
+                                value="{{ old('tanggal_lahir', $karyawan->tanggal_lahir ? \Carbon\Carbon::parse($karyawan->tanggal_lahir)->format('Y-m-d') : '') }}"
+                                required
+                                class="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-teal-500/20">
+                            <p class="text-[8px] font-bold text-slate-400 leading-tight">Format: DD-MM-YYYY</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis
+                                Kelamin</label>
+                            <div class="relative" x-data @click.outside="openDropdown = null">
+                                <button type="button" @click.stop="openDropdown = openDropdown === 'gender' ? null : 'gender'"
+                                    class="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-all"
+                                    :class="openDropdown === 'gender' ? 'ring-2 ring-teal-400 bg-white' : ''">
+                                    <span x-text="jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan'"></span>
+                                    <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                        :class="openDropdown === 'gender' ? 'rotate-180' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                        <path d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </button>
-                                <button type="button" @click="jenisKelamin = 'P'; openDropdown = null"
-                                    class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
-                                    :class="jenisKelamin === 'P' ? 'bg-teal-50 text-teal-700' :
-                                        'text-slate-600 hover:bg-slate-50'">
-                                    Perempuan
-                                </button>
+                                <div x-show="openDropdown === 'gender'" x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                    class="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 space-y-0.5">
+                                    <button type="button" @click="jenisKelamin = 'L'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                        :class="jenisKelamin === 'L' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        Laki-laki
+                                    </button>
+                                    <button type="button" @click="jenisKelamin = 'P'; openDropdown = null"
+                                        class="w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-colors"
+                                        :class="jenisKelamin === 'P' ? 'bg-teal-50 text-teal-700' :
+                                            'text-slate-600 hover:bg-slate-50'">
+                                        Perempuan
+                                    </button>
+                                </div>
+                                <input type="hidden" name="jenis_kelamin" :value="jenisKelamin">
                             </div>
-                            <input type="hidden" name="jenis_kelamin" :value="jenisKelamin">
                         </div>
                     </div>
 

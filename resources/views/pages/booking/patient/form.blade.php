@@ -1425,11 +1425,39 @@
                                     <p class="text-base font-semibold text-slate-700"
                                         x-text="fileName ? fileName : 'Tap to select or take photo'"></p>
                                     <p class="text-xs font-medium text-slate-400 uppercase tracking-tighter"
-                                        x-show="!fileName">JPEG, PNG, or PDF supported</p>
+                                        x-show="!fileName">JPEG, PNG, or PDF supported (Maks. 2 MB)</p>
                                 </div>
                                 <input type="file" name="payment_proof"
                                     class="absolute inset-0 opacity-0 cursor-pointer"
-                                    @change="fileName = $event.target.files[0]?.name ?? ''; paymentProofFileName = fileName;">
+                                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                                    @change="
+                                        const file = $event.target.files[0];
+                                        if (file) {
+                                            if (file.size > 2 * 1024 * 1024) {
+                                                $event.target.value = '';
+                                                fileName = '';
+                                                paymentProofFileName = '';
+                                                if (typeof Swal !== 'undefined') {
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Ukuran File Terlalu Besar',
+                                                        text: 'Ukuran file bukti pembayaran tidak boleh lebih dari 2 MB.',
+                                                        confirmButtonColor: '#0f766e',
+                                                        confirmButtonText: 'Mengerti',
+                                                        customClass: { popup: 'rounded-2xl', confirmButton: 'rounded-xl shadow-md' }
+                                                    });
+                                                } else {
+                                                    alert('Ukuran file bukti pembayaran tidak boleh lebih dari 2 MB.');
+                                                }
+                                                return;
+                                            }
+                                            fileName = file.name;
+                                            paymentProofFileName = fileName;
+                                        } else {
+                                            fileName = '';
+                                            paymentProofFileName = '';
+                                        }
+                                    ">
                             </div>
                         </label>
                     </div>
