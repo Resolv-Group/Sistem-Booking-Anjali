@@ -59,11 +59,9 @@
                         </h1>
                     </div>
                 </div>
-                {{-- Right Slot: Simple Decorative Brand Icon --}}
-                <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
+                {{-- Right Slot: Brand Logo --}}
+                <div class="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shadow-sm flex items-center justify-center bg-white shrink-0">
+                    <img src="{{ asset('images/logo_anjali.jpg') }}" alt="Logo Anjali" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>

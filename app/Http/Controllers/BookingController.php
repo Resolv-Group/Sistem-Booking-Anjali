@@ -575,7 +575,10 @@ class BookingController extends Controller
             'terapis_sesi_id' => 'required|exists:terapis_sesi,id',
             'slots' => 'required|integer|min:1|max:5',
             'patients_data' => 'required|string',
-            'payment_proof' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
+            'payment_proof' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:2048',
+        ], [
+            'payment_proof.max' => 'Ukuran file bukti pembayaran tidak boleh lebih dari 2 MB.',
+            'payment_proof.uploaded' => 'Ukuran file bukti pembayaran melebihi batas maksimal 2 MB.',
         ]);
 
         $primaryUser = auth()->user();
